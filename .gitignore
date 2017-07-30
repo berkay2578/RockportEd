@@ -259,3 +259,11 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/RockportEd/imgui/extra_fonts/Roboto-Medium.ttf
+/RockportEd/imgui/extra_fonts/README.txt
+/RockportEd/imgui/extra_fonts/ProggyTiny.ttf
+/RockportEd/imgui/extra_fonts/ProggyClean.ttf
+/RockportEd/imgui/extra_fonts/Karla-Regular.ttf
+/RockportEd/imgui/extra_fonts/DroidSans.ttf
+/RockportEd/imgui/extra_fonts/Cousine-Regular.ttf
+/RockportEd/imgui/extra_fonts/binary_to_compressed_c.exe

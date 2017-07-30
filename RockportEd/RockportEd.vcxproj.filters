@@ -1,39 +1,94 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="D3D9Hook.h">
+      <Filter>D3D9Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D9Hook_Settings.h">
+      <Filter>D3D9Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="VTableHook.hpp">
+      <Filter>D3D9Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Mods.h">
+      <Filter>D3D9Hook\Toggle</Filter>
+    </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
+      <Filter>default</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
+      <Filter>default</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\dx9\imgui_impl_dx9.h">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\extra_fonts\RobotoMedium.hpp">
+      <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="D3D9Hook.cpp">
+      <Filter>D3D9Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D9Hook_Settings.cpp">
+      <Filter>D3D9Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Mods.cpp">
+      <Filter>D3D9Hook\Toggle</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>default</Filter>
     </ClCompile>
-    <ClCompile Include="RockportEd.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>D3D9Hook\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>D3D9Hook\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="D3D9Hook">
+      <UniqueIdentifier>{d828252d-5890-4a66-ab97-133d53c6f3e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="D3D9Hook\Toggle">
+      <UniqueIdentifier>{81ed320d-28d3-4fca-9d5c-974e1400119f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes">
+      <UniqueIdentifier>{556c61bc-759d-4ce9-b726-be679b8815d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="default">
+      <UniqueIdentifier>{dea0fb78-a8ea-4f81-8f01-cbf7bbe8ced1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="D3D9Hook\imgui">
+      <UniqueIdentifier>{781621c3-2b2b-4035-869e-7e843858f024}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
