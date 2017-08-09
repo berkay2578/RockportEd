@@ -48,6 +48,7 @@ namespace D3D9Hook {
 	HRESULT WINAPI beginStateBlockHook(LPDIRECT3DDEVICE9 pDevice);
 
 	bool showUserGuide = false;
+	char** cameras = new char*[7];
 
 	void doImGuiStyle() {
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -129,6 +130,8 @@ namespace D3D9Hook {
 		if (pDevice->TestCooperativeLevel() == D3D_OK) {
 			if (D3D9HookSettings::isImguiInitialized) {
 				if (D3D9HookSettings::Options::isMainWindowVisible) {
+					ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
+
 					if (showUserGuide) {
 						ImGui::SetNextWindowPosCenter(ImGuiSetCond_Appearing);
 						ImGui::Begin("User Guide", &showUserGuide, ImVec2(0.0f, 0.0f), 1.0f,
@@ -154,29 +157,49 @@ namespace D3D9Hook {
 					}
 
 					ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
+					ImGui::Begin("Debug", (bool*)0, ImVec2(100, 100));
+					ImGui::Text("GetAvailableTextureMem MB: %u", pDevice->GetAvailableTextureMem());
+					ImGui::End();
+
+					ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
 					ImGui::Begin("RockportEd", (bool*)0, ImVec2(250.0f, 120.0f), 0.9f,
 								 ImGuiWindowFlags_NoSavedSettings);
 
-					ImGui::Checkbox("Debug Camera", &D3D9HookSettings::Options::opt_DebugCamera);
-					ImGui::Checkbox("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera);
+				#ifdef NDEBUG
+					ImGui::TextWrapped("Current car bytes: %s", D3D9HookSettings::Options::opt_CustomCarBytesValue);
+				#else
+					ImGui::Checkbox("Car bytes: ", &D3D9HookSettings::Options::opt_CustomCarBytes);
+					ImGui::InputText("##CarBytes", D3D9HookSettings::Options::opt_CustomCarBytesValue, 256,
+									 ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsUppercase
+									 | (D3D9HookSettings::Options::opt_CustomCarBytes ? 0 : ImGuiInputTextFlags_ReadOnly));
+				#endif
+
+					ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
 					if (D3D9HookSettings::Options::opt_CustomCamera) {
 						ImGui::BeginChild("##CustomCamera", ImVec2(0.0f, 0.0f), true);
-						ImGui::TextWrapped("X");
-						ImGui::SliderFloat("##CameraX", &D3D9HookSettings::Options::opt_CustomCamera_X, -5.0f, 5.0f);
-						ImGui::TextWrapped("Horizontal Angle");
-						ImGui::SliderFloat("##CameraHorAngle", &D3D9HookSettings::Options::opt_CustomCamera_HorAngle, -5.0f, 5.0f);
-						ImGui::TextWrapped("Z");
-						ImGui::SliderFloat("##CameraZ", &D3D9HookSettings::Options::opt_CustomCamera_Z, 0.0f, 5.0f);
-						ImGui::TextWrapped("FOV");
-						ImGui::SliderFloat("##CameraFov", &D3D9HookSettings::Options::opt_CustomCamera_Fov, 10.0f, 100.0f);
-						ImGui::TextWrapped("Rotation");
-						ImGui::SliderAngle("##CameraRot", &D3D9HookSettings::Options::opt_CustomCamera_Rot, 0.0f, 90.0f);
+						ImGui::TextWrapped("Camera");
+						ImGui::Combo("##CameraCombo", Mods::activeCamera, cameras, 7);
+						int activeCam = *Mods::activeCamera;
+						if (activeCam == 0 || (activeCam > 1 && activeCam < 4)) {
+							ImGui::TextWrapped("X");
+							ImGui::SliderFloat("##CameraX", Mods::cameraData[activeCam]["X"], -10.0f, 10.0f);
+							ImGui::TextWrapped("Z");
+							ImGui::SliderFloat("##CameraZ", Mods::cameraData[activeCam]["Z"], -10.0f, 10.0f);
+							ImGui::TextWrapped("FOV");
+							ImGui::SliderFloat("##CameraFov", Mods::cameraData[activeCam]["Fov"], 25.0f, 120.0f);
+							ImGui::TextWrapped("Horizontal Angle");
+							ImGui::SliderFloat("##CameraHorAngle", Mods::cameraData[activeCam]["HorAngle"], -45.0f, 45.0f, "%.3f deg");
+							ImGui::TextWrapped("Vertical Angle");
+							ImGui::SliderFloat("##CameraVerAngle", Mods::cameraData[activeCam]["VerAngle"], -25.0f, 45.0f, "%.3f deg");
+						}
 						ImGui::EndChild();
 					}
 
 					ImGui::End();
 				}
-
+				else {
+					ImGui::GetIO().MouseDrawCursor = false;
+				}
 				ImGui::Render();
 			}
 		}
@@ -212,9 +235,10 @@ namespace D3D9Hook {
 		return retBeginStateBlock;
 	}
 
+	// Need DI8Hook
 	LRESULT CALLBACK WndProcHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		if (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU)
-			return true;
+			return TRUE;
 
 		if (D3D9HookSettings::isImguiInitialized) {
 			ImGuiIO io = ImGui::GetIO();
@@ -229,23 +253,46 @@ namespace D3D9Hook {
 
 				if (io.WantCaptureMouse) {
 					switch (uMsg) {
+						case WM_MOUSEACTIVATE:
+						case WM_MOUSEHOVER:
+						case WM_MOUSEHWHEEL:
+						case WM_MOUSELEAVE:
+						case WM_MOUSEMOVE:
+						case WM_MOUSEWHEEL:
 						case WM_LBUTTONDOWN:
 						case WM_LBUTTONUP:
 						case WM_MBUTTONDOWN:
 						case WM_MBUTTONUP:
 						case WM_RBUTTONDOWN:
 						case WM_RBUTTONUP:
-							return true;
+						case WM_XBUTTONDOWN:
+						case WM_XBUTTONUP:
+							return TRUE;
 					}
 				}
 				if (io.WantTextInput) {
-					return true;
+					return TRUE;
 				}
 			}
 		}
 
 		return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
 	}
+
+	//log test
+	/*char* frmt = "%s\r\n";
+	void __declspec(naked) logHook() {
+		__asm {
+			pushad
+			lea eax, [esp + 0x40]
+			push eax
+			push[frmt]
+			call printf
+			add esp, 0x08
+			popad
+			ret
+		}
+	}*/
 
 	void Init() {
 		d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
@@ -267,6 +314,21 @@ namespace D3D9Hook {
 		origEndScene = d3dDeviceHook->Hook(42, endSceneHook);
 		origBeginStateBlock = d3dDeviceHook->Hook(60, beginStateBlockHook);
 
+		cameras[0] = "Bumper";
+		cameras[1] = "Hood";
+		cameras[2] = "Near";
+		cameras[3] = "Far";
+		cameras[4] = "i";
+		cameras[5] = "don kno";
+		cameras[6] = "Pullback";
 		showUserGuide = Settings::isFirstTime();
+
+		// log test
+		/*AllocConsole();
+		freopen("CONOUT$", "w", stdout);
+
+		DWORD logCallRet = Memory::makeAbsolute(0x64821);
+		Memory::writeCall(logCallRet, (DWORD)logHook);
+		Memory::writeRet(logCallRet + 0x5);*/
 	}
 }

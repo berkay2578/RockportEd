@@ -40,6 +40,9 @@
     <ClInclude Include="imgui\extra_fonts\RobotoMedium.hpp">
       <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="DInput8Hook.h">
+      <Filter>D3D9Hook\DInput8Hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -73,6 +76,9 @@
     <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
       <Filter>D3D9Hook\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="DInput8Hook.cpp">
+      <Filter>D3D9Hook\DInput8Hook</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="D3D9Hook">
@@ -89,6 +95,9 @@
     </Filter>
     <Filter Include="D3D9Hook\imgui">
       <UniqueIdentifier>{781621c3-2b2b-4035-869e-7e843858f024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="D3D9Hook\DInput8Hook">
+      <UniqueIdentifier>{57411f28-00b1-4030-bb66-13e27a6c1e3b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

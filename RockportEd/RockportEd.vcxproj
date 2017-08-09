@@ -23,7 +23,7 @@
     <ProjectGuid>{68388F64-B72F-4F62-B99B-5B1289E5F243}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RockportEd</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -79,6 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
+    <TargetExt>.asi</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -135,6 +136,9 @@
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Release\RockportEd.asi" "D:\Oyunlar\NFS Most Wanted\scripts\RockportEd.asi" /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -155,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="D3D9Hook.h" />
     <ClInclude Include="D3D9Hook_Settings.h" />
+    <ClInclude Include="DInput8Hook.h" />
     <ClInclude Include="imgui\dx9\imgui_impl_dx9.h" />
     <ClInclude Include="imgui\extra_fonts\RobotoMedium.hpp" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -170,6 +175,7 @@
   <ItemGroup>
     <ClCompile Include="D3D9Hook.cpp" />
     <ClCompile Include="D3D9Hook_Settings.cpp" />
+    <ClCompile Include="DInput8Hook.cpp" />
     <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />

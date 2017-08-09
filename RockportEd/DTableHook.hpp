@@ -3,15 +3,15 @@
 #include "Memory.h"
 #include <map>
 
-class VTableHook {
-	VTableHook(const VTableHook&) = delete;
+class DTableHook {
+	DTableHook(const DTableHook&) = delete;
 
 private:
 	DWORD* pOrigVTable;
 	std::map<UINT, DWORD> hookedIndexes;
 
 public:
-	VTableHook(PDWORD* ppClass) {
+	DTableHook(PDWORD* ppClass) {
 		pOrigVTable = *ppClass;
 	}
 

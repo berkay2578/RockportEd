@@ -6,13 +6,9 @@ namespace D3D9HookSettings {
 	namespace Options {
 		bool isMainWindowVisible = true;
 
-		bool opt_DebugCamera = false;
-
 		bool opt_CustomCamera = false;
-		float opt_CustomCamera_X = 3.0f;
-		float opt_CustomCamera_HorAngle = 3.0f;
-		float opt_CustomCamera_Z = 3.0f;
-		float opt_CustomCamera_Fov = 3.0f;
-		float opt_CustomCamera_Rot = 3.0f;
+
+		bool opt_CustomCarBytes = false;
+		char* opt_CustomCarBytesValue = new char[8];
 	}
 }
