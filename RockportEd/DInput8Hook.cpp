@@ -7,20 +7,7 @@
 #include "Memory.h"
 #include <dinput.h>
 
-const GUID keyboardGUID =
-{
-	0x6F1D2B61,
-	0xD5A0,
-	0x11CF,
-	0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
-};
-const GUID mouseGUID =
-{
-	0x6F1D2B60,
-	0xD5A0,
-	0x11CF,
-	0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
-};
+#pragma comment (lib, "dxguid.lib")
 
 typedef LPDIRECTINPUTDEVICEA* LPPDIRECTINPUTDEVICEA;
 typedef HRESULT(WINAPI* GetDeviceState_t)(HINSTANCE, DWORD, LPVOID);
@@ -28,35 +15,55 @@ typedef HRESULT(WINAPI* CreateDevice_t)(HINSTANCE, REFGUID, LPPDIRECTINPUTDEVICE
 typedef HRESULT(WINAPI* DirectInput8Create_t)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 
 namespace DInput8Hook {
-	GetDeviceState_t origGetDeviceState;
+	GetDeviceState_t origGetDeviceState_Keyboard;
+	GetDeviceState_t origGetDeviceState_Mouse;
 	CreateDevice_t origCreateDevice;
 	DirectInput8Create_t origDirectInput8Create;
 
-	HRESULT WINAPI getDeviceStateHook(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
-		HRESULT retOrigGetDeviceState = origGetDeviceState(hInstance, cbData, lpvData);
+	HRESULT WINAPI getDeviceStateHook_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
+		HRESULT retOrigGetDeviceState = origGetDeviceState_Keyboard(hInstance, cbData, lpvData);
 
-		/*char* pkbbuf = (char*)lpvData;
-		if (pkbbuf[DIK_M]) {
+		if (cbData == 256) {
+			char* pkbbuf = (char*)lpvData;
+			if (pkbbuf[DIK_M]) {
+				Beep(1500, 100);
+				pkbbuf[DIK_M] = 0;
+			}
+		}
+
+		return retOrigGetDeviceState;
+	}
+	HRESULT WINAPI getDeviceStateHook_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
+		HRESULT retOrigGetDeviceState = origGetDeviceState_Mouse(hInstance, cbData, lpvData);
+
+		DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
+		if (mouseState->rgbButtons[0])
 			Beep(1500, 100);
-			pkbbuf[DIK_M] = 0;
-		}*/
+
 
 		return retOrigGetDeviceState;
 	}
 
 	HRESULT WINAPI createDeviceHook(HINSTANCE hInstance, REFGUID refGUID, LPPDIRECTINPUTDEVICEA lppDirectInputDevice, LPUNKNOWN lpUnkOuter) {
 		HRESULT retOrigCreateDevice = origCreateDevice(hInstance, refGUID, lppDirectInputDevice, lpUnkOuter);
-		if (refGUID != keyboardGUID
-			/*&& refGUID != mouseGUID*/)
-			return retOrigCreateDevice;
+		if (refGUID == GUID_SysKeyboard) {
+			DWORD* inputTable = *(PDWORD*)(*lppDirectInputDevice);
+			Memory::openMemoryAccess(inputTable[9], 4);
 
-		DWORD* inputTable = *(PDWORD*)(*lppDirectInputDevice);
+			origGetDeviceState_Keyboard = (GetDeviceState_t)(DWORD)inputTable[9];
+			inputTable[9] = (DWORD)getDeviceStateHook_Keyboard;
 
-		Memory::openMemoryAccess(inputTable[9], 4);
-		origGetDeviceState = (GetDeviceState_t)(DWORD)inputTable[9];
+			Memory::restoreMemoryAccess();
+		}
+		else if (refGUID == GUID_SysMouse) {
+			DWORD* inputTable = *(PDWORD*)(*lppDirectInputDevice);
+			Memory::openMemoryAccess(inputTable[9], 4);
 
-		inputTable[9] = (DWORD)getDeviceStateHook;
-		Memory::restoreMemoryAccess();
+			origGetDeviceState_Mouse = (GetDeviceState_t)(DWORD)inputTable[9];
+			inputTable[9] = (DWORD)getDeviceStateHook_Mouse;
+
+			Memory::restoreMemoryAccess();
+		}
 		return retOrigCreateDevice;
 	}
 
