@@ -126,11 +126,38 @@ namespace D3D9Hook {
 		doImGuiStyle();
 		return origBeginScene(pDevice);
 	}
+
+	float resWidth, resHeight;
+	float baseResWidth, baseResHeight;
+	int gameResolutionCave() {
+		int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
+		if (currentResIndex < 5) {
+			DWORD* newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
+			resWidth = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0xA);
+			resHeight = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
+
+			int ratio = (int)((resWidth / resHeight) * 100);
+			if (ratio == 177) { // 16:9
+				baseResWidth = 850.0f;
+				baseResHeight = 480.0f;
+			}
+			else if (ratio == 133) { // 4:3
+				baseResWidth = 640.0f - 3; // -3
+				baseResHeight = 480.0f - 5; // -5
+			}
+		}
+		return currentResIndex;
+	}
+
 	HRESULT WINAPI endSceneHook(LPDIRECT3DDEVICE9 pDevice) {
 		if (pDevice->TestCooperativeLevel() == D3D_OK) {
 			if (D3D9HookSettings::isImguiInitialized) {
+				ImGuiIO& o = ImGui::GetIO();
+
 				if (D3D9HookSettings::Options::isMainWindowVisible) {
-					ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
+					o.MousePos.x = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB0)) * ((float)resWidth / baseResWidth);
+					o.MousePos.y = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB4)) * ((float)resHeight / baseResHeight);
+					o.MouseDrawCursor = o.WantCaptureMouse;
 
 					if (showUserGuide) {
 						ImGui::SetNextWindowPosCenter(ImGuiSetCond_Appearing);
@@ -156,9 +183,19 @@ namespace D3D9Hook {
 						ImGui::End();
 					}
 
-					ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
-					ImGui::Begin("Debug", (bool*)0, ImVec2(100, 100));
+					ImGui::SetNextWindowPos(ImVec2(100, 60), ImGuiSetCond_Once);
+					ImGui::Begin("Debug", (bool*)0, ImVec2(100, 100), 1.0f, ImGuiWindowFlags_AlwaysAutoResize);
 					ImGui::Text("GetAvailableTextureMem MB: %u", pDevice->GetAvailableTextureMem());
+					static RECT rect;
+					GetClientRect(windowHandle, &rect);
+					ImGui::Text("GetClientRect->right %ld", rect.right);
+					ImGui::Text("GetClientRect->bottom %ld", rect.bottom);
+					ImGui::Text("gameResolutionCave Width: %.3f", resWidth);
+					ImGui::Text("gameResolutionCave Height: %.3f", resHeight);
+					ImGui::Text("cursor X from game memory: %ld", *(LONG*)Memory::makeAbsolute(0x51CFB0));
+					ImGui::Text("cursor Y from game memory: %ld", *(LONG*)Memory::makeAbsolute(0x51CFB4));
+					ImGui::Text("adjusted X: %.3f", o.MousePos.x);
+					ImGui::Text("adjusted Y: %.3f", o.MousePos.y);
 					ImGui::End();
 
 					ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
@@ -198,7 +235,7 @@ namespace D3D9Hook {
 					ImGui::End();
 				}
 				else {
-					ImGui::GetIO().MouseDrawCursor = false;
+					o.MouseDrawCursor = false;
 				}
 				ImGui::Render();
 			}
@@ -235,7 +272,6 @@ namespace D3D9Hook {
 		return retBeginStateBlock;
 	}
 
-	// Need DI8Hook
 	LRESULT CALLBACK WndProcHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		if (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU)
 			return TRUE;
@@ -267,11 +303,21 @@ namespace D3D9Hook {
 						case WM_RBUTTONUP:
 						case WM_XBUTTONDOWN:
 						case WM_XBUTTONUP:
+							D3D9HookSettings::blockMouse = true;
 							return TRUE;
 					}
 				}
-				if (io.WantTextInput) {
+				else {
+					D3D9HookSettings::blockMouse = false;
+				}
+
+				if (io.WantCaptureKeyboard || io.WantTextInput) {
+					D3D9HookSettings::blockKeyboard = true;
 					return TRUE;
+				}
+				else {
+					D3D9HookSettings::blockKeyboard = false;
+
 				}
 			}
 		}
@@ -294,8 +340,14 @@ namespace D3D9Hook {
 		}
 	}*/
 
-	void Init() {
-		d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
+	DWORD WINAPI Init(LPVOID) {
+		Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
+
+		while (!d3dDeviceAddress) {
+			d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
+			Sleep(100);
+		}
+
 		d3dDevice = (LPDIRECT3DDEVICE9)d3dDeviceAddress;
 
 		D3DDEVICE_CREATION_PARAMETERS cParams;
@@ -305,8 +357,8 @@ namespace D3D9Hook {
 		origWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG_PTR)&WndProcHook);
 
 		// fix double clicks
-		DWORD Style = GetClassLong(windowHandle, GCL_STYLE) & ~CS_DBLCLKS;
-		SetClassLong(windowHandle, GCL_STYLE, Style);
+		DWORD Style = GetClassLongPtr(windowHandle, GCL_STYLE) & ~CS_DBLCLKS;
+		SetClassLongPtr(windowHandle, GCL_STYLE, Style);
 
 		d3dDeviceHook = make_unique<VTableHook>((PDWORD*)d3dDevice);
 		origReset = d3dDeviceHook->Hook(16, resetHook);
@@ -330,5 +382,6 @@ namespace D3D9Hook {
 		DWORD logCallRet = Memory::makeAbsolute(0x64821);
 		Memory::writeCall(logCallRet, (DWORD)logHook);
 		Memory::writeRet(logCallRet + 0x5);*/
+		return TRUE;
 	}
 }

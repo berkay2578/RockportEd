@@ -6,5 +6,5 @@ namespace Mods {
 	extern int* activeCamera;
 	extern std::map<int, std::map<char*, float*>> cameraData;
 
-	void Init();
+	DWORD WINAPI Init(LPVOID);
 }

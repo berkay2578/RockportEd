@@ -7,8 +7,8 @@
 using std::map;
 
 namespace Mods {
-	int* activeCamera;
-	map<int, map<char*, float*>> cameraData;
+	int* activeCamera = nullptr;
+	map<int, map<char*, float*>> cameraData ={};
 
 #pragma region Car bytes
 	DWORD carbytesReadHook_Entry;
@@ -48,9 +48,16 @@ namespace Mods {
 
 	// fix these damn pointer smh, fuck is + 0x2B148
 	// read game code, there's [edi+0C] that's set from ecx for activeCam and blablablablalba
-	void Init() {
+	DWORD WINAPI Init(LPVOID) {
 	#pragma region Camera
+		while (!Memory::readPointer(0x51CF90, 2, 0x10, 0x8C)) {
+			Sleep(100);
+		}
 		activeCamera = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0x8C);
+
+		while (!Memory::readPointer(0x51DCC8, 1, 0xF4)) {
+			Sleep(100);
+		}
 		DWORD camBase = *Memory::readPointer(0x51DCC8, 1, 0xF4);
 
 		map<char*, float*> farCamera;
@@ -78,10 +85,10 @@ namespace Mods {
 		cameraData[2] = nearCamera;
 		cameraData[0] = bumperCamera;
 	#pragma endregion
-
+		/*
 		carbytesReadHook_Entry = Memory::makeAbsolute(0x16F2B3);
 		carbytesReadHook_Ret = Memory::makeAbsolute(0x16F2B9);
 		Memory::writeJMP(carbytesReadHook_Entry, (DWORD)carbytesReadHook);
-		Memory::writeNop(carbytesReadHook_Entry + 0x5, 1);
+		Memory::writeNop(carbytesReadHook_Entry + 0x5, 1);*/
 	}
 }

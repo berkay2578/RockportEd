@@ -3,6 +3,10 @@
 
 namespace D3D9HookSettings {
 	extern bool isImguiInitialized;
+
+	extern bool blockKeyboard;
+	extern bool blockMouse;
+
 	namespace Options {
 		extern bool isMainWindowVisible;
 

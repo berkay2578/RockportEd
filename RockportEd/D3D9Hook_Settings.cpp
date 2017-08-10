@@ -3,6 +3,10 @@
 
 namespace D3D9HookSettings {
 	bool isImguiInitialized = false;
+
+	bool blockKeyboard = false;
+	bool blockMouse = false;
+
 	namespace Options {
 		bool isMainWindowVisible = true;
 

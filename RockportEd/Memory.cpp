@@ -31,12 +31,20 @@ namespace Memory {
 	}
 
 	DWORD* readPointer(const DWORD& baseOffset, const int offsetCount, ...) {
-		DWORD* pointer = (DWORD*)(baseAddress + baseOffset);
+		DWORD* pointer = (DWORD*)makeAbsolute(baseOffset);
+		if (!*pointer)
+			return nullptr;
+
 		if (offsetCount > 0) {
 			va_list offsets;
 			va_start(offsets, offsetCount);
-			for (int i = 0; i < offsetCount; i++)
+			for (int i = 0; i < offsetCount; i++) {
 				pointer = (DWORD*)(*pointer + va_arg(offsets, int));
+				if (!*pointer) {
+					pointer = nullptr;
+					break;
+				}
+			}
 
 			va_end(offsets);
 		}

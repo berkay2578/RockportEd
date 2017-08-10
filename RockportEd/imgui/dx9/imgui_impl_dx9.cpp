@@ -197,10 +197,10 @@ IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT msg, WPARAM wParam, LP
     case WM_MOUSEWHEEL:
         io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
         return true;
-    case WM_MOUSEMOVE:
+   /* case WM_MOUSEMOVE:
         io.MousePos.x = (signed short)(lParam);
         io.MousePos.y = (signed short)(lParam >> 16);
-        return true;
+        return true;*/
     case WM_KEYDOWN:
         if (wParam < 256)
             io.KeysDown[wParam] = 1;
