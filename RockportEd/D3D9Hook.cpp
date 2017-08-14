@@ -7,12 +7,7 @@
 #include "Mods.h"
 
 #include <d3d9.h>
-#include <d3dx9.h>
-
-typedef HRESULT(WINAPI* Reset_t)(LPDIRECT3DDEVICE9, D3DPRESENT_PARAMETERS*);
-typedef HRESULT(WINAPI* BeginScene_t)(LPDIRECT3DDEVICE9);
-typedef HRESULT(WINAPI* EndScene_t)(LPDIRECT3DDEVICE9);
-typedef HRESULT(WINAPI* BeginStateBlock_t)(LPDIRECT3DDEVICE9);
+#include "D3D9Types.h"
 
 #define VK_W 0x57
 #define VK_A 0x41
@@ -20,9 +15,10 @@ typedef HRESULT(WINAPI* BeginStateBlock_t)(LPDIRECT3DDEVICE9);
 #define VK_D 0x44
 
 #include "imgui/imgui.h"
-#include "imgui/dx9/imgui_impl_dx9.h"
 #include "imgui/extra_fonts/RobotoMedium.hpp"
+
 extern LRESULT ImGui_ImplDX9_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#include "imgui/dx9/imgui_impl_dx9.h"
 
 #include <memory>
 using std::unique_ptr;
@@ -39,16 +35,20 @@ namespace D3D9Hook {
 	unique_ptr<VTableHook> d3dDeviceHook = nullptr;
 
 	Reset_t origReset = nullptr;
-	HRESULT WINAPI resetHook(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters);
 	BeginScene_t origBeginScene = nullptr;
-	HRESULT WINAPI beginSceneHook(LPDIRECT3DDEVICE9 pDevice);
 	EndScene_t origEndScene = nullptr;
-	HRESULT WINAPI endSceneHook(LPDIRECT3DDEVICE9 pDevice);
 	BeginStateBlock_t origBeginStateBlock = nullptr;
-	HRESULT WINAPI beginStateBlockHook(LPDIRECT3DDEVICE9 pDevice);
 
 	bool showUserGuide = false;
-	char** cameras = new char*[7];
+	char* cameras[7] = {
+		"Bumper",
+		"Hood",
+		"Near",
+		"Far",
+		"i",
+		"don kno",
+		"Pullback"
+	};
 
 	void doImGuiStyle() {
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -124,6 +124,8 @@ namespace D3D9Hook {
 
 		ImGui_ImplDX9_NewFrame();
 		doImGuiStyle();
+
+
 		return origBeginScene(pDevice);
 	}
 
@@ -325,21 +327,6 @@ namespace D3D9Hook {
 		return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
-	//log test
-	/*char* frmt = "%s\r\n";
-	void __declspec(naked) logHook() {
-		__asm {
-			pushad
-			lea eax, [esp + 0x40]
-			push eax
-			push[frmt]
-			call printf
-			add esp, 0x08
-			popad
-			ret
-		}
-	}*/
-
 	DWORD WINAPI Init(LPVOID) {
 		Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
 
@@ -347,7 +334,6 @@ namespace D3D9Hook {
 			d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
 			Sleep(100);
 		}
-
 		d3dDevice = (LPDIRECT3DDEVICE9)d3dDeviceAddress;
 
 		D3DDEVICE_CREATION_PARAMETERS cParams;
@@ -366,22 +352,8 @@ namespace D3D9Hook {
 		origEndScene = d3dDeviceHook->Hook(42, endSceneHook);
 		origBeginStateBlock = d3dDeviceHook->Hook(60, beginStateBlockHook);
 
-		cameras[0] = "Bumper";
-		cameras[1] = "Hood";
-		cameras[2] = "Near";
-		cameras[3] = "Far";
-		cameras[4] = "i";
-		cameras[5] = "don kno";
-		cameras[6] = "Pullback";
 		showUserGuide = Settings::isFirstTime();
 
-		// log test
-		/*AllocConsole();
-		freopen("CONOUT$", "w", stdout);
-
-		DWORD logCallRet = Memory::makeAbsolute(0x64821);
-		Memory::writeCall(logCallRet, (DWORD)logHook);
-		Memory::writeRet(logCallRet + 0x5);*/
 		return TRUE;
 	}
 }

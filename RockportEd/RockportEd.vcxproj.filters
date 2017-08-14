@@ -43,6 +43,9 @@
     <ClInclude Include="DInput8Hook.h">
       <Filter>D3D9Hook\DInput8Hook</Filter>
     </ClInclude>
+    <ClInclude Include="D3D9Types.h">
+      <Filter>D3D9Hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

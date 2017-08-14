@@ -85,10 +85,9 @@ namespace Mods {
 		cameraData[2] = nearCamera;
 		cameraData[0] = bumperCamera;
 	#pragma endregion
-		/*
 		carbytesReadHook_Entry = Memory::makeAbsolute(0x16F2B3);
 		carbytesReadHook_Ret = Memory::makeAbsolute(0x16F2B9);
 		Memory::writeJMP(carbytesReadHook_Entry, (DWORD)carbytesReadHook);
-		Memory::writeNop(carbytesReadHook_Entry + 0x5, 1);*/
+		Memory::writeNop(carbytesReadHook_Entry + 0x5, 1);
 	}
 }
