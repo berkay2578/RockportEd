@@ -2,6 +2,6 @@
 #include "stdafx.h"
 
 namespace Settings {
-	bool isFirstTime();
-	void Init();
+   bool isFirstTime();
+   void Init();
 }

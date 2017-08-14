@@ -2,17 +2,17 @@
 #include "stdafx.h"
 
 namespace D3D9HookSettings {
-	extern bool isImguiInitialized;
+   extern bool isImguiInitialized;
 
-	extern bool blockKeyboard;
-	extern bool blockMouse;
+   extern bool blockKeyboard;
+   extern bool blockMouse;
 
-	namespace Options {
-		extern bool isMainWindowVisible;
+   namespace Options {
+      extern bool isMainWindowVisible;
 
-		extern bool opt_CustomCamera;
+      extern bool opt_CustomCamera;
 
-		extern bool opt_CustomCarBytes;
-		extern char* opt_CustomCarBytesValue;
-	}
+      extern bool opt_CustomCarBytes;
+      extern char* opt_CustomCarBytesValue;
+   }
 }

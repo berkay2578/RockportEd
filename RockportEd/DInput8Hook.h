@@ -1,5 +1,5 @@
 #pragma once
 
 namespace DInput8Hook {
-	void Init();
+   void Init();
 }
