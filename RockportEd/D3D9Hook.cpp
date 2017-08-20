@@ -40,7 +40,7 @@ namespace D3D9Hook {
    BeginStateBlock_t origBeginStateBlock = nullptr;
 
    bool showUserGuide = false;
-   char* cameras[7] = {
+   char* cameras[7] ={
       "Bumper",
       "Hood",
       "Near",
@@ -187,7 +187,6 @@ namespace D3D9Hook {
 
                ImGui::SetNextWindowPos(ImVec2(100, 60), ImGuiSetCond_Once);
                ImGui::Begin("Debug", (bool*)0, ImVec2(100, 100), 1.0f, ImGuiWindowFlags_AlwaysAutoResize);
-               ImGui::Text("GetAvailableTextureMem MB: %u", pDevice->GetAvailableTextureMem());
                static RECT rect;
                GetClientRect(windowHandle, &rect);
                ImGui::Text("GetClientRect->right %ld", rect.right);
@@ -198,6 +197,21 @@ namespace D3D9Hook {
                ImGui::Text("cursor Y from game memory: %ld", *(LONG*)Memory::makeAbsolute(0x51CFB4));
                ImGui::Text("adjusted X: %.3f", o.MousePos.x);
                ImGui::Text("adjusted Y: %.3f", o.MousePos.y);
+               ImGui::End();
+
+               // replay test
+               ImGui::Begin("Replay System Test", (bool*)0, ImVec2(100, 100), 0.8f);
+               if (ImGui::Checkbox("Record", &Mods::isRecording)) {
+                  if (Mods::isRecording)
+                     Mods::startRecording();
+               }
+               ImGui::Text("Frame Count: %u", Mods::frameCount);
+               ImGui::Separator();
+               if (ImGui::Checkbox("Replay", &Mods::isShowingReplay)) {
+                  if (Mods::isShowingReplay)
+                     Mods::startReplay();
+               }
+               ImGui::Text("Frame Number: %u", Mods::frameNr);
                ImGui::End();
 
                ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
@@ -232,19 +246,19 @@ namespace D3D9Hook {
                      ImGui::SliderFloat("##CameraVerAngle", Mods::cameraData[activeCam]["VerAngle"], -25.0f, 45.0f, "%.3f deg");
                   }
                   ImGui::EndChild();
-               }
+            }
 
                ImGui::End();
-            }
+         }
             else {
                o.MouseDrawCursor = false;
             }
             ImGui::Render();
-         }
       }
+   }
 
       return origEndScene(pDevice);
-   }
+}
    HRESULT WINAPI resetHook(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
       if (!D3D9HookSettings::isImguiInitialized)
          return origReset(pDevice, pPresentationParameters);
