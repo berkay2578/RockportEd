@@ -14,7 +14,7 @@
 
 
 // TODO: reference additional headers your program requires here
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_NO_SECURE_WARNINGS
 
 #include <string>
 using std::string;

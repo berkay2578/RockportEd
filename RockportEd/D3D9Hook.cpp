@@ -51,65 +51,65 @@ namespace D3D9Hook {
    };
 
    void doImGuiStyle() {
-      ImGuiStyle& style = ImGui::GetStyle();
+      ImGuiStyle* style = &ImGui::GetStyle();
 
-      style.GrabRounding = 2.0f;
-      style.GrabMinSize = 7.0f;
-      style.WindowRounding = 0.f;
-      style.ScrollbarRounding = 0.0f;
-      style.FrameRounding = 0.0f;
-      style.FramePadding = ImVec2(5.0f, 2.0f);
-      style.ItemSpacing = ImVec2(8.0f, 8.0f);
-      style.ItemInnerSpacing = ImVec2(9.0f, 3.0f);
-      style.IndentSpacing = 22.0f;
-      style.ScrollbarSize = 16.0f;
-      style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
-      style.WindowPadding = ImVec2(14.0f, 14.0f);
-      style.WindowMinSize = ImVec2(250.0f, 120.0f);
+      style->WindowMinSize = ImVec2(100.0f, 100.0f);
+      style->WindowPadding = ImVec2(10.0f, 10.0f);
+      style->WindowRounding = 5.0f;
+      style->ChildWindowRounding = 5.0f;
+      style->FramePadding = ImVec2(5.0f, 4.0f);
+      style->FrameRounding = 5.0f;
+      style->ItemSpacing = ImVec2(5.0f, 5.0f);
+      style->ItemInnerSpacing = ImVec2(10.0f, 10.0f);
+      style->IndentSpacing = 15.0f;
+      style->ScrollbarSize = 16.0f;
+      style->ScrollbarRounding = 5.0f;
+      style->GrabMinSize = 7.0f;
+      style->GrabRounding = 2.0f;
 
-      style.Colors[ImGuiCol_Text] = ImVec4(0.73f, 0.73f, 0.73f, 1.00f);
-      style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-      style.Colors[ImGuiCol_WindowBg] = ImVec4(0.26f, 0.26f, 0.26f, 0.95f);
-      style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
-      style.Colors[ImGuiCol_PopupBg] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-      style.Colors[ImGuiCol_Border] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-      style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-      style.Colors[ImGuiCol_FrameBg] = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
-      style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
-      style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
-      style.Colors[ImGuiCol_TitleBg] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-      style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.21f, 0.21f, 0.21f, 1.00f);
-      style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_ComboBg] = ImVec4(0.32f, 0.32f, 0.32f, 1.00f);
-      style.Colors[ImGuiCol_CheckMark] = ImVec4(0.78f, 0.78f, 0.78f, 1.00f);
-      style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.74f, 0.74f, 0.74f, 1.00f);
-      style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.74f, 0.74f, 0.74f, 1.00f);
-      style.Colors[ImGuiCol_Button] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.43f, 0.43f, 0.43f, 1.00f);
-      style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.11f, 0.11f, 0.11f, 1.00f);
-      style.Colors[ImGuiCol_Header] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-      style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-      style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-      style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-      style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-      style.Colors[ImGuiCol_CloseButton] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-      style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-      style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-      style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-      style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-      style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-      style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.32f, 0.52f, 0.65f, 1.00f);
-      style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.50f);
+      style->Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+      style->Colors[ImGuiCol_WindowBg] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      style->Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
+      style->Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.10f, 1.00f);
+      style->Colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
+      style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_FrameBg] = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
+      style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
+      style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
+      style->Colors[ImGuiCol_TitleBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.8f);
+      style->Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.78f, 0.78f, 0.78f, 0.39f);
+      style->Colors[ImGuiCol_TitleBgActive] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
+      style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.25f, 0.30f, 0.60f);
+      style->Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
+      style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
+      style->Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
+      style->Colors[ImGuiCol_ComboBg] = ImVec4(0.78f, 0.78f, 0.78f, 0.98f);
+      style->Colors[ImGuiCol_CheckMark] = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
+      style->Colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
+      style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
+      style->Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.00f, 0.00f, 0.27f);
+      style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
+      style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
+      style->Colors[ImGuiCol_Header] = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
+      style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.20f, 0.51f, 0.67f, 1.00f);
+      style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
+      style->Colors[ImGuiCol_Column] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_ColumnHovered] = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
+      style->Colors[ImGuiCol_ColumnActive] = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
+      style->Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
+      style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.27f, 0.59f, 0.75f, 0.78f);
+      style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.08f, 0.39f, 0.55f, 0.78f);
+      style->Colors[ImGuiCol_CloseButton] = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+      style->Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.71f, 0.71f, 0.71f, 0.60f);
+      style->Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+      style->Colors[ImGuiCol_PlotLines] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
+      style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
    }
 
    HRESULT WINAPI beginSceneHook(LPDIRECT3DDEVICE9 pDevice) {
@@ -124,7 +124,6 @@ namespace D3D9Hook {
 
       ImGui_ImplDX9_NewFrame();
       doImGuiStyle();
-
 
       return origBeginScene(pDevice);
    }
@@ -184,52 +183,10 @@ namespace D3D9Hook {
                   ImGui::BulletText("Click on the button at the top-right of this window to close it.");
                   ImGui::End();
                }
-
-               ImGui::SetNextWindowPos(ImVec2(100, 60), ImGuiSetCond_Once);
-               ImGui::Begin("Debug", (bool*)0, ImVec2(100, 100), 1.0f, ImGuiWindowFlags_AlwaysAutoResize);
-               static RECT rect;
-               GetClientRect(windowHandle, &rect);
-               ImGui::Text("GetClientRect->right %ld", rect.right);
-               ImGui::Text("GetClientRect->bottom %ld", rect.bottom);
-               ImGui::Text("gameResolutionCave Width: %.3f", resWidth);
-               ImGui::Text("gameResolutionCave Height: %.3f", resHeight);
-               ImGui::Text("cursor X from game memory: %ld", *(LONG*)Memory::makeAbsolute(0x51CFB0));
-               ImGui::Text("cursor Y from game memory: %ld", *(LONG*)Memory::makeAbsolute(0x51CFB4));
-               ImGui::Text("adjusted X: %.3f", o.MousePos.x);
-               ImGui::Text("adjusted Y: %.3f", o.MousePos.y);
-               ImGui::End();
-
-               // replay test
-               ImGui::Begin("Replay System Test", (bool*)0, ImVec2(100, 100), 0.8f);
-               if (ImGui::Checkbox("Record", &Mods::isRecording)) {
-                  if (Mods::isRecording)
-                     Mods::startRecording();
-               }
-               ImGui::Text("Frame Count: %u", Mods::frameCount);
-               ImGui::Separator();
-               if (ImGui::Checkbox("Replay", &Mods::isShowingReplay)) {
-                  if (Mods::isShowingReplay)
-                     Mods::startReplay();
-               }
-               ImGui::Text("Frame Number: %u", Mods::frameNr);
-               ImGui::End();
-
-               ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
-               ImGui::Begin("RockportEd", (bool*)0, ImVec2(250.0f, 120.0f), 0.9f,
-                            ImGuiWindowFlags_NoSavedSettings);
-
-            #ifdef NDEBUG
-               ImGui::TextWrapped("Current car bytes: %s", D3D9HookSettings::Options::opt_CustomCarBytesValue);
-            #else
-               ImGui::Checkbox("Car bytes: ", &D3D9HookSettings::Options::opt_CustomCarBytes);
-               ImGui::InputText("##CarBytes", D3D9HookSettings::Options::opt_CustomCarBytesValue, 256,
-                                ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsUppercase
-                                | (D3D9HookSettings::Options::opt_CustomCarBytes ? 0 : ImGuiInputTextFlags_ReadOnly));
-            #endif
-
-               ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
                if (D3D9HookSettings::Options::opt_CustomCamera) {
-                  ImGui::BeginChild("##CustomCamera", ImVec2(0.0f, 0.0f), true);
+                  ImGui::SetNextWindowPosCenter(ImGuiSetCond_Once);
+                  ImGui::Begin("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera, ImVec2(50.0f, 50.0f), 0.8f);
+                  ImGui::PushItemWidth(-1);
                   ImGui::TextWrapped("Camera");
                   ImGui::Combo("##CameraCombo", Mods::activeCamera, cameras, 7);
                   int activeCam = *Mods::activeCamera;
@@ -245,20 +202,51 @@ namespace D3D9Hook {
                      ImGui::TextWrapped("Vertical Angle");
                      ImGui::SliderFloat("##CameraVerAngle", Mods::cameraData[activeCam]["VerAngle"], -25.0f, 45.0f, "%.3f deg");
                   }
-                  ImGui::EndChild();
-            }
+                  ImGui::PopItemWidth();
+                  ImGui::End();
+               }
+               if (D3D9HookSettings::Options::opt_ReplayMenu) {
+                  ImGui::SetNextWindowPosCenter(ImGuiSetCond_Once);
+                  ImGui::Begin("Replay System", &D3D9HookSettings::Options::opt_ReplayMenu, ImVec2(160.0f, 180.0f), 0.8f);
+                  if (ImGui::Checkbox("Record", &Mods::isRecording)) {
+                     if (Mods::isRecording)
+                        Mods::startRecording();
+                  }
+                  ImGui::Text("Frame Count: %u", Mods::frameCount);
+                  ImGui::Separator();
+                  if (ImGui::Checkbox("Replay", &Mods::isShowingReplay)) {
+                     if (Mods::isShowingReplay)
+                        Mods::startReplay();
+                  }
+                  ImGui::Text("Frame Number: %u", Mods::frameNr);
+                  ImGui::End();
+               }
+
+               ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiSetCond_Once);
+               ImGui::Begin("RockportEd", (bool*)0, ImVec2(200.0f, 140.0f), 0.9f);
+
+            #ifdef NDEBUG
+               ImGui::TextWrapped("Current car bytes: %s", D3D9HookSettings::Options::opt_CustomCarBytesValue);
+            #else
+               ImGui::Checkbox("Car bytes: ", &D3D9HookSettings::Options::opt_CustomCarBytes);
+               ImGui::InputText("##CarBytes", D3D9HookSettings::Options::opt_CustomCarBytesValue, 256,
+                                ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsUppercase
+                                | (D3D9HookSettings::Options::opt_CustomCarBytes ? 0 : ImGuiInputTextFlags_ReadOnly));
+            #endif
+               ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
+               ImGui::Checkbox("Replay Menu", &D3D9HookSettings::Options::opt_ReplayMenu);
 
                ImGui::End();
-         }
+            }
             else {
                o.MouseDrawCursor = false;
             }
             ImGui::Render();
+         }
       }
-   }
 
       return origEndScene(pDevice);
-}
+   }
    HRESULT WINAPI resetHook(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
       if (!D3D9HookSettings::isImguiInitialized)
          return origReset(pDevice, pPresentationParameters);

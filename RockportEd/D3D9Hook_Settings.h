@@ -11,6 +11,7 @@ namespace D3D9HookSettings {
       extern bool isMainWindowVisible;
 
       extern bool opt_CustomCamera;
+      extern bool opt_ReplayMenu;
 
       extern bool opt_CustomCarBytes;
       extern char* opt_CustomCarBytesValue;

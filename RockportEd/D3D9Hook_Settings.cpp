@@ -11,6 +11,7 @@ namespace D3D9HookSettings {
       bool isMainWindowVisible = true;
 
       bool opt_CustomCamera = false;
+      bool opt_ReplayMenu = false;
 
       bool opt_CustomCarBytes = false;
       char* opt_CustomCarBytesValue = new char[8];
