@@ -11,7 +11,9 @@ namespace Mods {
    extern void startRecording();
 
    extern bool isShowingReplay;
+   extern bool isReplayPaused;
    extern UINT frameNr;
+   extern void changeReplayState();
    extern void startReplay();
 
    DWORD WINAPI Init(LPVOID);

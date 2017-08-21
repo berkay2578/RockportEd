@@ -8,10 +8,10 @@ using std::map;
 #include <vector>
 using std::vector;
 
+// TODO: rewrite
 namespace Mods {
    int* activeCamera = nullptr;
    map<int, map<char*, float*>> cameraData ={};
-
 
 #pragma region Car bytes
    DWORD carbytesReadHook_Entry;
@@ -49,7 +49,6 @@ namespace Mods {
    }
 #pragma endregion
 
-
 #pragma region Player Replay
    struct CarInfo {
       float y_Lift;
@@ -86,16 +85,16 @@ namespace Mods {
    UINT frameCount = 0;
 
    DWORD WINAPI record(LPVOID) {
-      replayData[&playerCarInfo->x][0] = playerCarInfo->x;
-      replayData[&playerCarInfo->y][0] = playerCarInfo->y;
-      replayData[&playerCarInfo->z][0] = playerCarInfo->z;
+      while (isRecording) {
+         replayData[&playerCarInfo->x].push_back(playerCarInfo->x);
+         replayData[&playerCarInfo->y].push_back(playerCarInfo->y);
+         replayData[&playerCarInfo->z].push_back(playerCarInfo->z);
 
-      replayData[&playerCarInfo->x_Rotation][0]     = playerCarInfo->x_Rotation;
-      replayData[&playerCarInfo->y_Rotation][0]     = playerCarInfo->y_Rotation;
-      replayData[&playerCarInfo->x_Lift][0]         = playerCarInfo->x_Lift;
-      replayData[&playerCarInfo->y_Lift][0]         = playerCarInfo->y_Lift;
+         replayData[&playerCarInfo->x_Rotation].push_back(playerCarInfo->x_Rotation);
+         replayData[&playerCarInfo->y_Rotation].push_back(playerCarInfo->y_Rotation);
+         replayData[&playerCarInfo->x_Lift].push_back(playerCarInfo->x_Lift);
+         replayData[&playerCarInfo->y_Lift].push_back(playerCarInfo->y_Lift);
 
-      do {
          replayData[&playerCarInfo->x_LiftForce].push_back(playerCarInfo->x_LiftForce);
          replayData[&playerCarInfo->y_LiftForce].push_back(playerCarInfo->y_LiftForce);
 
@@ -106,7 +105,7 @@ namespace Mods {
 
          frameCount++;
          Sleep(1);
-      } while (isRecording);
+      }
 
       replayData[&playerCarInfo->x_LiftForce].push_back(0.0f);
       replayData[&playerCarInfo->y_LiftForce].push_back(0.0f);
@@ -118,13 +117,13 @@ namespace Mods {
       return TRUE;
    }
    void startRecording() {
-      replayData[&playerCarInfo->x]              = vector<float>(1);
-      replayData[&playerCarInfo->y]              = vector<float>(1);
-      replayData[&playerCarInfo->z]              = vector<float>(1);
-      replayData[&playerCarInfo->x_Rotation]     = vector<float>(1);
-      replayData[&playerCarInfo->y_Rotation]     = vector<float>(1);
-      replayData[&playerCarInfo->x_Lift]         = vector<float>(1);
-      replayData[&playerCarInfo->y_Lift]         = vector<float>(1);
+      replayData[&playerCarInfo->x]              = vector<float>();
+      replayData[&playerCarInfo->y]              = vector<float>();
+      replayData[&playerCarInfo->z]              = vector<float>();
+      replayData[&playerCarInfo->x_Rotation]     = vector<float>();
+      replayData[&playerCarInfo->y_Rotation]     = vector<float>();
+      replayData[&playerCarInfo->x_Lift]         = vector<float>();
+      replayData[&playerCarInfo->y_Lift]         = vector<float>();
 
       replayData[&playerCarInfo->x_LiftForce] = vector<float>();
       replayData[&playerCarInfo->y_LiftForce] = vector<float>();
@@ -141,45 +140,95 @@ namespace Mods {
 
 #pragma region Replay
    bool isShowingReplay = false;
-   UINT frameNr   = 0;
+   bool isReplayPaused  = false;
+   UINT frameNr         = 0;
+
+   float origGravity, origMass;
 
    DWORD WINAPI replay(LPVOID) {
-      playerCarInfo->x           = replayData[&playerCarInfo->x][0];
-      playerCarInfo->y           = replayData[&playerCarInfo->y][0];
-      playerCarInfo->z           = replayData[&playerCarInfo->z][0];
+      do {
+         if (isReplayPaused) {
+            playerCarInfo->x                = replayData[&playerCarInfo->x][frameNr];
+            playerCarInfo->y                = replayData[&playerCarInfo->y][frameNr];
+            playerCarInfo->z                = replayData[&playerCarInfo->z][frameNr];
 
-      playerCarInfo->x_Rotation  = replayData[&playerCarInfo->x_Rotation][0];
-      playerCarInfo->y_Rotation  = replayData[&playerCarInfo->y_Rotation][0];
-      playerCarInfo->x_Lift      = replayData[&playerCarInfo->x_Lift][0];
-      playerCarInfo->y_Lift      = replayData[&playerCarInfo->y_Lift][0];
+            playerCarInfo->x_Rotation       = replayData[&playerCarInfo->x_Rotation][frameNr];
+            playerCarInfo->y_Rotation       = replayData[&playerCarInfo->y_Rotation][frameNr];
+            playerCarInfo->x_Lift           = replayData[&playerCarInfo->x_Lift][frameNr];
+            playerCarInfo->y_Lift           = replayData[&playerCarInfo->y_Lift][frameNr];
 
-      for (frameNr; frameNr < frameCount; frameNr++) {
-         playerCarInfo->x_LiftForce = replayData[&playerCarInfo->x_LiftForce][frameNr];
-         playerCarInfo->y_LiftForce = replayData[&playerCarInfo->y_LiftForce][frameNr];
+            playerCarInfo->x_LiftForce      = 0.0f;
+            playerCarInfo->y_LiftForce      = 0.0f;
 
-         playerCarInfo->x_Velocity       = replayData[&playerCarInfo->x_Velocity][frameNr];
-         playerCarInfo->y_Velocity       = replayData[&playerCarInfo->y_Velocity][frameNr];
-         playerCarInfo->z_Velocity       = replayData[&playerCarInfo->z_Velocity][frameNr];
-         playerCarInfo->angular_Velocity = replayData[&playerCarInfo->angular_Velocity][frameNr];
+            playerCarInfo->x_Velocity       = 0.0f;
+            playerCarInfo->y_Velocity       = 0.0f;
+            playerCarInfo->z_Velocity       = 0.0f;
 
-         if (!isShowingReplay)
-            break;
+            playerCarInfo->angular_Velocity = replayData[&playerCarInfo->angular_Velocity][frameNr];
+            Sleep(1);
+            playerCarInfo->angular_Velocity = 0.0f;
+         }
+         else {
+            for (frameNr; frameNr < frameCount; frameNr++) {
+               playerCarInfo->x_LiftForce      = replayData[&playerCarInfo->x_LiftForce][frameNr];
+               playerCarInfo->y_LiftForce      = replayData[&playerCarInfo->y_LiftForce][frameNr];
+
+               playerCarInfo->x_Velocity       = replayData[&playerCarInfo->x_Velocity][frameNr];
+               playerCarInfo->y_Velocity       = replayData[&playerCarInfo->y_Velocity][frameNr];
+               playerCarInfo->z_Velocity       = replayData[&playerCarInfo->z_Velocity][frameNr];
+               playerCarInfo->angular_Velocity = replayData[&playerCarInfo->angular_Velocity][frameNr];
+
+               if (!isShowingReplay || isReplayPaused)
+                  break;
+               Sleep(1);
+            }
+
+            playerCarInfo->x_LiftForce      = 0.0f;
+            playerCarInfo->y_LiftForce      = 0.0f;
+
+            playerCarInfo->x_Velocity       = 0.0f;
+            playerCarInfo->y_Velocity       = 0.0f;
+            playerCarInfo->z_Velocity       = 0.0f;
+            playerCarInfo->angular_Velocity = 0.0f;
+
+            if (!isReplayPaused)
+               break;
+         }
          Sleep(1);
-      }
-
-      playerCarInfo->x_LiftForce = 0.0f;
-      playerCarInfo->y_LiftForce = 0.0f;
-
-      playerCarInfo->x_Velocity       = 0.0f;
-      playerCarInfo->y_Velocity       = 0.0f;
-      playerCarInfo->z_Velocity       = 0.0f;
-      playerCarInfo->angular_Velocity = 0.0f;
+      } while (isShowingReplay);
 
       isShowingReplay = false;
+      if (isReplayPaused) {
+         isReplayPaused = false;
+         changeReplayState();
+      }
       return TRUE;
+   }
+
+   void changeReplayState() {
+      if (isReplayPaused) {
+         origGravity            = playerCarInfo->gravity;
+         origMass               = playerCarInfo->mass;
+
+         playerCarInfo->gravity = 0.0f;
+         playerCarInfo->mass    = 0.0f;
+      }
+      else {
+         playerCarInfo->gravity = origGravity;
+         playerCarInfo->mass    = origMass;
+      }
    }
    void startReplay() {
       frameNr = 0;
+      playerCarInfo->x           = replayData[&playerCarInfo->x][frameNr];
+      playerCarInfo->y           = replayData[&playerCarInfo->y][frameNr];
+      playerCarInfo->z           = replayData[&playerCarInfo->z][frameNr];
+
+      playerCarInfo->x_Rotation  = replayData[&playerCarInfo->x_Rotation][frameNr];
+      playerCarInfo->y_Rotation  = replayData[&playerCarInfo->y_Rotation][frameNr];
+      playerCarInfo->x_Lift      = replayData[&playerCarInfo->x_Lift][frameNr];
+      playerCarInfo->y_Lift      = replayData[&playerCarInfo->y_Lift][frameNr];
+
       CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&replay, 0, 0, 0);
    }
 #pragma endregion
@@ -235,7 +284,7 @@ namespace Mods {
       playerCarInfo = (CarInfo*)Memory::makeAbsolute(0x5386C8);
    #pragma endregion
 
-   #ifdef DEBUG
+   #ifdef NDEBUG
       *farCamera["X"] = -6.376f;
       *farCamera["Z"] = 1.56f;
       *farCamera["Fov"] = 81.55f;

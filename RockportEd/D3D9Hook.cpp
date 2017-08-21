@@ -185,7 +185,7 @@ namespace D3D9Hook {
                }
                if (D3D9HookSettings::Options::opt_CustomCamera) {
                   ImGui::SetNextWindowPosCenter(ImGuiSetCond_Once);
-                  ImGui::Begin("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera, ImVec2(50.0f, 50.0f), 0.8f);
+                  ImGui::Begin("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera, ImVec2(200.0f, 200.0f), 0.8f);
                   ImGui::PushItemWidth(-1);
                   ImGui::TextWrapped("Camera");
                   ImGui::Combo("##CameraCombo", Mods::activeCamera, cameras, 7);
@@ -213,12 +213,19 @@ namespace D3D9Hook {
                         Mods::startRecording();
                   }
                   ImGui::Text("Frame Count: %u", Mods::frameCount);
+
                   ImGui::Separator();
+
                   if (ImGui::Checkbox("Replay", &Mods::isShowingReplay)) {
                      if (Mods::isShowingReplay)
                         Mods::startReplay();
                   }
-                  ImGui::Text("Frame Number: %u", Mods::frameNr);
+                  if (Mods::isShowingReplay) {
+                     if (ImGui::Checkbox("Pause", &Mods::isReplayPaused)) {
+                        Mods::changeReplayState();
+                     }
+                     ImGui::SliderUInt("Current Frame", &Mods::frameNr, 0, Mods::frameCount - 1);
+                  }
                   ImGui::End();
                }
 
