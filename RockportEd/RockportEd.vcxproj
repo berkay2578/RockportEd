@@ -160,6 +160,7 @@
     <ClInclude Include="D3D9Hook.h" />
     <ClInclude Include="D3D9Hook_Settings.h" />
     <ClInclude Include="DInput8Hook.h" />
+    <ClInclude Include="imguiEx.h" />
     <ClInclude Include="imgui\dx9\imgui_impl_dx9.h" />
     <ClInclude Include="imgui\extra_fonts\RobotoMedium.hpp" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -177,6 +178,7 @@
     <ClCompile Include="D3D9Hook.cpp" />
     <ClCompile Include="D3D9Hook_Settings.cpp" />
     <ClCompile Include="DInput8Hook.cpp" />
+    <ClCompile Include="imguiEx.cpp" />
     <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />

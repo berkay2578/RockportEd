@@ -40,7 +40,7 @@ namespace Memory {
          va_start(offsets, offsetCount);
          for (int i = 0; i < offsetCount; i++) {
             pointer = (DWORD*)(*pointer + va_arg(offsets, int));
-            if (!*pointer) {
+            if (!pointer) {
                pointer = nullptr;
                break;
             }
