@@ -18,6 +18,7 @@
 #include "imguiEx.h"
 #include "imgui\extra_fonts\RobotoMedium.hpp"
 #include "imgui\extra_fonts\Digital.hpp"
+#include "imgui\extra_fonts\CooperHewitt_Italic.hpp"
 
 extern LRESULT ImGui_ImplDX9_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #include "imgui\dx9\imgui_impl_dx9.h"
@@ -55,62 +56,62 @@ namespace D3D9Hook {
    void doImGuiStyle() {
       ImGuiStyle* style = &ImGui::GetStyle();
 
-      style->WindowMinSize = ImVec2(10.0f, 10.0f);
-      style->WindowPadding = ImVec2(10.0f, 10.0f);
-      style->WindowRounding = 5.0f;
+      style->WindowMinSize       = ImVec2(10.0f, 10.0f);
+      style->WindowPadding       = ImVec2(10.0f, 10.0f);
+      style->WindowRounding      = 5.0f;
       style->ChildWindowRounding = 5.0f;
-      style->FramePadding = ImVec2(5.0f, 4.0f);
-      style->FrameRounding = 5.0f;
-      style->ItemSpacing = ImVec2(5.0f, 5.0f);
-      style->ItemInnerSpacing = ImVec2(10.0f, 10.0f);
-      style->IndentSpacing = 15.0f;
-      style->ScrollbarSize = 16.0f;
-      style->ScrollbarRounding = 5.0f;
-      style->GrabMinSize = 7.0f;
-      style->GrabRounding = 2.0f;
+      style->FramePadding        = ImVec2(5.0f, 4.0f);
+      style->FrameRounding       = 5.0f;
+      style->ItemSpacing         = ImVec2(5.0f, 5.0f);
+      style->ItemInnerSpacing    = ImVec2(10.0f, 10.0f);
+      style->IndentSpacing       = 15.0f;
+      style->ScrollbarSize       = 16.0f;
+      style->ScrollbarRounding   = 5.0f;
+      style->GrabMinSize         = 7.0f;
+      style->GrabRounding        = 2.0f;
 
-      style->Colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-      style->Colors[ImGuiCol_WindowBg] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-      style->Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
-      style->Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.10f, 1.00f);
-      style->Colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
-      style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_FrameBg] = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
-      style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
-      style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
-      style->Colors[ImGuiCol_TitleBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.8f);
-      style->Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.78f, 0.78f, 0.78f, 0.39f);
-      style->Colors[ImGuiCol_TitleBgActive] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-      style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
-      style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.25f, 0.30f, 0.60f);
-      style->Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
+      style->Colors[ImGuiCol_Text]                 = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_TextDisabled]         = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+      style->Colors[ImGuiCol_WindowBg]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      style->Colors[ImGuiCol_ChildWindowBg]        = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
+      style->Colors[ImGuiCol_PopupBg]              = ImVec4(0.05f, 0.05f, 0.10f, 1.00f);
+      style->Colors[ImGuiCol_Border]               = ImVec4(0.00f, 0.00f, 0.00f, 0.80f);
+      style->Colors[ImGuiCol_BorderShadow]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+      style->Colors[ImGuiCol_FrameBg]              = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
+      style->Colors[ImGuiCol_FrameBgHovered]       = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
+      style->Colors[ImGuiCol_FrameBgActive]        = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
+      style->Colors[ImGuiCol_TitleBg]              = ImVec4(1.00f, 1.00f, 1.00f, 0.80f);
+      style->Colors[ImGuiCol_TitleBgCollapsed]     = ImVec4(0.78f, 0.78f, 0.78f, 0.39f);
+      style->Colors[ImGuiCol_TitleBgActive]        = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      style->Colors[ImGuiCol_MenuBarBg]            = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
+      style->Colors[ImGuiCol_ScrollbarBg]          = ImVec4(0.20f, 0.25f, 0.30f, 0.60f);
+      style->Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
       style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
-      style->Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
-      style->Colors[ImGuiCol_ComboBg] = ImVec4(0.78f, 0.78f, 0.78f, 0.98f);
-      style->Colors[ImGuiCol_CheckMark] = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
-      style->Colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
-      style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
-      style->Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.00f, 0.00f, 0.27f);
-      style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
-      style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
-      style->Colors[ImGuiCol_Header] = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
-      style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.20f, 0.51f, 0.67f, 1.00f);
-      style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
-      style->Colors[ImGuiCol_Separator] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
-      style->Colors[ImGuiCol_SeparatorActive] = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
-      style->Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
-      style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.27f, 0.59f, 0.75f, 0.78f);
-      style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.08f, 0.39f, 0.55f, 0.78f);
-      style->Colors[ImGuiCol_CloseButton] = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-      style->Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.71f, 0.71f, 0.71f, 0.60f);
-      style->Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-      style->Colors[ImGuiCol_PlotLines] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-      style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
+      style->Colors[ImGuiCol_ComboBg]              = ImVec4(0.78f, 0.78f, 0.78f, 0.98f);
+      style->Colors[ImGuiCol_CheckMark]            = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
+      style->Colors[ImGuiCol_SliderGrab]           = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
+      style->Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
+      style->Colors[ImGuiCol_Button]               = ImVec4(0.00f, 0.00f, 0.00f, 0.27f);
+      style->Colors[ImGuiCol_ButtonHovered]        = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
+      style->Colors[ImGuiCol_ButtonActive]         = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
+      style->Colors[ImGuiCol_Header]               = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
+      style->Colors[ImGuiCol_HeaderHovered]        = ImVec4(0.20f, 0.51f, 0.67f, 1.00f);
+      style->Colors[ImGuiCol_HeaderActive]         = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
+      style->Colors[ImGuiCol_Separator]            = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_SeparatorHovered]     = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
+      style->Colors[ImGuiCol_SeparatorActive]      = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
+      style->Colors[ImGuiCol_ResizeGrip]           = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
+      style->Colors[ImGuiCol_ResizeGripHovered]    = ImVec4(0.27f, 0.59f, 0.75f, 0.78f);
+      style->Colors[ImGuiCol_ResizeGripActive]     = ImVec4(0.08f, 0.39f, 0.55f, 0.78f);
+      style->Colors[ImGuiCol_CloseButton]          = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+      style->Colors[ImGuiCol_CloseButtonHovered]   = ImVec4(0.71f, 0.71f, 0.71f, 0.60f);
+      style->Colors[ImGuiCol_CloseButtonActive]    = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+      style->Colors[ImGuiCol_PlotLines]            = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+      style->Colors[ImGuiCol_PlotLinesHovered]     = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+      style->Colors[ImGuiCol_PlotHistogram]        = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
       style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
+      style->Colors[ImGuiCol_TextSelectedBg]       = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
       style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
    }
 
@@ -120,8 +121,8 @@ namespace D3D9Hook {
          ImGuiIO& io = ImGui::GetIO();
          io.IniFilename = NULL;
          io.Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 14.0f);
-         io.Fonts->AddFontFromMemoryCompressedTTF(Digital::Digital_compressed_data, Digital::Digital_compressed_size, 18.0f);
-         io.Fonts->AddFontFromMemoryCompressedTTF(Digital::Digital_compressed_data, Digital::Digital_compressed_size, 24.0f);
+         io.Fonts->AddFontFromMemoryCompressedTTF(Digital::Digital_compressed_data, Digital::Digital_compressed_size, 34.0f);
+         io.Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Italic_compressed_data, CooperHewitt_Italic_compressed_size, 64.0f);
          io.FontDefault = NULL;
          D3D9HookSettings::isImguiInitialized = true;
          doImGuiStyle();
@@ -257,116 +258,142 @@ namespace D3D9Hook {
                o.MouseDrawCursor = false;
             }
 
-            if (Mods::NewHUD::isSuitable) {
+            if (Mods::NewHUD::confirmSuitableness(o.DeltaTime)) {
                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            #pragma region Speed + RPM
-               static char speed[4];
-               static char rpm[5];
-
-               sprintf_s(speed, "%.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
-               sprintf_s(rpm, "%.0f", Mods::NewHUD::getRPM());
-
-               ImGui::SetNextWindowPos(ImVec2(resWidth - 110.0f, resHeight - 90.0f), ImGuiCond_Once);
-               //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.76f, 0.45f, 1.0f)); original mw color
-               ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.27f, 0.55f, 1.0f));
-
-               ImGui::Begin("##Speed", (bool*)0, ImVec2(100.0f, 80.0f), 0.5f,
-                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
-
-               ImGui::PushFont(o.Fonts->Fonts[1]);
-               ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("888").x - ImGui::GetStyle().WindowPadding.x);
-               ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.3f), "%03.0f", 888.0f);
-               ImGui::SameLine();
-               ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize(speed).x - ImGui::GetStyle().WindowPadding.x);
-               ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), speed);
-               ImGui::PopFont();
-
-               ImGui::PushFont(o.Fonts->Fonts[2]);
-               ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize("8888").x - ImGui::GetStyle().WindowPadding.x);
-               ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.3f), "%04.0f", 8888.0f);
-               ImGui::SameLine();
-               ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize(rpm).x - ImGui::GetStyle().WindowPadding.x);
-               ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), rpm);
-               ImGui::PopFont();
-
-               ImGui::End();
-               ImGui::PopStyleColor();
-            #pragma endregion
-
-               ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-            #pragma region NOS
-               static char nosText[4] = "NOS";
-
-               ImGui::SetNextWindowPos(ImVec2(resWidth - 90.0f, resHeight - 110.0f), ImGuiCond_Once);
-               //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.73f, 0.92f, 0.24f, 1.0f)); original mw color
-
-               ImGui::Begin("##NOS", (bool*)0, ImVec2(80.0f, 20.0f), 0.0f,
-                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
-
-               ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.27f, 0.55f, 0.5f));
-               ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.0f, 0.38f, 0.75f, 0.8f));
                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
-               ImGui::ProgressBar(*Mods::NewHUD::nos, ImVec2(80.0f, 20.0f), "");
+               ImVec2 textSize;
+               ImVec2 cursorPos;
+               const float rpmPercentage = (*Mods::NewHUD::rpm - 1000) / 9000.0f;
+               const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
 
-               ImGui::PopStyleVar();
-               ImGui::PopStyleColor();
-               ImGui::PopStyleColor();
+               // RPM
+               {
+                  float nos = *Mods::NewHUD::nos;
 
-               ImGui::SetCursorPos(ImVec2(
-                  (ImGui::GetWindowWidth() - ImGui::CalcTextSize(nosText).x) / 2,
-                  (ImGui::GetWindowHeight() - ImGui::CalcTextSize(nosText).y) / 2
-               ));
-               ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), nosText);
+                  static char rpm[5];
+                  sprintf_s(rpm, "%.0f", Mods::NewHUD::getRPM());
 
-               ImGui::End();
-            #pragma endregion
-               /*
-               #pragma region Speedbreaker
-                  ImGui::SetNextWindowPos(ImVec2(resWidth - 120.0f, resHeight - 80.0f), ImGuiCond_Once);
-                  ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.55f, 0.0f, 1.0f));
+                  const ImVec4 bgColor = ImVec4(
+                     (0.80f - (0.10f * rpmPercentage)) * nos,
+                     (0.56f - (0.15f * rpmPercentage)) * nos,
+                     (0.25f - (0.20f * rpmPercentage)) * nos,
+                     1.0f);
+                  ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
 
-                  ImGui::Begin("##Speedbreaker", (bool*)0, ImVec2(20.0f, 70.0f), *Mods::NewHUD::speedbreaker,
-                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
+                  ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 70.0f), ImGuiCond_Once);
+                  ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.7f,
+                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
+                               | ImGuiWindowFlags_ShowBorders);
 
+                  ImGui::PushFont(o.Fonts->Fonts[1]);
+                  textSize = ImGui::CalcTextSize("8888");
+                  cursorPos = (ImGui::GetWindowSize() - textSize) / 2 >> 8;
+
+                  ImGui::SetCursorPos(cursorPos);
+                  ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.3f), "%04.0f", 8888.0f);
+
+                  ImGui::SameLine();
+
+                  ImGui::SetCursorPos(cursorPos);
+                  ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), rpm);
+
+                  ImGui::PopFont();
                   ImGui::End();
                   ImGui::PopStyleColor();
-               #pragma endregion
-               */
-            #pragma region Gear
-               static char gearText[2];
-               if (*Mods::NewHUD::gear == 0) {
-                  strcpy_s(gearText, "R");
-               }
-               else if (*Mods::NewHUD::gear == 1) {
-                  strcpy_s(gearText, "N");
-               }
-               else {
-                  _itoa_s(*Mods::NewHUD::gear - 1, gearText, 10);
                }
 
-               ImGui::SetNextWindowPos(ImVec2(resWidth - 110.0f, resHeight - 110.0f), ImGuiCond_Once);
-               ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.27f, 0.55f, 1.0f));
+               // Speed
+               {
+                  static char speed[4];
 
-               ImGui::Begin("##Gear", (bool*)0, ImVec2(20.0f, 20.0f), 0.5f,
-                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
+                  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-               ImGui::SetCursorPos(ImVec2(
-                  (ImGui::GetWindowWidth() / 2) - (ImGui::CalcTextSize(gearText).x / 2),
-                  (ImGui::GetWindowHeight() / 2) - (ImGui::CalcTextSize(gearText).y / 2)
-               ));
-               ImVec4 textColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-               if (Mods::NewHUD::isOverRevving())
-                  textColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-               else if (Mods::NewHUD::isInPerfectShiftRange())
-                  textColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+                  ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 150.0f), ImGuiCond_Once);
+                  ImGui::Begin("##Speed", (bool*)0, ImVec2(150.0f, 90.0f), 0.0f,
+                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
 
-               ImGui::TextColored(textColor, gearText);
+                  ImGui::PushFont(o.Fonts->Fonts[2]);
+                  sprintf_s(speed, "%03.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
+                  textSize = ImGui::CalcTextSize(speed);
+                  cursorPos = ImVec2(
+                     ImGui::GetWindowWidth() - textSize.x - 10.0f,
+                     (ImGui::GetWindowHeight() - textSize.y) / 2.0f + 10.0f
+                  );
 
-               ImGui::End();
-               ImGui::PopStyleColor();
-            #pragma endregion
+                  ImGui::SetCursorPos(cursorPos);
+                  ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.5f), speed);
+
+                  ImGui::SameLine();
+                  sprintf_s(speed, "%.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
+                  textSize = ImGui::CalcTextSize(speed);
+                  cursorPos = ImVec2(
+                     ImGui::GetWindowWidth() - textSize.x + 1.0f - 10.0f,
+                     (ImGui::GetWindowHeight() - textSize.y) / 2.0f - 2.0f + 10.0f
+                  );
+
+                  ImGui::SetCursorPos(cursorPos);
+                  ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), speed);
+
+                  ImGui::PopFont();
+                  ImGui::End();
+                  ImGui::PopStyleVar();
+               }
+
+               // Gear
+               {
+                  static char gearText[5];
+                  if (*Mods::NewHUD::gear == 0) {
+                     strcpy_s(gearText, "R");
+                  }
+                  else if (*Mods::NewHUD::gear == 1) {
+                     strcpy_s(gearText, "N");
+                  }
+                  else {
+                     _itoa_s(*Mods::NewHUD::gear - 1, gearText, 10);
+                  }
+
+                  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+                  ImGui::SetNextWindowPos(ImVec2(resWidth - 175.0f, resHeight - 55.0f), ImGuiCond_Once);
+                  ImGui::Begin("##Gear", (bool*)0, ImVec2(30.0f, 30.0f), 0.0f,
+                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
+                               | ImGuiWindowFlags_ShowBorders);
+
+                  static float secondsSinceLastFlash = 0.0f;
+
+                  const ImVec4 frameBg = ImVec4(0.80f - (0.10f * rpmPercentage),
+                                                0.56f - (0.15f * rpmPercentage),
+                                                0.25f - (0.20f * rpmPercentage),
+                                                1.0f);
+                  ImVec4 bgColor = ImVec4(1.0f, 0.76f, 0.45f, 1.0f);
+                  float textColor = 0.0f;
+
+                  if (Mods::NewHUD::isOverRevving()) {
+                     secondsSinceLastFlash += o.DeltaTime;
+                     if (secondsSinceLastFlash > 0.2f) {
+                        secondsSinceLastFlash = 0.0f;
+                     }
+                     else if (secondsSinceLastFlash < 0.1f) {
+                        bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+                        textColor = 1.0f;
+                     }
+                  }
+
+                  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
+                  ImGui::PushStyleColor(ImGuiCol_FrameBg, frameBg);
+
+                  ImGui::ProgressBar(rpmPercentage, ImVec2(30.0f, 30.0f), "");
+
+                  ImGui::PopStyleColor();
+                  ImGui::PopStyleColor();
+
+                  ImGui::SetCursorPos((ImGui::GetWindowSize() - ImGui::CalcTextSize(gearText)) / 2);
+                  ImGui::TextColored(ImVec4(textColor, textColor, textColor, 1.0f), gearText);
+
+                  ImGui::End();
+                  ImGui::PopStyleVar();
+               }
 
                ImGui::PopStyleVar();
                ImGui::PopStyleVar();

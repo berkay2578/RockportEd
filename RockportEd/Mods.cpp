@@ -254,14 +254,18 @@ namespace Mods {
    }
    namespace NewHUD {
       namespace _internal {
-         bool  isSuitable       = false;
-         bool* isGameplayActive = nullptr;
-         bool* isGameLoaded     = nullptr;
-         int*  gameplayState    = nullptr;
+         bool  isInit            = false;
+         bool  isSuitable        = false;
+         bool* isGameplayActive  = nullptr;
+         bool* isGameLoaded      = nullptr;
+         int*  gameplayState     = nullptr;
 
-         DWORD* carPowerBase    = nullptr;
+         float lastReadInSeconds = 10.0f;
+
+         bool* isShowingOverlayOnHUD    = nullptr;
+         bool* showGameGauges           = nullptr;
+         DWORD* carPowerBase            = nullptr;
       }
-      bool isSuitable = false;
 
       short* gear              = nullptr;
       float* rpm               = nullptr;
@@ -272,6 +276,47 @@ namespace Mods {
       float* speedbreaker      = nullptr;
       int*   money             = nullptr;
 
+      bool getAddresses(const float& secondsSinceLastFrame) {
+         if (!*_internal::isShowingOverlayOnHUD) {
+            _internal::lastReadInSeconds += secondsSinceLastFrame;
+
+            if (_internal::lastReadInSeconds > 2.0f) {
+               _internal::lastReadInSeconds = 0.0f;
+
+               _internal::showGameGauges = (bool*)Memory::readPointer(0x51CF90, 2, 0x10, 0x80);
+               if (_internal::showGameGauges) {
+                  *_internal::showGameGauges = false;
+
+                  _internal::carPowerBase = Memory::readPointer(0x5142D0, 1, 0x20);
+                  if (_internal::carPowerBase) {
+                     gear              = (short*)(*_internal::carPowerBase + 0x8C);
+                     rpm               = (float*)(*_internal::carPowerBase + 0x2C);
+                     perfectShiftRange = (float*)(*_internal::carPowerBase + 0x44);
+                     maxRpm            = (float*)(*_internal::carPowerBase + 0x3C);
+                     speed             = (float*)Memory::readPointer(0x5352B0, 1, 0x11C);
+                     nos               = (float*)Memory::readPointer(0x52D918, 4, 0x4C0, 0x4, 0x5C, 0xA4);
+                     speedbreaker      = (float*)Memory::readPointer(0x589228, 1, 0x84);
+                     money             = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0xB4);
+                  }
+               }
+            }
+
+            return gear && rpm && perfectShiftRange && maxRpm && speed && nos && speedbreaker && money;
+         }
+         return false;
+      }
+
+      bool confirmSuitableness(const float& secondsSinceLastFrame) {
+         if (!_internal::isInit)
+            return false;
+
+         _internal::isSuitable = (*_internal::isGameplayActive && _internal::isGameLoaded) && (*_internal::gameplayState == 6);
+         if (_internal::isSuitable)
+            return getAddresses(secondsSinceLastFrame);
+
+         return false;
+      }
+
       float getRPM() {
          return max(((*rpm / 10000) * (*maxRpm)) + 200, 1000);
       }
@@ -281,67 +326,16 @@ namespace Mods {
          return false;
       }
       bool isOverRevving() {
-         return (getRPM() + 250.0f) >= *maxRpm;
-      }
-
-      DWORD WINAPI getAddresses(LPVOID) {
-         for (;;) {
-            _internal::isSuitable = (*_internal::isGameplayActive && _internal::isGameLoaded) && (*_internal::gameplayState == 6);
-
-            if (_internal::isSuitable) {
-               if (!isSuitable) {
-                  if (!_internal::carPowerBase)
-                     _internal::carPowerBase = Memory::readPointer(0x5142D0, 1, 0x20);
-
-                  if (!gear && _internal::carPowerBase)
-                     gear = (short*)(*_internal::carPowerBase + 0x8C);
-
-                  if (!rpm && _internal::carPowerBase)
-                     rpm = (float*)(*_internal::carPowerBase + 0x2C);
-
-                  if (!perfectShiftRange && _internal::carPowerBase)
-                     perfectShiftRange = (float*)(*_internal::carPowerBase + 0x44);
-
-                  if (!maxRpm && _internal::carPowerBase)
-                     maxRpm = (float*)(*_internal::carPowerBase + 0x3C);
-
-                  if (!speed)
-                     speed = (float*)Memory::readPointer(0x5352B0, 1, 0x11C);
-
-                  if (!nos)
-                     nos = (float*)Memory::readPointer(0x52D918, 4, 0x4C0, 0x4, 0x5C, 0xA4);
-
-                  if (!speedbreaker)
-                     speedbreaker = (float*)Memory::readPointer(0x589228, 1, 0x84);
-
-                  if (!money)
-                     money = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0xB4);
-               }
-               isSuitable = gear && rpm && perfectShiftRange && maxRpm && speed && nos && speedbreaker && money;
-            }
-            else {
-               _internal::carPowerBase = nullptr;
-
-               gear              = nullptr;
-               rpm               = nullptr;
-               perfectShiftRange = nullptr;
-               maxRpm            = nullptr;
-               nos               = nullptr;
-               speedbreaker      = nullptr;
-               money             = nullptr;
-            }
-
-            Sleep(100);
-         }
-         return TRUE;
+         return (getRPM() + 100.0f) >= *maxRpm;
       }
 
       void Init() {
          _internal::isGameplayActive = (bool*)Memory::makeAbsolute(0x4F40C4);
          _internal::isGameLoaded     = (bool*)Memory::makeAbsolute(0x51CD38);
          _internal::gameplayState    = (int*)Memory::makeAbsolute(0x525E90);
+         _internal::isShowingOverlayOnHUD  = (bool*)Memory::makeAbsolute(0x51CAE4);
 
-         CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&getAddresses, 0, 0, 0);
+         _internal::isInit = true;
       }
    }
 
@@ -352,16 +346,16 @@ namespace Mods {
       NewHUD::Init();
 
       // just some settigs that I'm putting here since this is meant for private use anyways
-   #ifdef NDEBUG
-      *Camera::data[3]["X"]        = -6.376f;
-      *Camera::data[3]["Z"]        = 1.56f;
-      *Camera::data[3]["Fov"]      = 81.55f;
-      *Camera::data[3]["HorAngle"] = 0.035f;
-      *Camera::data[3]["VerAngle"] = 0.45f;
+      {
+         *Camera::data[3]["X"]        = -6.376f;
+         *Camera::data[3]["Z"]        = 1.56f;
+         *Camera::data[3]["Fov"]      = 81.55f;
+         *Camera::data[3]["HorAngle"] = 0.035f;
+         *Camera::data[3]["VerAngle"] = 0.45f;
 
-      Memory::writeRaw(0x37395A, false, 2, 0x38, 0xC0); // more traffic cars
-      *(float*)Memory::readPointer(0x50DCC0, 3, 0x58, 0x3DC, 0x134) = 1.0f; // even more traffic cars
-   #endif
+         Memory::writeRaw(0x37395A, false, 2, 0x38, 0xC0); // more traffic cars
+         *(float*)Memory::readPointer(0x50DCC0, 3, 0x58, 0x3DC, 0x134) = 1.0f; // even more traffic cars
+      }
       return TRUE;
    }
 }

@@ -52,8 +52,6 @@ namespace Mods {
       }
    }
    namespace NewHUD {
-      extern bool   isSuitable;
-
       extern short* gear;
       extern float* rpm;
       extern float* maxRpm;
@@ -61,6 +59,8 @@ namespace Mods {
       extern float* nos;
       extern float* speedbreaker;
       extern int*   money;
+
+      bool  confirmSuitableness(const float& secondsSinceLastFrame);
 
       float getRPM();
       bool  isInPerfectShiftRange();
