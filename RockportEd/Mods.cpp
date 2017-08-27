@@ -262,15 +262,17 @@ namespace Mods {
 
          float lastReadInSeconds = 10.0f;
 
-         bool* isShowingOverlayOnHUD    = nullptr;
-         bool* showGameGauges           = nullptr;
-         DWORD* carPowerBase            = nullptr;
+         bool*  isShowingOverlayOnHUD  = nullptr;
+         float* rpmMultiplier          = nullptr;
+         bool*  showGameGauges         = nullptr;
+         DWORD* carPowerBase           = nullptr;
       }
 
       short* gear              = nullptr;
       float* rpm               = nullptr;
       float* perfectShiftRange = nullptr;
       float* maxRpm            = nullptr;
+      float* maxPossibleRpm    = nullptr;
       float* speed             = nullptr;
       float* nos               = nullptr;
       float* speedbreaker      = nullptr;
@@ -293,10 +295,31 @@ namespace Mods {
                      rpm               = (float*)(*_internal::carPowerBase + 0x2C);
                      perfectShiftRange = (float*)(*_internal::carPowerBase + 0x44);
                      maxRpm            = (float*)(*_internal::carPowerBase + 0x3C);
+                     maxPossibleRpm    = (float*)(*_internal::carPowerBase + 0x38);
                      speed             = (float*)Memory::readPointer(0x5352B0, 1, 0x11C);
                      nos               = (float*)Memory::readPointer(0x52D918, 4, 0x4C0, 0x4, 0x5C, 0xA4);
                      speedbreaker      = (float*)Memory::readPointer(0x589228, 1, 0x84);
                      money             = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0xB4);
+
+                     // Allow redlining anywhere
+                     if (maxRpm && maxPossibleRpm) {
+                        Memory::openMemoryAccess((DWORD)_internal::rpmMultiplier, 4);
+                        *_internal::rpmMultiplier = ((10000.0f / *maxRpm) * *maxPossibleRpm) - 1000.0f;
+                        Memory::restoreMemoryAccess();
+                     }
+                  }
+                  else {
+                     *_internal::rpmMultiplier = 9000.0f;
+
+                     gear              = nullptr;
+                     rpm               = nullptr;
+                     perfectShiftRange = nullptr;
+                     maxRpm            = nullptr;
+                     maxPossibleRpm    = nullptr;
+                     speed             = nullptr;
+                     nos               = nullptr;
+                     speedbreaker      = nullptr;
+                     money             = nullptr;
                   }
                }
             }
@@ -318,7 +341,7 @@ namespace Mods {
       }
 
       float getRPM() {
-         return max(((*rpm / 10000) * (*maxRpm)) + 200, 1000);
+         return max((*rpm / 10000) * (*maxRpm), 1000);
       }
       bool isInPerfectShiftRange() {
          if (getRPM() > 2000.0f)
@@ -330,10 +353,11 @@ namespace Mods {
       }
 
       void Init() {
-         _internal::isGameplayActive = (bool*)Memory::makeAbsolute(0x4F40C4);
-         _internal::isGameLoaded     = (bool*)Memory::makeAbsolute(0x51CD38);
-         _internal::gameplayState    = (int*)Memory::makeAbsolute(0x525E90);
+         _internal::isGameplayActive       = (bool*)Memory::makeAbsolute(0x4F40C4);
+         _internal::isGameLoaded           = (bool*)Memory::makeAbsolute(0x51CD38);
+         _internal::gameplayState          = (int*)Memory::makeAbsolute(0x525E90);
          _internal::isShowingOverlayOnHUD  = (bool*)Memory::makeAbsolute(0x51CAE4);
+         _internal::rpmMultiplier          = (float*)Memory::makeAbsolute(0x497674);
 
          _internal::isInit = true;
       }
