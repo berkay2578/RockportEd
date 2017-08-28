@@ -31,15 +31,14 @@ using std::make_unique;
 #include <commctrl.h>
 
 namespace D3D9Hook {
-   HWND windowHandle                    = nullptr;
-   WNDPROC origWndProc                  = nullptr;
-   DWORD d3dDeviceAddress               = NULL;
-   LPDIRECT3DDEVICE9 d3dDevice          = nullptr;
+   HWND                   windowHandle  = nullptr;
+   WNDPROC                origWndProc   = nullptr;
+   LPDIRECT3DDEVICE9      d3dDevice     = nullptr;
    unique_ptr<VTableHook> d3dDeviceHook = nullptr;
 
-   Reset_t origReset                     = nullptr;
-   BeginScene_t origBeginScene           = nullptr;
-   EndScene_t origEndScene               = nullptr;
+   Reset_t           origReset           = nullptr;
+   BeginScene_t      origBeginScene      = nullptr;
+   EndScene_t        origEndScene        = nullptr;
    BeginStateBlock_t origBeginStateBlock = nullptr;
 
    bool showUserGuide = false;
@@ -48,8 +47,8 @@ namespace D3D9Hook {
       "Hood",
       "Near",
       "Far",
-      "i",
-      "don kno",
+      "Challenge Entry",
+      "Speedbreaker",
       "Pullback"
    };
 
@@ -115,17 +114,19 @@ namespace D3D9Hook {
       style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
    }
 
-   HRESULT WINAPI beginSceneHook(LPDIRECT3DDEVICE9 pDevice) {
+   HRESULT WINAPI hkBeginScene(LPDIRECT3DDEVICE9 pDevice) {
       if (!D3D9HookSettings::isImguiInitialized) {
          ImGui_ImplDX9_Init(windowHandle, d3dDevice);
+
          ImGuiIO& io = ImGui::GetIO();
          io.IniFilename = NULL;
          io.Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 14.0f);
          io.Fonts->AddFontFromMemoryCompressedTTF(Digital::Digital_compressed_data, Digital::Digital_compressed_size, 34.0f);
          io.Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Italic_compressed_data, CooperHewitt_Italic_compressed_size, 64.0f);
          io.FontDefault = NULL;
-         D3D9HookSettings::isImguiInitialized = true;
+
          doImGuiStyle();
+         D3D9HookSettings::isImguiInitialized = true;
       }
 
       ImGui_ImplDX9_NewFrame();
@@ -138,32 +139,33 @@ namespace D3D9Hook {
    int gameResolutionCave() {
       int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
       if (currentResIndex < 5) {
-         DWORD* newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
-         resWidth                       = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0xA);
-         resHeight                      = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
+         DWORD* newResolutionSetupAddrs;
+         newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
+         resWidth                = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A);
+         resHeight               = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
 
          int ratio = (int)((resWidth / resHeight) * 100);
          if (ratio == 177) { // 16:9
-            baseResWidth = 850.0f;
+            baseResWidth  = 850.0f;
             baseResHeight = 480.0f;
          }
          else if (ratio == 133) { // 4:3
-            baseResWidth = 640.0f - 3; // -3
-            baseResHeight = 480.0f - 5; // -5
+            baseResWidth  = 640.0f - 3;
+            baseResHeight = 480.0f - 5;
          }
       }
       return currentResIndex;
    }
 
-   HRESULT WINAPI endSceneHook(LPDIRECT3DDEVICE9 pDevice) {
+   HRESULT WINAPI hkEndScene(LPDIRECT3DDEVICE9 pDevice) {
       if (pDevice->TestCooperativeLevel() == D3D_OK) {
          if (D3D9HookSettings::isImguiInitialized) {
-            ImGuiIO& o = ImGui::GetIO();
+            ImGuiIO& io = ImGui::GetIO();
 
             if (D3D9HookSettings::Options::isMainWindowVisible) {
-               o.MousePos.x      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB0)) * ((float)resWidth / baseResWidth);
-               o.MousePos.y      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB4)) * ((float)resHeight / baseResHeight);
-               o.MouseDrawCursor = o.WantCaptureMouse;
+               io.MousePos.x      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB0)) * ((float)resWidth / baseResWidth);
+               io.MousePos.y      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB4)) * ((float)resHeight / baseResHeight);
+               io.MouseDrawCursor = io.WantCaptureMouse;
 
                if (showUserGuide) {
                   ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
@@ -247,17 +249,17 @@ namespace D3D9Hook {
                ImGui::End();
             }
             else {
-               o.MouseDrawCursor = false;
+               io.MouseDrawCursor = false;
             }
 
-            if (Mods::NewHUD::confirmSuitableness(o.DeltaTime)) {
+            if (Mods::NewHUD::confirmSuitableness(io.DeltaTime)) {
                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
-               ImVec2 textSize;
-               ImVec2 cursorPos;
-               const float rpmPercentage = (*Mods::NewHUD::rpm - 1000) / 9000.0f;
-               const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
+               static ImVec2 textSize;
+               static ImVec2 cursorPos;
+               static const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000) / 9000.0f;
+               static const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
 
                // RPM
                {
@@ -278,8 +280,8 @@ namespace D3D9Hook {
                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
                                | ImGuiWindowFlags_ShowBorders);
 
-                  ImGui::PushFont(o.Fonts->Fonts[1]);
-                  textSize = ImGui::CalcTextSize("8888");
+                  ImGui::PushFont(io.Fonts->Fonts[1]);
+                  textSize  = ImGui::CalcTextSize("8888");
                   cursorPos = (ImGui::GetWindowSize() - textSize) / 2 >> 8;
 
                   ImGui::SetCursorPos(cursorPos);
@@ -305,7 +307,7 @@ namespace D3D9Hook {
                   ImGui::Begin("##Speed", (bool*)0, ImVec2(150.0f, 90.0f), 0.0f,
                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
 
-                  ImGui::PushFont(o.Fonts->Fonts[2]);
+                  ImGui::PushFont(io.Fonts->Fonts[2]);
                   sprintf_s(speed, "%03.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
                   textSize = ImGui::CalcTextSize(speed);
                   cursorPos = ImVec2(
@@ -314,7 +316,7 @@ namespace D3D9Hook {
                   );
 
                   ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.5f), speed);
+                  ImGui::TextColored(ImVec4(0.3f, 0.3f, 0.3f, 0.5f), speed);
 
                   ImGui::SameLine();
                   sprintf_s(speed, "%.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
@@ -325,7 +327,7 @@ namespace D3D9Hook {
                   );
 
                   ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 1.0f), speed);
+                  ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), speed);
 
                   ImGui::PopFont();
                   ImGui::End();
@@ -362,7 +364,7 @@ namespace D3D9Hook {
                   float textColor = 0.0f;
 
                   if (Mods::NewHUD::isOverRevving()) {
-                     secondsSinceLastFlash += o.DeltaTime;
+                     secondsSinceLastFlash += io.DeltaTime;
                      if (secondsSinceLastFlash > 0.2f) {
                         secondsSinceLastFlash = 0.0f;
                      }
@@ -396,7 +398,7 @@ namespace D3D9Hook {
 
       return origEndScene(pDevice);
    }
-   HRESULT WINAPI resetHook(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
+   HRESULT WINAPI hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
       if (!D3D9HookSettings::isImguiInitialized)
          return origReset(pDevice, pPresentationParameters);
 
@@ -414,19 +416,19 @@ namespace D3D9Hook {
       ImGui_ImplDX9_CreateDeviceObjects();
       return retOrigReset;
    }
-   HRESULT WINAPI beginStateBlockHook(LPDIRECT3DDEVICE9 pDevice) {
+   HRESULT WINAPI hkBeginStateBlock(LPDIRECT3DDEVICE9 pDevice) {
       d3dDeviceHook->UnhookAll();
 
       auto retBeginStateBlock = origBeginStateBlock(pDevice);
 
-      origReset           = d3dDeviceHook->Hook(16, resetHook);
-      origBeginScene      = d3dDeviceHook->Hook(41, beginSceneHook);
-      origEndScene        = d3dDeviceHook->Hook(42, endSceneHook);
-      origBeginStateBlock = d3dDeviceHook->Hook(60, beginStateBlockHook);
+      origReset           = d3dDeviceHook->Hook(16, hkReset);
+      origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
+      origEndScene        = d3dDeviceHook->Hook(42, hkEndScene);
+      origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
       return retBeginStateBlock;
    }
 
-   LRESULT CALLBACK WndProcHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+   LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       if (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU)
          return TRUE;
 
@@ -497,6 +499,7 @@ namespace D3D9Hook {
    DWORD WINAPI Init(LPVOID) {
       Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
 
+      DWORD d3dDeviceAddress = NULL;
       while (!d3dDeviceAddress) {
          d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
          Sleep(100);
@@ -508,17 +511,17 @@ namespace D3D9Hook {
       d3dDevice->GetCreationParameters(&cParams);
       windowHandle = cParams.hFocusWindow;
 
-      origWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG_PTR)&WndProcHook);
+      origWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG_PTR)&hkWndProc);
 
       // fix double clicks
       DWORD Style = GetClassLongPtr(windowHandle, GCL_STYLE) & ~CS_DBLCLKS;
       SetClassLongPtr(windowHandle, GCL_STYLE, Style);
 
       d3dDeviceHook       = make_unique<VTableHook>((PDWORD*)d3dDevice);
-      origReset           = d3dDeviceHook->Hook(16, resetHook);
-      origBeginScene      = d3dDeviceHook->Hook(41, beginSceneHook);
-      origEndScene        = d3dDeviceHook->Hook(42, endSceneHook);
-      origBeginStateBlock = d3dDeviceHook->Hook(60, beginStateBlockHook);
+      origReset           = d3dDeviceHook->Hook(16, hkReset);
+      origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
+      origEndScene        = d3dDeviceHook->Hook(42, hkEndScene);
+      origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
 
       showUserGuide = Settings::isFirstTime();
 
