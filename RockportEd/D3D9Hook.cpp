@@ -31,15 +31,15 @@ using std::make_unique;
 #include <commctrl.h>
 
 namespace D3D9Hook {
-   HWND windowHandle = nullptr;
-   WNDPROC origWndProc;
-   DWORD d3dDeviceAddress;
-   LPDIRECT3DDEVICE9 d3dDevice = nullptr;
+   HWND windowHandle                    = nullptr;
+   WNDPROC origWndProc                  = nullptr;
+   DWORD d3dDeviceAddress               = NULL;
+   LPDIRECT3DDEVICE9 d3dDevice          = nullptr;
    unique_ptr<VTableHook> d3dDeviceHook = nullptr;
 
-   Reset_t origReset = nullptr;
-   BeginScene_t origBeginScene = nullptr;
-   EndScene_t origEndScene = nullptr;
+   Reset_t origReset                     = nullptr;
+   BeginScene_t origBeginScene           = nullptr;
+   EndScene_t origEndScene               = nullptr;
    BeginStateBlock_t origBeginStateBlock = nullptr;
 
    bool showUserGuide = false;
@@ -139,8 +139,8 @@ namespace D3D9Hook {
       int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
       if (currentResIndex < 5) {
          DWORD* newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
-         resWidth = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0xA);
-         resHeight = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
+         resWidth                       = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0xA);
+         resHeight                      = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
 
          int ratio = (int)((resWidth / resHeight) * 100);
          if (ratio == 177) { // 16:9
@@ -161,8 +161,8 @@ namespace D3D9Hook {
             ImGuiIO& o = ImGui::GetIO();
 
             if (D3D9HookSettings::Options::isMainWindowVisible) {
-               o.MousePos.x = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB0)) * ((float)resWidth / baseResWidth);
-               o.MousePos.y = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB4)) * ((float)resHeight / baseResHeight);
+               o.MousePos.x      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB0)) * ((float)resWidth / baseResWidth);
+               o.MousePos.y      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB4)) * ((float)resHeight / baseResHeight);
                o.MouseDrawCursor = o.WantCaptureMouse;
 
                if (showUserGuide) {
@@ -241,14 +241,6 @@ namespace D3D9Hook {
                ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiCond_Once);
                ImGui::Begin("RockportEd", (bool*)0, ImVec2(200.0f, 140.0f), 0.9f);
 
-            #ifdef NDEBUG
-               ImGui::TextWrapped("Current car bytes: %s", D3D9HookSettings::Options::opt_CustomCarBytesValue);
-            #else
-               ImGui::Checkbox("Car bytes: ", &D3D9HookSettings::Options::opt_CustomCarBytes);
-               ImGui::InputText("##CarBytes", D3D9HookSettings::Options::opt_CustomCarBytesValue, 256,
-                                ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsUppercase
-                                | (D3D9HookSettings::Options::opt_CustomCarBytes ? 0 : ImGuiInputTextFlags_ReadOnly));
-            #endif
                ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
                ImGui::Checkbox("Replay Menu", &D3D9HookSettings::Options::opt_ReplayMenu);
 
@@ -427,9 +419,9 @@ namespace D3D9Hook {
 
       auto retBeginStateBlock = origBeginStateBlock(pDevice);
 
-      origReset = d3dDeviceHook->Hook(16, resetHook);
-      origBeginScene = d3dDeviceHook->Hook(41, beginSceneHook);
-      origEndScene = d3dDeviceHook->Hook(42, endSceneHook);
+      origReset           = d3dDeviceHook->Hook(16, resetHook);
+      origBeginScene      = d3dDeviceHook->Hook(41, beginSceneHook);
+      origEndScene        = d3dDeviceHook->Hook(42, endSceneHook);
       origBeginStateBlock = d3dDeviceHook->Hook(60, beginStateBlockHook);
       return retBeginStateBlock;
    }
@@ -448,14 +440,10 @@ namespace D3D9Hook {
             }
             else if (uMsg == WM_KEYDOWN) {
                switch (wParam) {
-                  case VK_NUMPAD8:
-                     //if (Mods::playerCarInfo->z < 100.0f)
-                     Mods::ReplaySystem::playerCarInfo->z_Velocity += 5.f;
-                     break;
                   case VK_END:
                   {
                      static bool mybool = false;
-                     mybool = !mybool;
+                     mybool             = !mybool;
                      d3dDevice->SetRenderState(D3DRS_FILLMODE, mybool ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
                   }
                   break;
@@ -526,10 +514,10 @@ namespace D3D9Hook {
       DWORD Style = GetClassLongPtr(windowHandle, GCL_STYLE) & ~CS_DBLCLKS;
       SetClassLongPtr(windowHandle, GCL_STYLE, Style);
 
-      d3dDeviceHook = make_unique<VTableHook>((PDWORD*)d3dDevice);
-      origReset = d3dDeviceHook->Hook(16, resetHook);
-      origBeginScene = d3dDeviceHook->Hook(41, beginSceneHook);
-      origEndScene = d3dDeviceHook->Hook(42, endSceneHook);
+      d3dDeviceHook       = make_unique<VTableHook>((PDWORD*)d3dDevice);
+      origReset           = d3dDeviceHook->Hook(16, resetHook);
+      origBeginScene      = d3dDeviceHook->Hook(41, beginSceneHook);
+      origEndScene        = d3dDeviceHook->Hook(42, endSceneHook);
       origBeginStateBlock = d3dDeviceHook->Hook(60, beginStateBlockHook);
 
       showUserGuide = Settings::isFirstTime();

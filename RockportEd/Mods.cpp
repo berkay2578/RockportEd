@@ -9,48 +9,6 @@ using std::map;
 using std::vector;
 
 namespace Mods {
-   namespace CarBytes {
-      DWORD carbytesReadHook_Entry;
-      DWORD carbytesReadHook_Ret;
-      DWORD carBytes;
-
-      void __declspec(naked) carbytesReadHook() {
-         __asm {
-            mov edi, [esp + 0x10]
-            mov ebx, ecx
-            pushad
-         }
-         if (D3D9HookSettings::Options::opt_CustomCarBytes) {
-            /* rehook inside the loop, game loads bytes for eacH COMPONENT FUCKING FUCK YOU OLD EAGL
-            __asm {
-            push eax
-            mov eax, [D3D9HookSettings::Options::opt_CustomCarBytesValue]
-            mov[ebx], eax
-            pop eax
-            }*/
-         }
-         else {
-            __asm {
-               push eax
-               mov eax, [ebx]
-               mov[carBytes], eax
-               pop eax
-            }
-            sprintf(D3D9HookSettings::Options::opt_CustomCarBytesValue, "%X", carBytes);
-         }
-         __asm {
-            popad
-            jmp carbytesReadHook_Ret
-         }
-      }
-
-      void Init() {
-         carbytesReadHook_Entry = Memory::makeAbsolute(0x16F2B3);
-         carbytesReadHook_Ret   = Memory::makeAbsolute(0x16F2B9);
-         Memory::writeJMP(carbytesReadHook_Entry, (DWORD)carbytesReadHook);
-         Memory::writeNop(carbytesReadHook_Entry + 0x5, 1);
-      }
-   }
    namespace Camera {
       int* activeCamera                 = nullptr;
       map<int, map<char*, float*>> data ={};
@@ -364,7 +322,6 @@ namespace Mods {
    }
 
    DWORD WINAPI Init(LPVOID) {
-      CarBytes::Init();
       Camera::Init();
       ReplaySystem::Init();
       NewHUD::Init();
