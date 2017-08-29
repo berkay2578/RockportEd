@@ -97,16 +97,14 @@ namespace DInput8Hook {
 
    HRESULT WINAPI hkDirectInput8Create(HINSTANCE hInstance, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN lpUnkOuter) {
       // Call original DirectInput8Create
-      HRESULT retOrigDirectInput8Create;
-      {
-         Memory::openMemoryAccess(origDirectInput8CreateAddr, 6);
-         memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)origCreateDeviceBeginBytes, 6);
+      Memory::openMemoryAccess(origDirectInput8CreateAddr, 6);
+      memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)origCreateDeviceBeginBytes, 6);
 
-         HRESULT retOrigDirectInput8Create = origDirectInput8Create(hInstance, dwVersion, riidltf, ppvOut, lpUnkOuter);
+      HRESULT retOrigDirectInput8Create = origDirectInput8Create(hInstance, dwVersion, riidltf, ppvOut, lpUnkOuter);
 
-         memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)detourCreateDeviceBeginBytes, 6);
-         Memory::restoreMemoryAccess();
-      }
+      memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)detourCreateDeviceBeginBytes, 6);
+      Memory::restoreMemoryAccess();
+
 
       DWORD* createDeviceAddr = (DWORD*)(
          (*(DWORD*)(*ppvOut) /* function table */)
