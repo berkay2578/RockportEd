@@ -134,6 +134,10 @@ namespace D3D9Hook {
       return origBeginScene(pDevice);
    }
 
+   /* windowed resize testing stuff
+   float newAsceptRatio = 1.3333f; //4:3 def
+   float hor3DScale = 1.0f / (newAsceptRatio / (4.0f / 3.0f));
+   */
    float resWidth, resHeight;
    float baseResWidth, baseResHeight;
    int gameResolutionCave() {
@@ -143,6 +147,13 @@ namespace D3D9Hook {
          newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
          resWidth                = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A);
          resHeight               = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
+
+         /* windowed resize testing stuff
+         Memory::openMemoryAccess(newResolutionSetupAddrs[currentResIndex] + 0x0A, 0x8);
+         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A) = (int)resWidth;
+         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10) = (int)resHeight;
+         Memory::restoreMemoryAccess();
+         */
 
          int ratio = (int)((resWidth / resHeight) * 100);
          if (ratio == 177) { // 16:9
@@ -327,7 +338,7 @@ namespace D3D9Hook {
                   );
 
                   ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), speed);
+                  ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), speed);
 
                   ImGui::PopFont();
                   ImGui::End();
@@ -414,6 +425,7 @@ namespace D3D9Hook {
       }
 
       ImGui_ImplDX9_CreateDeviceObjects();
+
       return retOrigReset;
    }
    HRESULT WINAPI hkBeginStateBlock(LPDIRECT3DDEVICE9 pDevice) {
@@ -429,8 +441,26 @@ namespace D3D9Hook {
    }
 
    LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+      // disable ALT menu
       if (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU)
          return TRUE;
+      /* windowed resize testing stuff
+      if (uMsg == WM_SIZE) {
+         RECT rect;
+         GetClientRect(windowHandle, &rect);
+
+         resWidth = (float)rect.right;
+         resHeight = (float)rect.bottom;
+         newAsceptRatio = resWidth / resHeight;
+         hor3DScale = 1.0f / (newAsceptRatio / (4.0f / 3.0f));
+
+         Memory::openMemoryAccess(0x8AE8F8, 4);
+         *(float*)0x8AE8F8 = 480.0f * newAsceptRatio;
+         Memory::restoreMemoryAccess();
+
+         return TRUE;
+      }
+      */
 
       if (D3D9HookSettings::isImguiInitialized) {
          ImGuiIO io = ImGui::GetIO();
@@ -496,6 +526,75 @@ namespace D3D9Hook {
       return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
    }
 
+
+   /* 1:1 WS Fix
+
+   // fix fov on resize hook
+   Memory::writeCall(0x2CF4EA, (DWORD)hkFovFix, false);
+   Memory::writeRaw(0x2CF4EF, false, 4, 0x90, 0x83, 0xF9, 0x01); // cmp ecx,    1
+   Memory::writeNop(0x2CF4F3, 3, false);
+
+   Memory::openMemoryAccess(0x6CF568, 4);
+   *(DWORD*)0x6CF568 = (DWORD)&flt1;
+   Memory::restoreMemoryAccess();
+
+   Memory::openMemoryAccess(0x6CF57A, 4);
+   *(DWORD*)0x6CF57A = (DWORD)&flt2;
+   Memory::restoreMemoryAccess();
+
+   Memory::openMemoryAccess(0x6CF5DE, 4);
+   *(DWORD*)0x6CF5DE = (DWORD)&flt3;
+   Memory::restoreMemoryAccess();
+
+   Memory::openMemoryAccess(0x6DA8B1, 4);
+   *(DWORD*)0x6DA8B1 = (DWORD)&dx;
+   Memory::restoreMemoryAccess();
+
+   float ver3DScale = 0.75f;
+   float mirrorScale = 0.4f;
+   float f1234 = 1.25f;
+   float f06 = 0.6f;
+   float f1 = 1.0f; // horizontal for vehicle reflection
+   float flt1 = 0.0f;
+   float flt2 = 0.0f;
+   float flt3 = 0.0f;
+
+   void hkFovFix() {
+      DWORD dummyVar = 0;
+      __asm {
+         mov eax, [edi + 0x60]
+         mov[dummyVar], ecx
+      }
+      if (dummyVar == 1 || dummyVar == 4) { //Headlights stretching, reflections etc
+         flt1 = hor3DScale;
+         flt2 = f06;
+         flt3 = f1234;
+      }
+      else {
+         if (dummyVar > 10) {
+            flt1 = f1;
+            flt2 = 0.5f;
+            flt3 = 1.0f;
+            _asm fld ds : f1
+            return;
+         }
+         else {
+            flt1 = 1.0f;
+            flt2 = 0.5f;
+            flt3 = 1.0f;
+         }
+      }
+
+
+      if (dummyVar == 3) //if rearview mirror
+         _asm fld ds : mirrorScale
+      else
+         _asm fld ds : ver3DScale
+   }
+
+   const WORD dx = 16400;
+   */
+
    DWORD WINAPI Init(LPVOID) {
       Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
 
@@ -513,10 +612,6 @@ namespace D3D9Hook {
 
       origWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG_PTR)&hkWndProc);
 
-      // fix double clicks
-      DWORD Style = GetClassLongPtr(windowHandle, GCL_STYLE) & ~CS_DBLCLKS;
-      SetClassLongPtr(windowHandle, GCL_STYLE, Style);
-
       d3dDeviceHook       = make_unique<VTableHook>((PDWORD*)d3dDevice);
       origReset           = d3dDeviceHook->Hook(16, hkReset);
       origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
@@ -524,6 +619,16 @@ namespace D3D9Hook {
       origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
 
       showUserGuide = Settings::isFirstTime();
+
+      if (*(bool*)0x982BF0) {
+         // user is using some windowed mod so make it proper
+
+         DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE) | WS_OVERLAPPEDWINDOW & (~WS_SIZEBOX & ~WS_MAXIMIZEBOX);
+         SetWindowLongPtr(windowHandle, GWL_STYLE, wStyle);
+
+         // refresh window so it validates the styleeeeeeeeeeeeee ye boi
+         SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
+      }
 
       return TRUE;
    }
