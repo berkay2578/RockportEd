@@ -269,8 +269,8 @@ namespace D3D9Hook {
 
                static ImVec2 textSize;
                static ImVec2 cursorPos;
-               static const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000) / 9000.0f;
-               static const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
+               const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000) / 9000.0f;
+               const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
 
                // RPM
                {
@@ -280,16 +280,26 @@ namespace D3D9Hook {
                   sprintf_s(rpm, "%.0f", Mods::NewHUD::getRPM());
 
                   const ImVec4 bgColor = ImVec4(
-                     (0.80f - (0.10f * rpmPercentage)) * nos,
-                     (0.56f - (0.15f * rpmPercentage)) * nos,
-                     (0.25f - (0.20f * rpmPercentage)) * nos,
-                     1.0f);
+                     0.80f - (0.10f * rpmPercentage),
+                     0.56f - (0.15f * rpmPercentage),
+                     0.25f - (0.20f * rpmPercentage),
+                     0.7f);
                   ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
+                  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
                   ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 70.0f), ImGuiCond_Once);
-                  ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.7f,
+                  ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.0f,
                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
                                | ImGuiWindowFlags_ShowBorders);
+
+
+                  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
+                  ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+
+                  ImGui::ProgressBar(nos, ImVec2(150.0f, 60.0f), "");
+
+                  ImGui::PopStyleColor();
+                  ImGui::PopStyleColor();
 
                   ImGui::PushFont(io.Fonts->Fonts[1]);
                   textSize  = ImGui::CalcTextSize("8888");
@@ -306,7 +316,9 @@ namespace D3D9Hook {
                   ImGui::PopFont();
                   ImGui::End();
                   ImGui::PopStyleColor();
+                  ImGui::PopStyleVar();
                }
+
 
                // Speed
                {
@@ -621,13 +633,25 @@ namespace D3D9Hook {
       showUserGuide = Settings::isFirstTime();
 
       if (*(bool*)0x982BF0) {
-         // user is using some windowed mod so make it proper
+         RECT o_cRect, n_cRect, n_wRect;
+         GetClientRect(windowHandle, &o_cRect);
 
          DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE) | WS_OVERLAPPEDWINDOW & (~WS_SIZEBOX & ~WS_MAXIMIZEBOX);
          SetWindowLongPtr(windowHandle, GWL_STYLE, wStyle);
 
-         // refresh window so it validates the styleeeeeeeeeeeeee ye boi
+         // make window change style
          SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
+
+         GetWindowRect(windowHandle, &n_wRect);
+         GetClientRect(windowHandle, &n_cRect);
+         int n_wWidth  = n_wRect.right - n_wRect.left;
+         int n_wHeight = n_wRect.bottom - n_wRect.top;
+         int dif_wWidth  = o_cRect.right - n_cRect.right;
+         int dif_wHeight = o_cRect.bottom - n_cRect.bottom;
+         int newWidth  = n_wWidth + dif_wWidth;
+         int newHeight = n_wHeight + dif_wHeight;
+
+         SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
       }
 
       return TRUE;
