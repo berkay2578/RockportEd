@@ -269,13 +269,13 @@ namespace D3D9Hook {
 
                static ImVec2 textSize;
                static ImVec2 cursorPos;
-               const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000) / 9000.0f;
+               const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000.0f) / 9000.0f;
                const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
+               const float throttlePercentage      = *Mods::NewHUD::throttlePercentage / 100.0f;
+               const float nos = *Mods::NewHUD::nos;
 
                // RPM
                {
-                  float nos = *Mods::NewHUD::nos;
-
                   static char rpm[5];
                   sprintf_s(rpm, "%.0f", Mods::NewHUD::getRPM());
 
@@ -291,7 +291,6 @@ namespace D3D9Hook {
                   ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.0f,
                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
                                | ImGuiWindowFlags_ShowBorders);
-
 
                   ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
                   ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
@@ -360,16 +359,18 @@ namespace D3D9Hook {
                // Gear
                {
                   static char gearText[5];
-                  if (*Mods::NewHUD::gear == 0) {
-                     strcpy_s(gearText, "R");
+                  const int gear = *Mods::NewHUD::gear;
+                  switch (gear) {
+                     case 0:
+                        strcpy_s(gearText, "R");
+                        break;
+                     case 1:
+                        strcpy_s(gearText, "N");
+                        break;
+                     default:
+                        _itoa_s(*Mods::NewHUD::gear - 1, gearText, 10);
+                        break;
                   }
-                  else if (*Mods::NewHUD::gear == 1) {
-                     strcpy_s(gearText, "N");
-                  }
-                  else {
-                     _itoa_s(*Mods::NewHUD::gear - 1, gearText, 10);
-                  }
-
                   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
                   ImGui::SetNextWindowPos(ImVec2(resWidth - 175.0f, resHeight - 55.0f), ImGuiCond_Once);
@@ -383,15 +384,15 @@ namespace D3D9Hook {
                                                 0.56f - (0.15f * rpmPercentage),
                                                 0.25f - (0.20f * rpmPercentage),
                                                 1.0f);
-                  ImVec4 bgColor = ImVec4(1.0f, 0.76f, 0.45f, 1.0f);
-                  float textColor = 0.0f;
+                  ImVec4 bgColor = gear == 0 ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f) : ImVec4(1.0f, 0.76f, 0.45f, 1.0f);
+                  float textColor = gear == 0 ? 1.0f : 0.0f;
 
                   if (Mods::NewHUD::isOverRevving()) {
                      secondsSinceLastFlash += io.DeltaTime;
-                     if (secondsSinceLastFlash > 0.2f) {
+                     if (secondsSinceLastFlash > (0.2f * throttlePercentage)) {
                         secondsSinceLastFlash = 0.0f;
                      }
-                     else if (secondsSinceLastFlash < 0.1f) {
+                     else if (secondsSinceLastFlash < (0.1f *  throttlePercentage)) {
                         bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
                         textColor = 1.0f;
                      }
@@ -532,6 +533,29 @@ namespace D3D9Hook {
                D3D9HookSettings::blockKeyboard = false;
 
             }
+         }
+      }
+
+      if (Mods::NewHUD::gear &&
+          Mods::GameInfo::isManualTransmissionEnabled && *Mods::GameInfo::isManualTransmissionEnabled) {
+         switch (uMsg) {
+            case WM_KEYDOWN:
+            {
+               if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearDown, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
+                  Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(0, *Mods::NewHUD::gear - 1);
+                  if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 0) {
+                     D3D9HookSettings::putIntoReverse = true;
+                     D3D9HookSettings::reversePedals  = true;
+                  }
+               }
+               else if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearUp, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
+                  Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = *Mods::NewHUD::gear + 1;
+                  if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
+                     D3D9HookSettings::reversePedals  = false;
+                  }
+               }
+            }
+            break;
          }
       }
 

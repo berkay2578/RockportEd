@@ -9,16 +9,64 @@ using std::map;
 using std::vector;
 
 namespace Mods {
+   namespace ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink {
+      int newGear = 2;
+      DWORD jmpBackAddr = NULL;
+
+      void __declspec(naked) gearHook() {
+         __asm {
+            push eax
+            mov eax, [GameInfo::isManualTransmissionEnabled]
+            test eax, eax
+            je NotInit
+            cmp[eax], 0
+            je notInit
+
+            mov edi, [newGear]
+
+            notInit :
+            pop eax
+
+               mov[esi + 0x00000084], edi
+               jmp jmpBackAddr
+         }
+      }
+
+      void Init() {
+         Memory::writeJMP(0x292114, (DWORD)gearHook, false);
+         jmpBackAddr = Memory::makeAbsolute(0x29211A);
+      }
+   }
+   // TODO: migrate stuff in newhud to this
+   namespace GameInfo {
+      BYTE* key_Accelerate              = nullptr;
+      BYTE* key_Brake                   = nullptr;
+      BYTE* key_GearDown                = nullptr;
+      BYTE* key_GearUp                  = nullptr;
+      bool* isManualTransmissionEnabled = nullptr;
+
+      void Init() {
+         key_Accelerate = (BYTE*)Memory::makeAbsolute(0x51F420);
+         key_Brake      = (BYTE*)Memory::makeAbsolute(0x51F454);
+         key_GearDown   = (BYTE*)Memory::makeAbsolute(0x51F58C);
+         key_GearUp     = (BYTE*)Memory::makeAbsolute(0x51F5C0);
+
+         while (!isManualTransmissionEnabled) {
+            isManualTransmissionEnabled = (bool*)Memory::readPointer(0x51CF90, 2, 0x10, 0x91);
+            Sleep(100);
+         }
+         ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::Init();
+      }
+   }
    namespace Camera {
       int* activeCamera                 = nullptr;
       map<int, map<char*, float*>> data ={};
 
       void Init() {
-         while (!Memory::readPointer(0x51CF90, 2, 0x10, 0x8C)) {
+         while (!activeCamera) {
+            activeCamera = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0x8C);
             Sleep(100);
          }
-         activeCamera = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0x8C);
-
          while (!Memory::readPointer(0x51DCC8, 1, 0xF4)) {
             Sleep(100);
          }
@@ -226,15 +274,15 @@ namespace Mods {
          DWORD* carPowerBase           = nullptr;
       }
 
-      short* gear              = nullptr;
-      float* rpm               = nullptr;
-      float* perfectShiftRange = nullptr;
-      float* maxRpm            = nullptr;
-      float* maxPossibleRpm    = nullptr;
-      float* speed             = nullptr;
-      float* nos               = nullptr;
-      float* speedbreaker      = nullptr;
-      int*   money             = nullptr;
+      int*   gear               = nullptr;
+      float* rpm                = nullptr;
+      float* maxRpm             = nullptr;
+      float* maxPossibleRpm     = nullptr;
+      float* throttlePercentage = nullptr;
+      float* speed              = nullptr;
+      float* nos                = nullptr;
+      float* speedbreaker       = nullptr;
+      int*   money              = nullptr;
 
       bool getAddresses(const float& secondsSinceLastFrame) {
          if (!*_internal::isShowingOverlayOnHUD) {
@@ -249,15 +297,15 @@ namespace Mods {
 
                   _internal::carPowerBase = Memory::readPointer(0x5142D0, 1, 0x20);
                   if (_internal::carPowerBase) {
-                     gear              = (short*)(*_internal::carPowerBase + 0x8C);
-                     rpm               = (float*)(*_internal::carPowerBase + 0x2C);
-                     perfectShiftRange = (float*)(*_internal::carPowerBase + 0x44);
-                     maxRpm            = (float*)(*_internal::carPowerBase + 0x3C);
-                     maxPossibleRpm    = (float*)(*_internal::carPowerBase + 0x38);
-                     speed             = (float*)Memory::readPointer(0x5352B0, 1, 0x11C);
-                     nos               = (float*)Memory::readPointer(0x52D918, 4, 0x4C0, 0x4, 0x5C, 0xA4);
-                     speedbreaker      = (float*)Memory::readPointer(0x589228, 1, 0x84);
-                     money             = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0xB4);
+                     gear               = (int*)(*_internal::carPowerBase + 0x8C);
+                     rpm                = (float*)(*_internal::carPowerBase + 0x2C);
+                     maxRpm             = (float*)(*_internal::carPowerBase + 0x3C);
+                     maxPossibleRpm     = (float*)(*_internal::carPowerBase + 0x38);
+                     throttlePercentage = (float*)(*_internal::carPowerBase + 0x40);
+                     speed              = (float*)Memory::readPointer(0x5352B0, 1, 0x11C);
+                     nos                = (float*)Memory::readPointer(0x52D918, 4, 0x4C0, 0x4, 0x5C, 0xA4);
+                     speedbreaker       = (float*)Memory::readPointer(0x589228, 1, 0x84);
+                     money              = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0xB4);
 
                      // Allow redlining anywhere
                      if (maxRpm && maxPossibleRpm) {
@@ -269,20 +317,20 @@ namespace Mods {
                   else {
                      *_internal::rpmMultiplier = 9000.0f;
 
-                     gear              = nullptr;
-                     rpm               = nullptr;
-                     perfectShiftRange = nullptr;
-                     maxRpm            = nullptr;
-                     maxPossibleRpm    = nullptr;
-                     speed             = nullptr;
-                     nos               = nullptr;
-                     speedbreaker      = nullptr;
-                     money             = nullptr;
+                     gear               = nullptr;
+                     rpm                = nullptr;
+                     maxRpm             = nullptr;
+                     maxPossibleRpm     = nullptr;
+                     throttlePercentage = nullptr;
+                     speed              = nullptr;
+                     nos                = nullptr;
+                     speedbreaker       = nullptr;
+                     money              = nullptr;
                   }
                }
             }
 
-            return gear && rpm && perfectShiftRange && maxRpm && speed && nos && speedbreaker && money;
+            return gear && rpm && maxRpm && maxPossibleRpm && throttlePercentage && speed && nos && speedbreaker && money;
          }
          return false;
       }
@@ -301,11 +349,6 @@ namespace Mods {
       float getRPM() {
          return max((*rpm / 10000) * (*maxRpm), 1000);
       }
-      bool isInPerfectShiftRange() {
-         if (getRPM() > 2000.0f)
-            return (getRPM() + *perfectShiftRange) >= *maxRpm;
-         return false;
-      }
       bool isOverRevving() {
          return (getRPM() + 100.0f) >= *maxRpm;
       }
@@ -322,6 +365,7 @@ namespace Mods {
    }
 
    DWORD WINAPI Init(LPVOID) {
+      GameInfo::Init();
       Camera::Init();
       ReplaySystem::Init();
       NewHUD::Init();

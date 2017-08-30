@@ -32,6 +32,7 @@ DECLARE_INTERFACE_(IDirectInputDeviceA, IUnknown)
 #include "DInput8Hook.h"
 #include "Memory.h"
 #include "D3D9Hook_Settings.h"
+#include "Mods.h"
 #include <dinput.h>
 
 #pragma comment (lib, "dxguid.lib")
@@ -54,6 +55,19 @@ namespace DInput8Hook {
       if (cbData == 256) {
          if (D3D9HookSettings::blockKeyboard) {
             ZeroMemory(lpvData, 256);
+         }
+         else {
+            BYTE* keys = (BYTE*)lpvData;
+            if (D3D9HookSettings::putIntoReverse) {
+               keys[*Mods::GameInfo::key_Brake] = TRUE;
+               D3D9HookSettings::putIntoReverse = false;
+            }
+            else if (D3D9HookSettings::reversePedals) {
+               BYTE brake                            = keys[*Mods::GameInfo::key_Brake];
+               BYTE accel                            = keys[*Mods::GameInfo::key_Accelerate];
+               keys[*Mods::GameInfo::key_Brake]      = accel;
+               keys[*Mods::GameInfo::key_Accelerate] = brake;
+            }
          }
       }
       return retOrigGetDeviceState;

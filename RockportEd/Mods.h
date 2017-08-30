@@ -31,6 +31,16 @@ namespace Mods {
       float mass;
    };
 
+   namespace ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink {
+      extern int newGear;
+   }
+   namespace GameInfo {
+      extern BYTE* key_Accelerate;
+      extern BYTE* key_Brake;
+      extern BYTE* key_GearDown;
+      extern BYTE* key_GearUp;
+      extern bool* isManualTransmissionEnabled;
+   }
    namespace Camera {
       extern int* activeCamera;
       extern std::map<int, std::map<char*, float*>> data;
@@ -52,9 +62,10 @@ namespace Mods {
       }
    }
    namespace NewHUD {
-      extern short* gear;
+      extern int*   gear;
       extern float* rpm;
       extern float* maxRpm;
+      extern float* throttlePercentage;
       extern float* speed;
       extern float* nos;
       extern float* speedbreaker;
@@ -63,7 +74,6 @@ namespace Mods {
       bool  confirmSuitableness(const float& secondsSinceLastFrame);
 
       float getRPM();
-      bool  isInPerfectShiftRange();
       bool  isOverRevving();
    }
 
