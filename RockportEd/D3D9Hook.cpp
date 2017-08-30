@@ -549,7 +549,7 @@ namespace D3D9Hook {
                   }
                }
                else if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearUp, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
-                  Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = *Mods::NewHUD::gear + 1;
+                  Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(1, *Mods::NewHUD::gear + 1);
                   if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
                      D3D9HookSettings::reversePedals  = false;
                   }

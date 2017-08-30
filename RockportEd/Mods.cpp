@@ -343,6 +343,7 @@ namespace Mods {
          if (_internal::isSuitable)
             return getAddresses(secondsSinceLastFrame);
 
+         D3D9HookSettings::reversePedals = false;
          return false;
       }
 
