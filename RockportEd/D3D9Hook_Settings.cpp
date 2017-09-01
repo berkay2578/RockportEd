@@ -13,8 +13,7 @@ namespace D3D9HookSettings {
    namespace Options {
       bool isMainWindowVisible = true;
 
-      bool opt_CustomCamera = false;
-
-      bool opt_ReplayMenu = false;
+      bool opt_CustomCamera       = false;
+      bool opt_ReplayMenu         = false;
    }
 }

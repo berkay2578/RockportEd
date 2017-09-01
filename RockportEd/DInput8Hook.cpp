@@ -39,7 +39,6 @@ DECLARE_INTERFACE_(IDirectInputDeviceA, IUnknown)
 
 typedef LPDIRECTINPUTDEVICEA* LPPDIRECTINPUTDEVICEA;
 typedef HRESULT(WINAPI* GetDeviceState_t)(HINSTANCE, DWORD, LPVOID);
-typedef HRESULT(WINAPI* SetProperty_t)(HINSTANCE, REFGUID, LPCDIPROPHEADER);
 typedef HRESULT(WINAPI* CreateDevice_t)(HINSTANCE, REFGUID, LPPDIRECTINPUTDEVICEA, LPUNKNOWN);
 typedef HRESULT(WINAPI* DirectInput8Create_t)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 
@@ -53,7 +52,7 @@ namespace DInput8Hook {
       HRESULT retOrigGetDeviceState = origGetDeviceState_Keyboard(hInstance, cbData, lpvData);
 
       if (cbData == 256) {
-         if (D3D9HookSettings::blockKeyboard) {
+         if (D3D9HookSettings::blockKeyboard || *Mods::GameInfo::isGameWindowInactive) {
             ZeroMemory(lpvData, 256);
          }
          else {
@@ -78,6 +77,9 @@ namespace DInput8Hook {
       DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
       if (D3D9HookSettings::blockMouse) {
          ZeroMemory(mouseState->rgbButtons, 4);
+      }
+      else if (*Mods::GameInfo::isGameWindowInactive) {
+         ZeroMemory(lpvData, sizeof(DIMOUSESTATE));
       }
       return retOrigGetDeviceState;
    }

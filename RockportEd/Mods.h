@@ -39,7 +39,9 @@ namespace Mods {
       extern BYTE* key_Brake;
       extern BYTE* key_GearDown;
       extern BYTE* key_GearUp;
+
       extern bool* isManualTransmissionEnabled;
+      extern bool* isGameWindowInactive;
    }
    namespace Camera {
       extern int* activeCamera;

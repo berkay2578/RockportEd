@@ -43,7 +43,9 @@ namespace Mods {
       BYTE* key_Brake                   = nullptr;
       BYTE* key_GearDown                = nullptr;
       BYTE* key_GearUp                  = nullptr;
+
       bool* isManualTransmissionEnabled = nullptr;
+      bool* isGameWindowInactive        = nullptr;
 
       void Init() {
          key_Accelerate = (BYTE*)Memory::makeAbsolute(0x51F420);
@@ -55,6 +57,7 @@ namespace Mods {
             isManualTransmissionEnabled = (bool*)Memory::readPointer(0x51CF90, 2, 0x10, 0x91);
             Sleep(100);
          }
+         isGameWindowInactive = (bool*)Memory::makeAbsolute(0x582C50);
          ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::Init();
       }
    }
@@ -264,7 +267,7 @@ namespace Mods {
          bool  isSuitable        = false;
          bool* isGameplayActive  = nullptr;
          bool* isGameLoaded      = nullptr;
-         int*  gameplayState     = nullptr;
+         int*  simMode           = nullptr;
 
          float lastReadInSeconds = 10.0f;
 
@@ -307,8 +310,9 @@ namespace Mods {
                      speedbreaker       = (float*)Memory::readPointer(0x589228, 1, 0x84);
                      money              = (int*)Memory::readPointer(0x51CF90, 2, 0x10, 0xB4);
 
-                     // Allow redlining anywhere
-                     if (maxRpm && maxPossibleRpm) {
+                     // Allow redlining anywhere if player is using manual transmission
+                     if (maxRpm && maxPossibleRpm
+                         && GameInfo::isManualTransmissionEnabled && *GameInfo::isManualTransmissionEnabled) {
                         Memory::openMemoryAccess((DWORD)_internal::rpmMultiplier, 4);
                         *_internal::rpmMultiplier = ((10000.0f / *maxRpm) * *maxPossibleRpm) - 1000.0f;
                         Memory::restoreMemoryAccess();
@@ -339,7 +343,7 @@ namespace Mods {
          if (!_internal::isInit)
             return false;
 
-         _internal::isSuitable = (*_internal::isGameplayActive && _internal::isGameLoaded) && (*_internal::gameplayState == 6);
+         _internal::isSuitable = (*_internal::isGameplayActive && _internal::isGameLoaded) && (*_internal::simMode == 6);
          if (_internal::isSuitable)
             return getAddresses(secondsSinceLastFrame);
 
@@ -357,7 +361,7 @@ namespace Mods {
       void Init() {
          _internal::isGameplayActive       = (bool*)Memory::makeAbsolute(0x4F40C4);
          _internal::isGameLoaded           = (bool*)Memory::makeAbsolute(0x51CD38);
-         _internal::gameplayState          = (int*)Memory::makeAbsolute(0x525E90);
+         _internal::simMode                = (int*)Memory::makeAbsolute(0x525E90);
          _internal::isShowingOverlayOnHUD  = (bool*)Memory::makeAbsolute(0x51CAE4);
          _internal::rpmMultiplier          = (float*)Memory::makeAbsolute(0x497674);
 
@@ -379,7 +383,7 @@ namespace Mods {
          *Camera::data[3]["HorAngle"] = 0.035f;
          *Camera::data[3]["VerAngle"] = 0.45f;
 
-         Memory::writeRaw(0x37395A, false, 2, 0x38, 0xC0); // more traffic cars
+         ///causes crash on > 3 opponents //Memory::writeRaw(0x37395A, false, 2, 0x38, 0xC0); // more traffic cars
          *(float*)Memory::readPointer(0x50DCC0, 3, 0x58, 0x3DC, 0x134) = 1.0f; // even more traffic cars
       }
       return TRUE;

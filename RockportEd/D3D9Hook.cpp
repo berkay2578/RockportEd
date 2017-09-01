@@ -41,8 +41,8 @@ namespace D3D9Hook {
    EndScene_t        origEndScene        = nullptr;
    BeginStateBlock_t origBeginStateBlock = nullptr;
 
-   bool showUserGuide = false;
-   char* cameras[7] ={
+   bool showUserGuide   = false;
+   char* cameras[7]     ={
       "Bumper",
       "Hood",
       "Near",
@@ -457,6 +457,11 @@ namespace D3D9Hook {
       // disable ALT menu
       if (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU)
          return TRUE;
+      // don't let window lose focus
+      if (uMsg == WM_ACTIVATEAPP) {
+         if (wParam == FALSE)
+            return TRUE;
+      }
       /* windowed resize testing stuff
       if (uMsg == WM_SIZE) {
          RECT rect;
@@ -525,7 +530,7 @@ namespace D3D9Hook {
                D3D9HookSettings::blockMouse = false;
             }
 
-            if (io.WantCaptureKeyboard || io.WantTextInput) {
+            if (/*io.WantCaptureKeyboard ||*/ io.WantTextInput) {
                D3D9HookSettings::blockKeyboard = true;
                return TRUE;
             }
@@ -676,6 +681,8 @@ namespace D3D9Hook {
          int newHeight = n_wHeight + dif_wHeight;
 
          SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+
+         *(bool*)0x982BF0 = false;
       }
 
       return TRUE;
