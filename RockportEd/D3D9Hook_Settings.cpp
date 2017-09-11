@@ -7,9 +7,6 @@ namespace D3D9HookSettings {
    bool blockKeyboard = false;
    bool blockMouse    = false;
 
-   bool putIntoReverse = false;
-   bool reversePedals  = false;
-
    namespace Options {
       bool isMainWindowVisible = true;
 

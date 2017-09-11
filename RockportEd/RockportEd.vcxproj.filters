@@ -49,6 +49,9 @@
     <ClInclude Include="imguiEx.h">
       <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="DInput8Hook_Extensions.hpp">
+      <Filter>D3D9Hook\DInput8Hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

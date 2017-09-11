@@ -30,12 +30,11 @@ DECLARE_INTERFACE_(IDirectInputDeviceA, IUnknown)
 
 #include "stdafx.h"
 #include "DInput8Hook.h"
+#include "DInput8Hook_Extensions.hpp"
 #include "Memory.h"
 #include "D3D9Hook_Settings.h"
 #include "Mods.h"
 #include <dinput.h>
-
-#pragma comment (lib, "dxguid.lib")
 
 typedef LPDIRECTINPUTDEVICEA* LPPDIRECTINPUTDEVICEA;
 typedef HRESULT(WINAPI* GetDeviceState_t)(HINSTANCE, DWORD, LPVOID);
@@ -48,39 +47,17 @@ namespace DInput8Hook {
    CreateDevice_t       origCreateDevice            = nullptr;
    DirectInput8Create_t origDirectInput8Create      = nullptr;
 
+
    HRESULT WINAPI hkGetDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
       HRESULT retOrigGetDeviceState = origGetDeviceState_Keyboard(hInstance, cbData, lpvData);
 
-      if (cbData == 256) {
-         if (D3D9HookSettings::blockKeyboard || *Mods::GameInfo::isGameWindowInactive) {
-            ZeroMemory(lpvData, 256);
-         }
-         else {
-            BYTE* keys = (BYTE*)lpvData;
-            if (D3D9HookSettings::putIntoReverse) {
-               keys[*Mods::GameInfo::key_Brake] = TRUE;
-               D3D9HookSettings::putIntoReverse = false;
-            }
-            else if (D3D9HookSettings::reversePedals) {
-               BYTE brake                            = keys[*Mods::GameInfo::key_Brake];
-               BYTE accel                            = keys[*Mods::GameInfo::key_Accelerate];
-               keys[*Mods::GameInfo::key_Brake]      = accel;
-               keys[*Mods::GameInfo::key_Accelerate] = brake;
-            }
-         }
-      }
+      DI8Extensions::exKeyboard_GetDeviceState(cbData, lpvData);
       return retOrigGetDeviceState;
    }
    HRESULT WINAPI hkGetDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
       HRESULT retOrigGetDeviceState = origGetDeviceState_Mouse(hInstance, cbData, lpvData);
 
-      DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
-      if (D3D9HookSettings::blockMouse) {
-         ZeroMemory(mouseState->rgbButtons, 4);
-      }
-      else if (*Mods::GameInfo::isGameWindowInactive) {
-         ZeroMemory(lpvData, sizeof(DIMOUSESTATE));
-      }
+      DI8Extensions::exMouse_GetDeviceState(lpvData);
       return retOrigGetDeviceState;
    }
 
@@ -104,6 +81,7 @@ namespace DInput8Hook {
 
          Memory::restoreMemoryAccess();
       }
+
       return retOrigCreateDevice;
    }
 
@@ -121,15 +99,12 @@ namespace DInput8Hook {
       memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)detourCreateDeviceBeginBytes, 6);
       Memory::restoreMemoryAccess();
 
+      DWORD* functionTable = (DWORD*)(**(PDWORD*)ppvOut);
+      if (!origCreateDevice)
+         origCreateDevice = (CreateDevice_t)functionTable[3];
 
-      DWORD* createDeviceAddr = (DWORD*)(
-         (*(DWORD*)(*ppvOut) /* function table */)
-         + 0x0C /* create device address offset */);
-
-      Memory::openMemoryAccess(*createDeviceAddr, 4);
-      origCreateDevice = (CreateDevice_t)*createDeviceAddr;
-
-      *createDeviceAddr = (DWORD)hkCreateDevice;
+      Memory::openMemoryAccess(functionTable[3], 4);
+      functionTable[3] = (DWORD)hkCreateDevice;
       Memory::restoreMemoryAccess();
       return retOrigDirectInput8Create;
    }

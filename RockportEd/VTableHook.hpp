@@ -17,7 +17,7 @@ public:
 
    template<class Type>
    Type Hook(UINT index, Type fnNew) {
-      DWORD fnOrig = (DWORD)pOrigVTable[index];
+      DWORD fnOrig = pOrigVTable[index];
       if (!hookedIndexes.count(index)) {
          Memory::openMemoryAccess(fnOrig, 4);
          pOrigVTable[index] = (DWORD)fnNew;

@@ -51,6 +51,8 @@ namespace D3D9Hook {
       "Speedbreaker",
       "Pullback"
    };
+   long* game_MousePosX;
+   long* game_MousePosY;
 
    void doImGuiStyle() {
       ImGuiStyle* style = &ImGui::GetStyle();
@@ -174,8 +176,8 @@ namespace D3D9Hook {
             ImGuiIO& io = ImGui::GetIO();
 
             if (D3D9HookSettings::Options::isMainWindowVisible) {
-               io.MousePos.x      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB0)) * ((float)resWidth / baseResWidth);
-               io.MousePos.y      = (float)(*(LONG*)Memory::makeAbsolute(0x51CFB4)) * ((float)resHeight / baseResHeight);
+               io.MousePos.x      = (float)(*game_MousePosX) * ((float)resWidth / baseResWidth);
+               io.MousePos.y      = (float)(*game_MousePosY) * ((float)resHeight / baseResHeight);
                io.MouseDrawCursor = io.WantCaptureMouse;
 
                if (showUserGuide) {
@@ -541,29 +543,6 @@ namespace D3D9Hook {
          }
       }
 
-      if (Mods::NewHUD::gear &&
-          Mods::GameInfo::isManualTransmissionEnabled && *Mods::GameInfo::isManualTransmissionEnabled) {
-         switch (uMsg) {
-            case WM_KEYDOWN:
-            {
-               if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearDown, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
-                  Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(0, *Mods::NewHUD::gear - 1);
-                  if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 0) {
-                     D3D9HookSettings::putIntoReverse = true;
-                     D3D9HookSettings::reversePedals  = true;
-                  }
-               }
-               else if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearUp, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
-                  Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(1, *Mods::NewHUD::gear + 1);
-                  if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
-                     D3D9HookSettings::reversePedals  = false;
-                  }
-               }
-            }
-            break;
-         }
-      }
-
       return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
    }
 
@@ -639,8 +618,11 @@ namespace D3D9Hook {
    DWORD WINAPI Init(LPVOID) {
       Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
 
+      bool argWindowed = *(bool*)0x982BF0;
+
       DWORD d3dDeviceAddress = NULL;
       while (!d3dDeviceAddress) {
+         *(bool*)0x982BF0 = true; // force windowed mode
          d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
          Sleep(100);
       }
@@ -661,7 +643,7 @@ namespace D3D9Hook {
 
       showUserGuide = Settings::isFirstTime();
 
-      if (*(bool*)0x982BF0) {
+      if (argWindowed) { // Proper windowed
          RECT o_cRect, n_cRect, n_wRect;
          GetClientRect(windowHandle, &o_cRect);
 
@@ -680,11 +662,15 @@ namespace D3D9Hook {
          int newWidth  = n_wWidth + dif_wWidth;
          int newHeight = n_wHeight + dif_wHeight;
 
-         SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
-
-         *(bool*)0x982BF0 = false;
+         SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE | SWP_DRAWFRAME);
       }
+      else { // Borderless fullscreen
+         SetWindowPos(windowHandle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE);
+      }
+      *(bool*)0x982BF0 = false; // force disabled windowed mode (makes game think it's fullscreen)
 
+      game_MousePosX = (long*)Memory::makeAbsolute(0x51CFB0);
+      game_MousePosY = (long*)Memory::makeAbsolute(0x51CFB4);
       return TRUE;
    }
 }

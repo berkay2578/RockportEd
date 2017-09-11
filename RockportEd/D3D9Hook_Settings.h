@@ -7,9 +7,6 @@ namespace D3D9HookSettings {
    extern bool blockKeyboard;
    extern bool blockMouse;
 
-   extern bool putIntoReverse;
-   extern bool reversePedals;
-
    namespace Options {
       extern bool isMainWindowVisible;
 
