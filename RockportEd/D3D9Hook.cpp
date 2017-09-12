@@ -464,6 +464,12 @@ namespace D3D9Hook {
          if (wParam == FALSE)
             return TRUE;
       }
+      // disable windows mouse
+      if (uMsg == WM_SETCURSOR && LOWORD(lParam) == HTCLIENT) {
+         SetCursor(NULL);
+         return TRUE;
+      }
+
       /* windowed resize testing stuff
       if (uMsg == WM_SIZE) {
          RECT rect;
@@ -619,6 +625,8 @@ namespace D3D9Hook {
       Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
 
       bool argWindowed = *(bool*)0x982BF0;
+      game_MousePosX = (long*)Memory::makeAbsolute(0x51CFB0);
+      game_MousePosY = (long*)Memory::makeAbsolute(0x51CFB4);
 
       DWORD d3dDeviceAddress = NULL;
       while (!d3dDeviceAddress) {
@@ -667,10 +675,8 @@ namespace D3D9Hook {
       else { // Borderless fullscreen
          SetWindowPos(windowHandle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE);
       }
-      *(bool*)0x982BF0 = false; // force disabled windowed mode (makes game think it's fullscreen)
+      *(bool*)0x982BF0 = argWindowed; // restore
 
-      game_MousePosX = (long*)Memory::makeAbsolute(0x51CFB0);
-      game_MousePosY = (long*)Memory::makeAbsolute(0x51CFB4);
       return TRUE;
    }
 }

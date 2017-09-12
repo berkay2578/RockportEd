@@ -17,21 +17,27 @@ namespace DI8Extensions {
          else {
             BYTE* keys = (BYTE*)lpvData;
 
-            if (Mods::NewHUD::gear &&
-                Mods::GameInfo::isManualTransmissionEnabled && *Mods::GameInfo::isManualTransmissionEnabled) {
+            if (Mods::NewHUD::gear
+                && Mods::GameInfo::isManualTransmissionEnabled
+                && *Mods::GameInfo::isManualTransmissionEnabled
+                ) {
                if (keys[*Mods::GameInfo::key_GearDown]) {
                   Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(0, *Mods::NewHUD::gear - 1);
-                  if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 0) {
-                     putIntoReverse = true;
-                     reversePedals  = true;
-                  }
                }
                else if (keys[*Mods::GameInfo::key_GearUp]) {
                   Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(1, *Mods::NewHUD::gear + 1);
-                  if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
-                     reversePedals  = false;
-                  }
                }
+            }
+
+            if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 0) {
+               if (!reversePedals) putIntoReverse = true;
+               reversePedals  = true;
+            }
+            else if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 1) {
+               keys[*Mods::GameInfo::key_Brake] = FALSE;
+            }
+            else if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
+               reversePedals  = false;
             }
 
             if (putIntoReverse) {
