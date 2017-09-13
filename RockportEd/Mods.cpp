@@ -3,7 +3,7 @@
 #include "Mods.h"
 #include "Memory.h"
 #include "D3D9Hook_Settings.h"
-#include "DInput8Hook_Extensions.hpp"
+#include "DInput8Hook_Extensions.h"
 
 using std::map;
 #include <vector>
@@ -11,7 +11,7 @@ using std::vector;
 
 namespace Mods {
    namespace ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink {
-      int newGear = 2;
+      int newGear = 1;
       DWORD jmpBackAddr = NULL;
 
       void __declspec(naked) gearHook() {

@@ -30,7 +30,7 @@ DECLARE_INTERFACE_(IDirectInputDeviceA, IUnknown)
 
 #include "stdafx.h"
 #include "DInput8Hook.h"
-#include "DInput8Hook_Extensions.hpp"
+#include "DInput8Hook_Extensions.h"
 #include "Memory.h"
 #include "D3D9Hook_Settings.h"
 #include "Mods.h"

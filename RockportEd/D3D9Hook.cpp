@@ -3,6 +3,7 @@
 #include "VTableHook.hpp"
 #include "Settings.h"
 #include "D3D9Hook_Settings.h"
+#include "DInput8Hook_Extensions.h"
 #include "Memory.h"
 #include "Mods.h"
 
@@ -508,6 +509,24 @@ namespace D3D9Hook {
                   default:
                      break;
                }
+
+               if (Mods::NewHUD::gear
+                   && Mods::GameInfo::isManualTransmissionEnabled
+                   && *Mods::GameInfo::isManualTransmissionEnabled
+                   ) {
+                  if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearDown, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
+                     Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(0, *Mods::NewHUD::gear - 1);
+                     if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 0) {
+                        DI8Extensions::reversePedals  = true;
+                     }
+                  }
+                  else if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearUp, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
+                     Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(1, *Mods::NewHUD::gear + 1);
+                     if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
+                        DI8Extensions::reversePedals  = false;
+                     }
+                  }
+               }
             }
          }
 
@@ -544,7 +563,6 @@ namespace D3D9Hook {
             }
             else {
                D3D9HookSettings::blockKeyboard = false;
-
             }
          }
       }
