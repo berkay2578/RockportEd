@@ -1,39 +1,7 @@
-// https://github.com/glfw/glfw/blob/master/deps/mingw/dinput.h
-// https://github.com/8BitPimp/fo1_rev/blob/master/dinput.cpp
-// These are __thiscalls and I'm too lazy to implement that, just showing them on stack is easier.
-/*
-DECLARE_INTERFACE_(IDirectInputDeviceA, IUnknown)
-{
-   //IUnknown methods, index 0
-   STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID * ppvObj) PURE;
-   STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-   STDMETHOD_(ULONG, Release)(THIS) PURE;
-
-   //IDirectInputDeviceA methods, index 3
-   STDMETHOD(GetCapabilities)(THIS_ LPDIDEVCAPS) PURE;
-   STDMETHOD(EnumObjects)(THIS_ LPDIENUMDEVICEOBJECTSCALLBACKA, LPVOID, DWORD) PURE;
-   STDMETHOD(GetProperty)(THIS_ REFGUID, LPDIPROPHEADER) PURE;
-   STDMETHOD(SetProperty)(THIS_ REFGUID, LPCDIPROPHEADER) PURE;
-   STDMETHOD(Acquire)(THIS) PURE;
-   STDMETHOD(Unacquire)(THIS) PURE;
-   STDMETHOD(GetDeviceState)(THIS_ DWORD, LPVOID) PURE;
-   STDMETHOD(GetDeviceData)(THIS_ DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD) PURE;
-   STDMETHOD(SetDataFormat)(THIS_ LPCDIDATAFORMAT) PURE;
-   STDMETHOD(SetEventNotification)(THIS_ HANDLE) PURE;
-   STDMETHOD(SetCooperativeLevel)(THIS_ HWND, DWORD) PURE;
-   STDMETHOD(GetObjectInfo)(THIS_ LPDIDEVICEOBJECTINSTANCEA, DWORD, DWORD) PURE;
-   STDMETHOD(GetDeviceInfo)(THIS_ LPDIDEVICEINSTANCEA) PURE;
-   STDMETHOD(RunControlPanel)(THIS_ HWND, DWORD) PURE;
-   STDMETHOD(Initialize)(THIS_ HINSTANCE, DWORD, REFGUID) PURE;
-};
-*/
-
 #include "stdafx.h"
 #include "DInput8Hook.h"
 #include "DInput8Hook_Extensions.h"
 #include "Memory.h"
-#include "D3D9Hook_Settings.h"
-#include "Mods.h"
 #include <dinput.h>
 
 typedef LPDIRECTINPUTDEVICEA* LPPDIRECTINPUTDEVICEA;

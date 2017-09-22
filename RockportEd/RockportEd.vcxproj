@@ -169,12 +169,10 @@
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="MirrorHookDefinitions.h" />
     <ClInclude Include="Mods.h" />
-    <ClInclude Include="Settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="D3D9Types.h" />
-    <ClInclude Include="VTableHook.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3D9Hook.cpp" />
@@ -201,7 +199,6 @@
     </ClCompile>
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Mods.cpp" />
-    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

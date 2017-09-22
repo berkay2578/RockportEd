@@ -8,13 +8,7 @@
       <Filter>D3D9Hook</Filter>
     </ClInclude>
     <ClInclude Include="Memory.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="VTableHook.hpp">
-      <Filter>D3D9Hook</Filter>
+      <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="Mods.h">
       <Filter>D3D9Hook\Toggle</Filter>
@@ -43,14 +37,14 @@
     <ClInclude Include="DInput8Hook.h">
       <Filter>D3D9Hook\DInput8Hook</Filter>
     </ClInclude>
-    <ClInclude Include="D3D9Types.h">
-      <Filter>D3D9Hook</Filter>
-    </ClInclude>
     <ClInclude Include="imguiEx.h">
       <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
     <ClInclude Include="DInput8Hook_Extensions.h">
       <Filter>D3D9Hook\DInput8Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="MirrorHookDefinitions.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -65,10 +59,7 @@
       <Filter>D3D9Hook\Toggle</Filter>
     </ClCompile>
     <ClCompile Include="Memory.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="Settings.cpp">
-      <Filter>Classes</Filter>
+      <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>default</Filter>
@@ -102,9 +93,6 @@
     <Filter Include="D3D9Hook\Toggle">
       <UniqueIdentifier>{81ed320d-28d3-4fca-9d5c-974e1400119f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes">
-      <UniqueIdentifier>{556c61bc-759d-4ce9-b726-be679b8815d1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="default">
       <UniqueIdentifier>{dea0fb78-a8ea-4f81-8f01-cbf7bbe8ced1}</UniqueIdentifier>
     </Filter>
@@ -113,6 +101,9 @@
     </Filter>
     <Filter Include="D3D9Hook\DInput8Hook">
       <UniqueIdentifier>{57411f28-00b1-4030-bb66-13e27a6c1e3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{556c61bc-759d-4ce9-b726-be679b8815d1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

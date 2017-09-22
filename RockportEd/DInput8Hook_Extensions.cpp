@@ -1,7 +1,6 @@
 #pragma once
 #include "stdafx.h"
 #include "DInput8Hook_Extensions.h"
-#include "Memory.h"
 #include "D3D9Hook_Settings.h"
 #include "Mods.h"
 #include <dinput.h>

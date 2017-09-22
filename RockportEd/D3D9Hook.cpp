@@ -1,14 +1,12 @@
 #include "stdafx.h"
 #include "D3D9Hook.h"
-#include "VTableHook.hpp"
-#include "Settings.h"
 #include "D3D9Hook_Settings.h"
 #include "DInput8Hook_Extensions.h"
 #include "Memory.h"
 #include "Mods.h"
 
 #include <d3d9.h>
-#include "D3D9Types.h"
+#include "MirrorHookDefinitions.h"
 
 #define VK_W 0x57
 #define VK_A 0x41
@@ -24,10 +22,6 @@
 extern LRESULT ImGui_ImplDX9_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #include "imgui\dx9\imgui_impl_dx9.h"
 
-#include <memory>
-using std::unique_ptr;
-using std::make_unique;
-
 //SetWindowSubClass
 #include <commctrl.h>
 
@@ -35,12 +29,6 @@ namespace D3D9Hook {
    HWND                   windowHandle  = nullptr;
    WNDPROC                origWndProc   = nullptr;
    LPDIRECT3DDEVICE9      d3dDevice     = nullptr;
-   unique_ptr<VTableHook> d3dDeviceHook = nullptr;
-
-   Reset_t           origReset           = nullptr;
-   BeginScene_t      origBeginScene      = nullptr;
-   EndScene_t        origEndScene        = nullptr;
-   BeginStateBlock_t origBeginStateBlock = nullptr;
 
    bool showUserGuide   = false;
    char* cameras[7]     ={
@@ -54,6 +42,41 @@ namespace D3D9Hook {
    };
    long* game_MousePosX;
    long* game_MousePosY;
+
+
+   /* windowed resize testing stuff
+   float newAsceptRatio = 1.3333f; //4:3 def
+   float hor3DScale = 1.0f / (newAsceptRatio / (4.0f / 3.0f));
+   */
+   float resWidth, resHeight;
+   float baseResWidth, baseResHeight;
+   int gameResolutionCave() {
+      int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
+      if (currentResIndex < 5) {
+         DWORD* newResolutionSetupAddrs;
+         newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
+         resWidth                = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A);
+         resHeight               = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
+
+         /* windowed resize testing stuff
+         Memory::openMemoryAccess(newResolutionSetupAddrs[currentResIndex] + 0x0A, 0x8);
+         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A) = (int)resWidth;
+         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10) = (int)resHeight;
+         Memory::restoreMemoryAccess();
+         */
+
+         int ratio = (int)((resWidth / resHeight) * 100);
+         if (ratio == 177) { // 16:9
+            baseResWidth  = 850.0f;
+            baseResHeight = 480.0f;
+         }
+         else if (ratio == 133) { // 4:3
+            baseResWidth  = 640.0f - 3;
+            baseResHeight = 480.0f - 5;
+         }
+      }
+      return currentResIndex;
+   }
 
    void doImGuiStyle() {
       ImGuiStyle* style = &ImGui::GetStyle();
@@ -117,7 +140,7 @@ namespace D3D9Hook {
       style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
    }
 
-   HRESULT WINAPI hkBeginScene(LPDIRECT3DDEVICE9 pDevice) {
+   void WINAPI beginScene(LPDIRECT3DDEVICE9 pDevice) {
       if (!D3D9HookSettings::isImguiInitialized) {
          ImGui_ImplDX9_Init(windowHandle, d3dDevice);
 
@@ -133,327 +156,270 @@ namespace D3D9Hook {
       }
 
       ImGui_ImplDX9_NewFrame();
-
-      return origBeginScene(pDevice);
    }
+   void WINAPI endScene(LPDIRECT3DDEVICE9 pDevice) {
+      if (D3D9HookSettings::isImguiInitialized) {
+         ImGuiIO& io = ImGui::GetIO();
 
-   /* windowed resize testing stuff
-   float newAsceptRatio = 1.3333f; //4:3 def
-   float hor3DScale = 1.0f / (newAsceptRatio / (4.0f / 3.0f));
-   */
-   float resWidth, resHeight;
-   float baseResWidth, baseResHeight;
-   int gameResolutionCave() {
-      int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
-      if (currentResIndex < 5) {
-         DWORD* newResolutionSetupAddrs;
-         newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
-         resWidth                = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A);
-         resHeight               = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
+         if (D3D9HookSettings::Options::isMainWindowVisible) {
+            io.MousePos.x      = (float)(*game_MousePosX) * ((float)resWidth / baseResWidth);
+            io.MousePos.y      = (float)(*game_MousePosY) * ((float)resHeight / baseResHeight);
+            io.MouseDrawCursor = io.WantCaptureMouse;
 
-         /* windowed resize testing stuff
-         Memory::openMemoryAccess(newResolutionSetupAddrs[currentResIndex] + 0x0A, 0x8);
-         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A) = (int)resWidth;
-         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10) = (int)resHeight;
-         Memory::restoreMemoryAccess();
-         */
-
-         int ratio = (int)((resWidth / resHeight) * 100);
-         if (ratio == 177) { // 16:9
-            baseResWidth  = 850.0f;
-            baseResHeight = 480.0f;
-         }
-         else if (ratio == 133) { // 4:3
-            baseResWidth  = 640.0f - 3;
-            baseResHeight = 480.0f - 5;
-         }
-      }
-      return currentResIndex;
-   }
-
-   HRESULT WINAPI hkEndScene(LPDIRECT3DDEVICE9 pDevice) {
-      if (pDevice->TestCooperativeLevel() == D3D_OK) {
-         if (D3D9HookSettings::isImguiInitialized) {
-            ImGuiIO& io = ImGui::GetIO();
-
-            if (D3D9HookSettings::Options::isMainWindowVisible) {
-               io.MousePos.x      = (float)(*game_MousePosX) * ((float)resWidth / baseResWidth);
-               io.MousePos.y      = (float)(*game_MousePosY) * ((float)resHeight / baseResHeight);
-               io.MouseDrawCursor = io.WantCaptureMouse;
-
-               if (showUserGuide) {
-                  ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-                  ImGui::Begin("User Guide", &showUserGuide, ImVec2(0.0f, 0.0f), 1.0f,
-                               ImGuiWindowFlags_NoSavedSettings);
-                  ImGui::BulletText("Press Insert to show/hide RockportEd.");
-                  ImGui::BulletText("Double-click on title bar to collapse windows.");
-                  ImGui::BulletText("Click and drag on lower right corner to resize windows.");
-                  ImGui::BulletText("Click and drag on any empty space to move windows.");
-                  ImGui::BulletText("Mouse Wheel to scroll.");
-                  ImGui::BulletText("TAB/SHIFT+TAB to cycle through keyboard editable fields.");
-                  ImGui::BulletText("CTRL+Click on a slider to input text.");
-                  ImGui::BulletText(
-                     "While editing text:\n"
-                     "- Hold SHIFT+Left/Right or use mouse to select text\n"
-                     "- CTRL+Left/Right to word jump\n"
-                     "- CTRL+A or double-click to select all\n"
-                     "- CTRL+X, CTRL+C, CTRL+V clipboard\n"
-                     "- CTRL+Z, CTRL+Y to undo/redo\n"
-                     "- ESCAPE to cancel\n"
-                     "- You can apply arithmetic operators +,*,/ on numerical values.\n");
-                  ImGui::BulletText("Click on the button at the top-right of this window to close it.");
-                  ImGui::End();
-               }
-               if (D3D9HookSettings::Options::opt_CustomCamera) {
-                  ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-                  ImGui::Begin("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera, ImVec2(200.0f, 200.0f), 0.8f);
-                  ImGui::PushItemWidth(-1);
-
-                  ImGui::TextWrapped("Camera");
-                  ImGui::Combo("##CameraCombo", Mods::Camera::activeCamera, cameras, 7);
-
-                  int activeCam = *Mods::Camera::activeCamera;
-                  if (activeCam == 0 || (activeCam > 1 && activeCam < 4)) {
-                     ImGui::TextWrapped("X");
-                     ImGui::SliderFloat("##CameraX", Mods::Camera::data[activeCam]["X"], -50.0f, 50.0f);
-                     ImGui::TextWrapped("Z");
-                     ImGui::SliderFloat("##CameraZ", Mods::Camera::data[activeCam]["Z"], -50.0f, 50.0f);
-                     ImGui::TextWrapped("FOV");
-                     ImGui::SliderFloat("##CameraFov", Mods::Camera::data[activeCam]["Fov"], 25.0f, 120.0f);
-                     ImGui::TextWrapped("Horizontal Angle");
-                     ImGui::SliderFloat("##CameraHorAngle", Mods::Camera::data[activeCam]["HorAngle"], -45.0f, 45.0f, "%.3f deg");
-                     ImGui::TextWrapped("Vertical Angle");
-                     ImGui::SliderFloat("##CameraVerAngle", Mods::Camera::data[activeCam]["VerAngle"], -25.0f, 45.0f, "%.3f deg");
-                  }
-
-                  ImGui::PopItemWidth();
-                  ImGui::End();
-               }
-               if (D3D9HookSettings::Options::opt_ReplayMenu) {
-                  ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-                  ImGui::Begin("Replay System", &D3D9HookSettings::Options::opt_ReplayMenu, ImVec2(160.0f, 180.0f), 0.8f);
-
-                  if (ImGui::Checkbox("Record", &Mods::ReplaySystem::Record::isRecording)) {
-                     if (Mods::ReplaySystem::Record::isRecording)
-                        Mods::ReplaySystem::Record::startRecording();
-                  }
-                  ImGui::Text("Frame Count: %u", Mods::ReplaySystem::Record::frameCount);
-
-                  ImGui::Separator();
-
-                  if (ImGui::Checkbox("Replay", &Mods::ReplaySystem::Replay::isShowingReplay)) {
-                     if (Mods::ReplaySystem::Replay::isShowingReplay)
-                        Mods::ReplaySystem::Replay::startReplay();
-                  }
-                  if (Mods::ReplaySystem::Replay::isShowingReplay) {
-                     if (ImGui::Checkbox("Pause", &Mods::ReplaySystem::Replay::isReplayPaused)) {
-                        Mods::ReplaySystem::Replay::changeReplayState();
-                     }
-                     ImGui::SliderUInt("Current Frame", &Mods::ReplaySystem::Replay::frameNr, 0, Mods::ReplaySystem::Record::frameCount - 1);
-                  }
-                  ImGui::End();
-               }
-
-               ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiCond_Once);
-               ImGui::Begin("RockportEd", (bool*)0, ImVec2(200.0f, 140.0f), 0.9f);
-
-               ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
-               ImGui::Checkbox("Replay Menu", &D3D9HookSettings::Options::opt_ReplayMenu);
-
+            if (showUserGuide) {
+               ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+               ImGui::Begin("User Guide", &showUserGuide, ImVec2(0.0f, 0.0f), 1.0f,
+                            ImGuiWindowFlags_NoSavedSettings);
+               ImGui::BulletText("Press Insert to show/hide RockportEd.");
+               ImGui::BulletText("Double-click on title bar to collapse windows.");
+               ImGui::BulletText("Click and drag on lower right corner to resize windows.");
+               ImGui::BulletText("Click and drag on any empty space to move windows.");
+               ImGui::BulletText("Mouse Wheel to scroll.");
+               ImGui::BulletText("TAB/SHIFT+TAB to cycle through keyboard editable fields.");
+               ImGui::BulletText("CTRL+Click on a slider to input text.");
+               ImGui::BulletText(
+                  "While editing text:\n"
+                  "- Hold SHIFT+Left/Right or use mouse to select text\n"
+                  "- CTRL+Left/Right to word jump\n"
+                  "- CTRL+A or double-click to select all\n"
+                  "- CTRL+X, CTRL+C, CTRL+V clipboard\n"
+                  "- CTRL+Z, CTRL+Y to undo/redo\n"
+                  "- ESCAPE to cancel\n"
+                  "- You can apply arithmetic operators +,*,/ on numerical values.\n");
+               ImGui::BulletText("Click on the button at the top-right of this window to close it.");
                ImGui::End();
             }
-            else {
-               io.MouseDrawCursor = false;
+            if (D3D9HookSettings::Options::opt_CustomCamera) {
+               ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+               ImGui::Begin("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera, ImVec2(200.0f, 200.0f), 0.8f);
+               ImGui::PushItemWidth(-1);
+
+               ImGui::TextWrapped("Camera");
+               ImGui::Combo("##CameraCombo", Mods::Camera::activeCamera, cameras, 7);
+
+               int activeCam = *Mods::Camera::activeCamera;
+               if (activeCam == 0 || (activeCam > 1 && activeCam < 4)) {
+                  ImGui::TextWrapped("X");
+                  ImGui::SliderFloat("##CameraX", Mods::Camera::data[activeCam]["X"], -50.0f, 50.0f);
+                  ImGui::TextWrapped("Z");
+                  ImGui::SliderFloat("##CameraZ", Mods::Camera::data[activeCam]["Z"], -50.0f, 50.0f);
+                  ImGui::TextWrapped("FOV");
+                  ImGui::SliderFloat("##CameraFov", Mods::Camera::data[activeCam]["Fov"], 25.0f, 120.0f);
+                  ImGui::TextWrapped("Horizontal Angle");
+                  ImGui::SliderFloat("##CameraHorAngle", Mods::Camera::data[activeCam]["HorAngle"], -45.0f, 45.0f, "%.3f deg");
+                  ImGui::TextWrapped("Vertical Angle");
+                  ImGui::SliderFloat("##CameraVerAngle", Mods::Camera::data[activeCam]["VerAngle"], -25.0f, 45.0f, "%.3f deg");
+               }
+
+               ImGui::PopItemWidth();
+               ImGui::End();
+            }
+            if (D3D9HookSettings::Options::opt_ReplayMenu) {
+               ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+               ImGui::Begin("Replay System", &D3D9HookSettings::Options::opt_ReplayMenu, ImVec2(160.0f, 180.0f), 0.8f);
+
+               if (ImGui::Checkbox("Record", &Mods::ReplaySystem::Record::isRecording)) {
+                  if (Mods::ReplaySystem::Record::isRecording)
+                     Mods::ReplaySystem::Record::startRecording();
+               }
+               ImGui::Text("Frame Count: %u", Mods::ReplaySystem::Record::frameCount);
+
+               ImGui::Separator();
+
+               if (ImGui::Checkbox("Replay", &Mods::ReplaySystem::Replay::isShowingReplay)) {
+                  if (Mods::ReplaySystem::Replay::isShowingReplay)
+                     Mods::ReplaySystem::Replay::startReplay();
+               }
+               if (Mods::ReplaySystem::Replay::isShowingReplay) {
+                  if (ImGui::Checkbox("Pause", &Mods::ReplaySystem::Replay::isReplayPaused)) {
+                     Mods::ReplaySystem::Replay::changeReplayState();
+                  }
+                  ImGui::SliderUInt("Current Frame", &Mods::ReplaySystem::Replay::frameNr, 0, Mods::ReplaySystem::Record::frameCount - 1);
+               }
+               ImGui::End();
             }
 
-            if (Mods::NewHUD::confirmSuitableness(io.DeltaTime)) {
-               ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-               ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+            ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiCond_Once);
+            ImGui::Begin("RockportEd", (bool*)0, ImVec2(200.0f, 140.0f), 0.9f);
 
-               static ImVec2 textSize;
-               static ImVec2 cursorPos;
-               const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000.0f) / 9000.0f;
-               const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
-               const float throttlePercentage      = *Mods::NewHUD::throttlePercentage / 100.0f;
-               const float nos = *Mods::NewHUD::nos;
+            ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
+            ImGui::Checkbox("Replay Menu", &D3D9HookSettings::Options::opt_ReplayMenu);
 
-               // RPM
-               {
-                  static char rpm[5];
-                  sprintf_s(rpm, "%.0f", Mods::NewHUD::getRPM());
-
-                  const ImVec4 bgColor = ImVec4(
-                     0.80f - (0.10f * rpmPercentage),
-                     0.56f - (0.15f * rpmPercentage),
-                     0.25f - (0.20f * rpmPercentage),
-                     0.7f);
-                  ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
-                  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-                  ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 70.0f), ImGuiCond_Once);
-                  ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.0f,
-                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
-                               | ImGuiWindowFlags_ShowBorders);
-
-                  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
-                  ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
-
-                  ImGui::ProgressBar(nos, ImVec2(150.0f, 60.0f), "");
-
-                  ImGui::PopStyleColor();
-                  ImGui::PopStyleColor();
-
-                  ImGui::PushFont(io.Fonts->Fonts[1]);
-                  textSize  = ImGui::CalcTextSize("8888");
-                  cursorPos = (ImGui::GetWindowSize() - textSize) / 2 >> 8;
-
-                  ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.3f), "%04.0f", 8888.0f);
-
-                  ImGui::SameLine();
-
-                  ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), rpm);
-
-                  ImGui::PopFont();
-                  ImGui::End();
-                  ImGui::PopStyleColor();
-                  ImGui::PopStyleVar();
-               }
-
-
-               // Speed
-               {
-                  static char speed[4];
-
-                  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-                  ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 150.0f), ImGuiCond_Once);
-                  ImGui::Begin("##Speed", (bool*)0, ImVec2(150.0f, 90.0f), 0.0f,
-                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
-
-                  ImGui::PushFont(io.Fonts->Fonts[2]);
-                  sprintf_s(speed, "%03.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
-                  textSize = ImGui::CalcTextSize(speed);
-                  cursorPos = ImVec2(
-                     ImGui::GetWindowWidth() - textSize.x - 10.0f,
-                     (ImGui::GetWindowHeight() - textSize.y) / 2.0f + 10.0f
-                  );
-
-                  ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(0.3f, 0.3f, 0.3f, 0.5f), speed);
-
-                  ImGui::SameLine();
-                  sprintf_s(speed, "%.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
-                  textSize = ImGui::CalcTextSize(speed);
-                  cursorPos = ImVec2(
-                     ImGui::GetWindowWidth() - textSize.x + 1.0f - 10.0f,
-                     (ImGui::GetWindowHeight() - textSize.y) / 2.0f - 2.0f + 10.0f
-                  );
-
-                  ImGui::SetCursorPos(cursorPos);
-                  ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), speed);
-
-                  ImGui::PopFont();
-                  ImGui::End();
-                  ImGui::PopStyleVar();
-               }
-
-               // Gear
-               {
-                  static char gearText[5];
-                  const int gear = *Mods::NewHUD::gear;
-                  switch (gear) {
-                     case 0:
-                        strcpy_s(gearText, "R");
-                        break;
-                     case 1:
-                        strcpy_s(gearText, "N");
-                        break;
-                     default:
-                        _itoa_s(*Mods::NewHUD::gear - 1, gearText, 10);
-                        break;
-                  }
-                  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-                  ImGui::SetNextWindowPos(ImVec2(resWidth - 175.0f, resHeight - 55.0f), ImGuiCond_Once);
-                  ImGui::Begin("##Gear", (bool*)0, ImVec2(30.0f, 30.0f), 0.0f,
-                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
-                               | ImGuiWindowFlags_ShowBorders);
-
-                  static float secondsSinceLastFlash = 0.0f;
-
-                  const ImVec4 frameBg = ImVec4(0.80f - (0.10f * rpmPercentage),
-                                                0.56f - (0.15f * rpmPercentage),
-                                                0.25f - (0.20f * rpmPercentage),
-                                                1.0f);
-                  ImVec4 bgColor = gear == 0 ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f) : ImVec4(1.0f, 0.76f, 0.45f, 1.0f);
-                  float textColor = gear == 0 ? 1.0f : 0.0f;
-
-                  if (Mods::NewHUD::isOverRevving()) {
-                     secondsSinceLastFlash += io.DeltaTime;
-                     if (secondsSinceLastFlash > (0.2f * throttlePercentage)) {
-                        secondsSinceLastFlash = 0.0f;
-                     }
-                     else if (secondsSinceLastFlash < (0.1f *  throttlePercentage)) {
-                        bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-                        textColor = 1.0f;
-                     }
-                  }
-
-                  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
-                  ImGui::PushStyleColor(ImGuiCol_FrameBg, frameBg);
-
-                  ImGui::ProgressBar(rpmPercentage, ImVec2(30.0f, 30.0f), "");
-
-                  ImGui::PopStyleColor();
-                  ImGui::PopStyleColor();
-
-                  ImGui::SetCursorPos((ImGui::GetWindowSize() - ImGui::CalcTextSize(gearText)) / 2);
-                  ImGui::TextColored(ImVec4(textColor, textColor, textColor, 1.0f), gearText);
-
-                  ImGui::End();
-                  ImGui::PopStyleVar();
-               }
-
-               ImGui::PopStyleVar();
-               ImGui::PopStyleVar();
-            }
-            ImGui::Render();
+            ImGui::End();
          }
+         else {
+            io.MouseDrawCursor = false;
+         }
+
+         if (Mods::NewHUD::confirmSuitableness(io.DeltaTime)) {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+
+            static ImVec2 textSize;
+            static ImVec2 cursorPos;
+            const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000.0f) / 9000.0f;
+            const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
+            const float throttlePercentage      = *Mods::NewHUD::throttlePercentage / 100.0f;
+            const float nos = *Mods::NewHUD::nos;
+
+            // RPM
+            {
+               static char rpm[5];
+               sprintf_s(rpm, "%.0f", Mods::NewHUD::getRPM());
+
+               const ImVec4 bgColor = ImVec4(
+                  0.80f - (0.10f * rpmPercentage),
+                  0.56f - (0.15f * rpmPercentage),
+                  0.25f - (0.20f * rpmPercentage),
+                  0.7f);
+               ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
+               ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+               ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 70.0f), ImGuiCond_Once);
+               ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.0f,
+                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
+                            | ImGuiWindowFlags_ShowBorders);
+
+               ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
+               ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+
+               ImGui::ProgressBar(nos, ImVec2(150.0f, 60.0f), "");
+
+               ImGui::PopStyleColor();
+               ImGui::PopStyleColor();
+
+               ImGui::PushFont(io.Fonts->Fonts[1]);
+               textSize  = ImGui::CalcTextSize("8888");
+               cursorPos = (ImGui::GetWindowSize() - textSize) / 2 >> 8;
+
+               ImGui::SetCursorPos(cursorPos);
+               ImGui::TextColored(ImVec4(0.0f, 0.0f, 0.0f, 0.3f), "%04.0f", 8888.0f);
+
+               ImGui::SameLine();
+
+               ImGui::SetCursorPos(cursorPos);
+               ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), rpm);
+
+               ImGui::PopFont();
+               ImGui::End();
+               ImGui::PopStyleColor();
+               ImGui::PopStyleVar();
+            }
+
+
+            // Speed
+            {
+               static char speed[4];
+
+               ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+               ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 150.0f), ImGuiCond_Once);
+               ImGui::Begin("##Speed", (bool*)0, ImVec2(150.0f, 90.0f), 0.0f,
+                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
+
+               ImGui::PushFont(io.Fonts->Fonts[2]);
+               sprintf_s(speed, "%03.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
+               textSize = ImGui::CalcTextSize(speed);
+               cursorPos = ImVec2(
+                  ImGui::GetWindowWidth() - textSize.x - 10.0f,
+                  (ImGui::GetWindowHeight() - textSize.y) / 2.0f + 10.0f
+               );
+
+               ImGui::SetCursorPos(cursorPos);
+               ImGui::TextColored(ImVec4(0.3f, 0.3f, 0.3f, 0.5f), speed);
+
+               ImGui::SameLine();
+               sprintf_s(speed, "%.0f", fabsf(*Mods::NewHUD::speed * 3.6f));
+               textSize = ImGui::CalcTextSize(speed);
+               cursorPos = ImVec2(
+                  ImGui::GetWindowWidth() - textSize.x + 1.0f - 10.0f,
+                  (ImGui::GetWindowHeight() - textSize.y) / 2.0f - 2.0f + 10.0f
+               );
+
+               ImGui::SetCursorPos(cursorPos);
+               ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), speed);
+
+               ImGui::PopFont();
+               ImGui::End();
+               ImGui::PopStyleVar();
+            }
+
+            // Gear
+            {
+               static char gearText[5];
+               const int gear = *Mods::NewHUD::gear;
+               switch (gear) {
+                  case 0:
+                     strcpy_s(gearText, "R");
+                     break;
+                  case 1:
+                     strcpy_s(gearText, "N");
+                     break;
+                  default:
+                     _itoa_s(*Mods::NewHUD::gear - 1, gearText, 10);
+                     break;
+               }
+               ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+               ImGui::SetNextWindowPos(ImVec2(resWidth - 175.0f, resHeight - 55.0f), ImGuiCond_Once);
+               ImGui::Begin("##Gear", (bool*)0, ImVec2(30.0f, 30.0f), 0.0f,
+                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
+                            | ImGuiWindowFlags_ShowBorders);
+
+               static float secondsSinceLastFlash = 0.0f;
+
+               const ImVec4 frameBg = ImVec4(0.80f - (0.10f * rpmPercentage),
+                                             0.56f - (0.15f * rpmPercentage),
+                                             0.25f - (0.20f * rpmPercentage),
+                                             1.0f);
+               ImVec4 bgColor = gear == 0 ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f) : ImVec4(1.0f, 0.76f, 0.45f, 1.0f);
+               float textColor = gear == 0 ? 1.0f : 0.0f;
+
+               if (Mods::NewHUD::isOverRevving()) {
+                  secondsSinceLastFlash += io.DeltaTime;
+                  if (secondsSinceLastFlash > (0.2f / throttlePercentage)) {
+                     secondsSinceLastFlash = 0.0f;
+                  }
+                  else if (secondsSinceLastFlash < (0.1f / throttlePercentage)) {
+                     bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+                     textColor = 1.0f;
+                  }
+               }
+
+               ImGui::PushStyleColor(ImGuiCol_PlotHistogram, bgColor);
+               ImGui::PushStyleColor(ImGuiCol_FrameBg, frameBg);
+
+               ImGui::ProgressBar(rpmPercentage, ImVec2(30.0f, 30.0f), "");
+
+               ImGui::PopStyleColor();
+               ImGui::PopStyleColor();
+
+               ImGui::SetCursorPos((ImGui::GetWindowSize() - ImGui::CalcTextSize(gearText)) / 2);
+               ImGui::TextColored(ImVec4(textColor, textColor, textColor, 1.0f), gearText);
+
+               ImGui::End();
+               ImGui::PopStyleVar();
+            }
+
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+         }
+         ImGui::Render();
       }
-
-      return origEndScene(pDevice);
    }
-   HRESULT WINAPI hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
-      if (!D3D9HookSettings::isImguiInitialized)
-         return origReset(pDevice, pPresentationParameters);
-
-      ImGui_ImplDX9_InvalidateDeviceObjects();
-      auto retOrigReset = origReset(pDevice, pPresentationParameters);
+   void WINAPI beforeReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
+      if (D3D9HookSettings::isImguiInitialized)
+         ImGui_ImplDX9_InvalidateDeviceObjects();
+   }
+   void WINAPI afterReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
       pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
       if (!pDevice || pDevice->TestCooperativeLevel() != D3D_OK) {
          ImGui_ImplDX9_Shutdown();
          D3D9HookSettings::isImguiInitialized = false;
-
-         return retOrigReset;
       }
 
       ImGui_ImplDX9_CreateDeviceObjects();
-
-      return retOrigReset;
-   }
-   HRESULT WINAPI hkBeginStateBlock(LPDIRECT3DDEVICE9 pDevice) {
-      d3dDeviceHook->UnhookAll();
-
-      auto retBeginStateBlock = origBeginStateBlock(pDevice);
-
-      origReset           = d3dDeviceHook->Hook(16, hkReset);
-      origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
-      origEndScene        = d3dDeviceHook->Hook(42, hkEndScene);
-      origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
-      return retBeginStateBlock;
    }
 
    LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -570,7 +536,6 @@ namespace D3D9Hook {
       return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
    }
 
-
    /* 1:1 WS Fix
 
    // fix fov on resize hook
@@ -646,28 +611,37 @@ namespace D3D9Hook {
       game_MousePosX = (long*)Memory::makeAbsolute(0x51CFB0);
       game_MousePosY = (long*)Memory::makeAbsolute(0x51CFB4);
 
-      DWORD d3dDeviceAddress = NULL;
-      while (!d3dDeviceAddress) {
-         *(bool*)0x982BF0 = true; // force windowed mode
-         d3dDeviceAddress = *(DWORD*)Memory::makeAbsolute(0x582BDC);
+      HMODULE hMirrorHook = nullptr;
+      while (!hMirrorHook) {
+         hMirrorHook = GetModuleHandle(L"MirrorHook.asi");
          Sleep(100);
       }
-      d3dDevice = (LPDIRECT3DDEVICE9)d3dDeviceAddress;
+
+      auto fIsReady = (MirrorHook::fIsReady)GetProcAddress(hMirrorHook, "IsReady");
+
+      while (!fIsReady()) {
+         *(bool*)0x982BF0 = true; // force windowed mode
+         Sleep(100);
+      }
+
+      auto fAddD3D9Extender = (MirrorHook::fAddD3D9Extender)GetProcAddress(hMirrorHook, "D3D9_Extenders::AddD3D9Extender");
+      auto fGetD3D9Device   = (MirrorHook::fGetD3D9Device)  GetProcAddress(hMirrorHook, "D3D9_Extenders::GetD3D9Device");
+      auto fGetWindowHandle = (MirrorHook::fGetWindowHandle)GetProcAddress(hMirrorHook, "D3D9_Extenders::GetWindowHandle");
+
+      while (!d3dDevice) {
+         d3dDevice = fGetD3D9Device();
+         Sleep(100);
+      }
       d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+      fAddD3D9Extender(0, &beforeReset);
+      fAddD3D9Extender(1, &afterReset);
+      fAddD3D9Extender(2, &beginScene);
+      fAddD3D9Extender(3, &endScene);
 
-      D3DDEVICE_CREATION_PARAMETERS cParams;
-      d3dDevice->GetCreationParameters(&cParams);
-      windowHandle = cParams.hFocusWindow;
-
+      windowHandle = fGetWindowHandle();
       origWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG_PTR)&hkWndProc);
 
-      d3dDeviceHook       = make_unique<VTableHook>((PDWORD*)d3dDevice);
-      origReset           = d3dDeviceHook->Hook(16, hkReset);
-      origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
-      origEndScene        = d3dDeviceHook->Hook(42, hkEndScene);
-      origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
-
-      showUserGuide = Settings::isFirstTime();
+      showUserGuide = false; //Settings::isFirstTime();
 
       if (argWindowed) { // Proper windowed
          RECT o_cRect, n_cRect, n_wRect;

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Settings.h"
 #include "Memory.h"
 #include "Mods.h"
 #include "D3D9Hook.h"
@@ -9,7 +8,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID) {
    if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
       DisableThreadLibraryCalls(hModule);
 
-      Settings::Init();
+      //Settings::Init(); just rewrite
       Memory::Init();
 
       DInput8Hook::Init(); // generic hook
