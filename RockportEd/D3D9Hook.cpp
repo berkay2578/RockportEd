@@ -6,7 +6,7 @@
 #include "Mods.h"
 
 #include <d3d9.h>
-#include "MirrorHookDefinitions.h"
+#include MIRRORHOOK_DEFINITIONS_PATH
 
 #define VK_W 0x57
 #define VK_A 0x41
@@ -617,28 +617,22 @@ namespace D3D9Hook {
          Sleep(100);
       }
 
-      auto fIsReady = (MirrorHook::fIsReady)GetProcAddress(hMirrorHook, "IsReady");
-
-      while (!fIsReady()) {
+      while (!MirrorHook::IsReady()) {
          *(bool*)0x982BF0 = true; // force windowed mode
          Sleep(100);
       }
 
-      auto fAddD3D9Extender = (MirrorHook::fAddD3D9Extender)GetProcAddress(hMirrorHook, "D3D9_Extenders::AddD3D9Extender");
-      auto fGetD3D9Device   = (MirrorHook::fGetD3D9Device)  GetProcAddress(hMirrorHook, "D3D9_Extenders::GetD3D9Device");
-      auto fGetWindowHandle = (MirrorHook::fGetWindowHandle)GetProcAddress(hMirrorHook, "D3D9_Extenders::GetWindowHandle");
-
       while (!d3dDevice) {
-         d3dDevice = fGetD3D9Device();
+         d3dDevice = MirrorHook::D3D9::GetD3D9Device();
          Sleep(100);
       }
       d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-      fAddD3D9Extender(0, &beforeReset);
-      fAddD3D9Extender(1, &afterReset);
-      fAddD3D9Extender(2, &beginScene);
-      fAddD3D9Extender(3, &endScene);
+      MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::BeforeReset, &beforeReset);
+      MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::AfterReset, &afterReset);
+      MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::BeginScene, &beginScene);
+      MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::EndScene, &endScene);
 
-      windowHandle = fGetWindowHandle();
+      windowHandle = MirrorHook::D3D9::GetWindowHandle();
       origWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG_PTR)&hkWndProc);
 
       showUserGuide = false; //Settings::isFirstTime();

@@ -43,9 +43,6 @@
     <ClInclude Include="DInput8Hook_Extensions.h">
       <Filter>D3D9Hook\DInput8Hook</Filter>
     </ClInclude>
-    <ClInclude Include="MirrorHookDefinitions.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
