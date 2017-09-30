@@ -1,91 +1,76 @@
 #include "stdafx.h"
 #include "DInput8Hook.h"
-#include "DInput8Hook_Extensions.h"
+#include "D3D9Hook_Settings.h"
 #include "Memory.h"
-#include <dinput.h>
+#include "Mods.h"
 
-typedef LPDIRECTINPUTDEVICEA* LPPDIRECTINPUTDEVICEA;
-typedef HRESULT(WINAPI* GetDeviceState_t)(HINSTANCE, DWORD, LPVOID);
-typedef HRESULT(WINAPI* CreateDevice_t)(HINSTANCE, REFGUID, LPPDIRECTINPUTDEVICEA, LPUNKNOWN);
-typedef HRESULT(WINAPI* DirectInput8Create_t)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+#include <dinput.h>
+#include MIRRORHOOK_DEFINITIONS_PATH
 
 namespace DInput8Hook {
-   GetDeviceState_t     origGetDeviceState_Keyboard = nullptr;
-   GetDeviceState_t     origGetDeviceState_Mouse    = nullptr;
-   CreateDevice_t       origCreateDevice            = nullptr;
-   DirectInput8Create_t origDirectInput8Create      = nullptr;
+   bool reversePedals  = false;
 
+   void WINAPI getDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
+      if (cbData == 256) {
+         if (D3D9HookSettings::blockKeyboard || *Mods::GameInfo::isGameWindowInactive) {
+            ZeroMemory(lpvData, 256);
+         }
+         else {
+            BYTE* keys = (BYTE*)lpvData;
 
-   HRESULT WINAPI hkGetDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
-      HRESULT retOrigGetDeviceState = origGetDeviceState_Keyboard(hInstance, cbData, lpvData);
+            if (Mods::NewHUD::gear
+                && Mods::GameInfo::isManualTransmissionEnabled
+                && *Mods::GameInfo::isManualTransmissionEnabled
+                ) {
+               if (*Mods::NewHUD::gear == 1) {
+                  keys[*Mods::GameInfo::key_Brake] = FALSE;
+                  if (keys[*Mods::GameInfo::key_GearDown]) {
+                     keys[*Mods::GameInfo::key_Accelerate] = FALSE;
+                     keys[*Mods::GameInfo::key_Brake]      = TRUE;
+                  }
+               }
+               else if (*Mods::NewHUD::gear == 0 && reversePedals) {
+                  BYTE brake                            = keys[*Mods::GameInfo::key_Brake];
+                  BYTE accel                            = keys[*Mods::GameInfo::key_Accelerate];
+                  keys[*Mods::GameInfo::key_Brake]      = accel;
+                  keys[*Mods::GameInfo::key_Accelerate] = brake;
+               }
+            }
 
-      DI8Extensions::exKeyboard_GetDeviceState(cbData, lpvData);
-      return retOrigGetDeviceState;
-   }
-   HRESULT WINAPI hkGetDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
-      HRESULT retOrigGetDeviceState = origGetDeviceState_Mouse(hInstance, cbData, lpvData);
-
-      DI8Extensions::exMouse_GetDeviceState(lpvData);
-      return retOrigGetDeviceState;
-   }
-
-   HRESULT WINAPI hkCreateDevice(HINSTANCE hInstance, REFGUID refGUID, LPPDIRECTINPUTDEVICEA lppDirectInputDevice, LPUNKNOWN lpUnkOuter) {
-      HRESULT retOrigCreateDevice = origCreateDevice(hInstance, refGUID, lppDirectInputDevice, lpUnkOuter);
-      if (refGUID == GUID_SysKeyboard) {
-         DWORD* inputTable = *(PDWORD*)(*lppDirectInputDevice);
-         Memory::openMemoryAccess(inputTable[9], 4);
-
-         origGetDeviceState_Keyboard = (GetDeviceState_t)(DWORD)inputTable[9];
-         inputTable[9]               = (DWORD)hkGetDeviceState_Keyboard;
-
-         Memory::restoreMemoryAccess();
+         }
       }
-      else if (refGUID == GUID_SysMouse) {
-         DWORD* inputTable = *(PDWORD*)(*lppDirectInputDevice);
-         Memory::openMemoryAccess(inputTable[9], 4);
+   }
+   void WINAPI getDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
+      DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
+      if (D3D9HookSettings::blockMouse) {
+         ZeroMemory(mouseState->rgbButtons, 4);
+      }
+      else if (*Mods::GameInfo::isGameWindowInactive) {
+         ZeroMemory(lpvData, sizeof(DIMOUSESTATE));
+      }
+   }
 
-         origGetDeviceState_Mouse = (GetDeviceState_t)(DWORD)inputTable[9];
-         inputTable[9]            = (DWORD)hkGetDeviceState_Mouse;
 
-         Memory::restoreMemoryAccess();
+   DWORD WINAPI Init(LPVOID) {
+      HMODULE hMirrorHook = nullptr;
+      while (!hMirrorHook) {
+         hMirrorHook = GetModuleHandle(L"MirrorHook.asi");
+         Sleep(100);
       }
 
-      return retOrigCreateDevice;
-   }
+      while (!MirrorHook::DirectInput8::IsReady()) {
+         Sleep(100);
+      }
 
-   DWORD origDirectInput8CreateAddr;
-   BYTE origCreateDeviceBeginBytes[6];
-   BYTE detourCreateDeviceBeginBytes[6];
+      MirrorHook::DirectInput8::AddDirectInput8Extender(
+         MirrorHook::DirectInput8::DirectInput8Device::Keyboard,
+         MirrorHook::DirectInput8::DirectInput8Extender::GetDeviceState,
+         &getDeviceState_Keyboard);
+      MirrorHook::DirectInput8::AddDirectInput8Extender(
+         MirrorHook::DirectInput8::DirectInput8Device::Mouse,
+         MirrorHook::DirectInput8::DirectInput8Extender::GetDeviceState,
+         &getDeviceState_Mouse);
 
-   HRESULT WINAPI hkDirectInput8Create(HINSTANCE hInstance, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN lpUnkOuter) {
-      // Call original DirectInput8Create
-      Memory::openMemoryAccess(origDirectInput8CreateAddr, 6);
-      memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)origCreateDeviceBeginBytes, 6);
-
-      HRESULT retOrigDirectInput8Create = origDirectInput8Create(hInstance, dwVersion, riidltf, ppvOut, lpUnkOuter);
-
-      memcpy_s((LPVOID)origDirectInput8CreateAddr, 6, (LPVOID)detourCreateDeviceBeginBytes, 6);
-      Memory::restoreMemoryAccess();
-
-      DWORD* functionTable = (DWORD*)(**(PDWORD*)ppvOut);
-      if (!origCreateDevice)
-         origCreateDevice = (CreateDevice_t)functionTable[3];
-
-      Memory::openMemoryAccess(functionTable[3], 4);
-      functionTable[3] = (DWORD)hkCreateDevice;
-      Memory::restoreMemoryAccess();
-      return retOrigDirectInput8Create;
-   }
-
-   void Init() {
-      origDirectInput8CreateAddr = (DWORD)GetProcAddress(LoadLibrary(L"dinput8.dll"), "DirectInput8Create");
-      origDirectInput8Create     = (DirectInput8Create_t)origDirectInput8CreateAddr;
-
-      memcpy_s((LPVOID)origCreateDeviceBeginBytes, 6, (LPVOID)origDirectInput8CreateAddr, 6);
-
-      Memory::writeJMP(origDirectInput8CreateAddr, (DWORD)hkDirectInput8Create);
-      Memory::writeRet(origDirectInput8CreateAddr + 5);
-
-      memcpy_s((LPVOID)detourCreateDeviceBeginBytes, 6, (LPVOID)origDirectInput8CreateAddr, 6);
+      return TRUE;
    }
 }

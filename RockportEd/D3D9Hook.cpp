@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "D3D9Hook.h"
 #include "D3D9Hook_Settings.h"
-#include "DInput8Hook_Extensions.h"
+#include "DInput8Hook.h"
 #include "Memory.h"
 #include "Mods.h"
 
@@ -483,13 +483,13 @@ namespace D3D9Hook {
                   if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearDown, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
                      Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(0, *Mods::NewHUD::gear - 1);
                      if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear == 0) {
-                        DI8Extensions::reversePedals  = true;
+                        DInput8Hook::reversePedals  = true;
                      }
                   }
                   else if (wParam == MapVirtualKeyEx(*Mods::GameInfo::key_GearUp, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL))) {
                      Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear = max(1, *Mods::NewHUD::gear + 1);
                      if (Mods::ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink::newGear > 0) {
-                        DI8Extensions::reversePedals  = false;
+                        DInput8Hook::reversePedals  = false;
                      }
                   }
                }

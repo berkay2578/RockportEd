@@ -10,11 +10,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID) {
 
       //Settings::Init(); just rewrite
       Memory::Init();
-
-      DInput8Hook::Init(); // generic hook
-
+      
       CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&Mods::Init, 0, 0, 0);
-      CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&D3D9Hook::Init, 0, 0, 0); // nfsmw specific hook
+      CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&D3D9Hook::Init, 0, 0, 0);
+      CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&DInput8Hook::Init, 0, 0, 0);
    }
    return TRUE;
 }

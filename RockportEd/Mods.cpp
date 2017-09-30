@@ -3,7 +3,7 @@
 #include "Mods.h"
 #include "Memory.h"
 #include "D3D9Hook_Settings.h"
-#include "DInput8Hook_Extensions.h"
+#include "DInput8Hook.h"
 
 using std::map;
 #include <vector>
@@ -348,7 +348,7 @@ namespace Mods {
          if (_internal::isSuitable)
             return getAddresses(secondsSinceLastFrame);
 
-         DI8Extensions::reversePedals = false;
+         DInput8Hook::reversePedals = false;
          return false;
       }
 

@@ -1,5 +1,7 @@
 #pragma once
 
 namespace DInput8Hook {
-   void Init();
+   extern bool reversePedals;
+
+   DWORD WINAPI Init(LPVOID);
 }
