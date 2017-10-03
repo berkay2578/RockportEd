@@ -35,13 +35,15 @@ namespace Mods {
       extern int newGear;
    }
    namespace GameInfo {
-      extern BYTE* key_Accelerate;
-      extern BYTE* key_Brake;
-      extern BYTE* key_GearDown;
-      extern BYTE* key_GearUp;
+      extern BYTE*  key_Accelerate;
+      extern BYTE*  key_Brake;
+      extern BYTE*  key_GearDown;
+      extern BYTE*  key_GearUp;
 
-      extern bool* isManualTransmissionEnabled;
-      extern bool* isGameWindowInactive;
+      extern bool*  isManualTransmissionEnabled;
+      extern bool*  isGameWindowInactive;
+
+      extern float* gameplaySpeed;
    }
    namespace Camera {
       extern int* activeCamera;

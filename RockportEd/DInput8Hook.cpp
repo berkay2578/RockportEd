@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DInput8Hook.h"
-#include "D3D9Hook_Settings.h"
-#include "Memory.h"
+#include "D3D9Hook.h"
 #include "Mods.h"
 
 #include <dinput.h>
@@ -12,7 +11,7 @@ namespace DInput8Hook {
 
    void WINAPI getDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
       if (cbData == 256) {
-         if (D3D9HookSettings::blockKeyboard || *Mods::GameInfo::isGameWindowInactive) {
+         if (D3D9Hook::Settings::blockKeyboard || *Mods::GameInfo::isGameWindowInactive) {
             ZeroMemory(lpvData, 256);
          }
          else {
@@ -42,7 +41,7 @@ namespace DInput8Hook {
    }
    void WINAPI getDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
       DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
-      if (D3D9HookSettings::blockMouse) {
+      if (D3D9Hook::Settings::blockMouse) {
          ZeroMemory(mouseState->rgbButtons, 4);
       }
       else if (*Mods::GameInfo::isGameWindowInactive) {
@@ -50,11 +49,10 @@ namespace DInput8Hook {
       }
    }
 
-
    DWORD WINAPI Init(LPVOID) {
       HMODULE hMirrorHook = nullptr;
       while (!hMirrorHook) {
-         hMirrorHook = GetModuleHandle(L"MirrorHook.asi");
+         hMirrorHook = GetModuleHandle("MirrorHook.asi");
          Sleep(100);
       }
 

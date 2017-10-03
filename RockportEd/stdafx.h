@@ -11,4 +11,4 @@
 #include <string>
 using std::string;
 
-#define MIRRORHOOK_DEFINITIONS_PATH "..\..\MirrorHook\MirrorHook\Definitions.hpp"
+#define MIRRORHOOK_DEFINITIONS_PATH "..\..\MirrorHook\MirrorHook\inc\Definitions.hpp"

@@ -4,9 +4,6 @@
     <ClInclude Include="D3D9Hook.h">
       <Filter>D3D9Hook</Filter>
     </ClInclude>
-    <ClInclude Include="D3D9Hook_Settings.h">
-      <Filter>D3D9Hook</Filter>
-    </ClInclude>
     <ClInclude Include="Memory.h">
       <Filter>Helpers</Filter>
     </ClInclude>
@@ -25,28 +22,25 @@
     <ClInclude Include="imgui\imgui.h">
       <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\dx9\imgui_impl_dx9.h">
-      <Filter>D3D9Hook\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
-      <Filter>D3D9Hook\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\extra_fonts\RobotoMedium.hpp">
       <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
     <ClInclude Include="DInput8Hook.h">
       <Filter>D3D9Hook\DInput8Hook</Filter>
     </ClInclude>
-    <ClInclude Include="imguiEx.h">
+    <ClInclude Include="imgui\dx9\imgui_impl_dx9.h">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_user.h">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_ext.h">
       <Filter>D3D9Hook\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="D3D9Hook.cpp">
-      <Filter>D3D9Hook</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D9Hook_Settings.cpp">
       <Filter>D3D9Hook</Filter>
     </ClCompile>
     <ClCompile Include="Mods.cpp">
@@ -67,13 +61,13 @@
     <ClCompile Include="imgui\imgui_draw.cpp">
       <Filter>D3D9Hook\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
-      <Filter>D3D9Hook\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="DInput8Hook.cpp">
       <Filter>D3D9Hook\DInput8Hook</Filter>
     </ClCompile>
-    <ClCompile Include="imguiEx.cpp">
+    <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
+      <Filter>D3D9Hook\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_user.cpp">
       <Filter>D3D9Hook\imgui</Filter>
     </ClCompile>
   </ItemGroup>

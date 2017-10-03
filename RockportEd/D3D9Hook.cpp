@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "D3D9Hook.h"
-#include "D3D9Hook_Settings.h"
 #include "DInput8Hook.h"
 #include "Memory.h"
 #include "Mods.h"
+using std::map;
 
 #include <d3d9.h>
 #include MIRRORHOOK_DEFINITIONS_PATH
@@ -14,7 +14,7 @@
 #define VK_D 0x44
 
 #include "imgui\imgui.h"
-#include "imguiEx.h"
+#include "imgui_ext.h"
 #include "imgui\extra_fonts\RobotoMedium.hpp"
 #include "imgui\extra_fonts\Digital.hpp"
 #include "imgui\extra_fonts\CooperHewitt_Italic.hpp"
@@ -26,12 +26,39 @@ extern LRESULT ImGui_ImplDX9_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, 
 #include <commctrl.h>
 
 namespace D3D9Hook {
-   HWND                   windowHandle  = nullptr;
-   WNDPROC                origWndProc   = nullptr;
-   LPDIRECT3DDEVICE9      d3dDevice     = nullptr;
+   namespace Settings {
+      // Exposed variables
+      bool blockKeyboard  = false;
+      bool blockMouse     = false;
 
-   bool showUserGuide   = false;
-   char* cameras[7]     ={
+      // Private variables
+      map<HookOptions, bool> enabledOptions =
+      {
+         { HookOptions::CustomCamera, false },
+         { HookOptions::Replay,       false },
+         { HookOptions::NewHUD,       true },
+         { HookOptions::GameSpeed,    false }
+      };
+      map<HookOptions, bool> visibleMenus =
+      {
+         { HookOptions::CustomCamera, false },
+         { HookOptions::Replay,       false },
+         { HookOptions::NewHUD,       false },
+         { HookOptions::GameSpeed,    false }
+      };
+   }
+
+   // Hook variables
+   LPDIRECT3DDEVICE9 d3dDevice    = nullptr;
+   HWND              windowHandle = nullptr;
+   WNDPROC           origWndProc  = nullptr;
+
+   // Namespace variables
+   bool isImguiInitialized  = false;
+   bool isMainWindowVisible = true;
+   bool showUserGuide       = false;
+   char* cameras[7]         =
+   {
       "Bumper",
       "Hood",
       "Near",
@@ -40,108 +67,17 @@ namespace D3D9Hook {
       "Speedbreaker",
       "Pullback"
    };
+
+   // Game variables
    long* game_MousePosX;
    long* game_MousePosY;
-
-
-   /* windowed resize testing stuff
-   float newAsceptRatio = 1.3333f; //4:3 def
-   float hor3DScale = 1.0f / (newAsceptRatio / (4.0f / 3.0f));
-   */
-   float resWidth, resHeight;
-   float baseResWidth, baseResHeight;
-   int gameResolutionCave() {
-      int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
-      if (currentResIndex < 5) {
-         DWORD* newResolutionSetupAddrs;
-         newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
-         resWidth                = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A);
-         resHeight               = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
-
-         /* windowed resize testing stuff
-         Memory::openMemoryAccess(newResolutionSetupAddrs[currentResIndex] + 0x0A, 0x8);
-         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A) = (int)resWidth;
-         *(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10) = (int)resHeight;
-         Memory::restoreMemoryAccess();
-         */
-
-         int ratio = (int)((resWidth / resHeight) * 100);
-         if (ratio == 177) { // 16:9
-            baseResWidth  = 850.0f;
-            baseResHeight = 480.0f;
-         }
-         else if (ratio == 133) { // 4:3
-            baseResWidth  = 640.0f - 3;
-            baseResHeight = 480.0f - 5;
-         }
-      }
-      return currentResIndex;
-   }
-
-   void doImGuiStyle() {
-      ImGuiStyle* style = &ImGui::GetStyle();
-
-      style->WindowMinSize       = ImVec2(10.0f, 10.0f);
-      style->WindowPadding       = ImVec2(10.0f, 10.0f);
-      style->WindowRounding      = 5.0f;
-      style->ChildWindowRounding = 5.0f;
-      style->FramePadding        = ImVec2(5.0f, 4.0f);
-      style->FrameRounding       = 5.0f;
-      style->ItemSpacing         = ImVec2(5.0f, 5.0f);
-      style->ItemInnerSpacing    = ImVec2(10.0f, 10.0f);
-      style->IndentSpacing       = 15.0f;
-      style->ScrollbarSize       = 16.0f;
-      style->ScrollbarRounding   = 5.0f;
-      style->GrabMinSize         = 7.0f;
-      style->GrabRounding        = 2.0f;
-
-      style->Colors[ImGuiCol_Text]                 = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_TextDisabled]         = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-      style->Colors[ImGuiCol_WindowBg]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-      style->Colors[ImGuiCol_ChildWindowBg]        = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
-      style->Colors[ImGuiCol_PopupBg]              = ImVec4(0.05f, 0.05f, 0.10f, 1.00f);
-      style->Colors[ImGuiCol_Border]               = ImVec4(0.00f, 0.00f, 0.00f, 0.80f);
-      style->Colors[ImGuiCol_BorderShadow]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-      style->Colors[ImGuiCol_FrameBg]              = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
-      style->Colors[ImGuiCol_FrameBgHovered]       = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
-      style->Colors[ImGuiCol_FrameBgActive]        = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
-      style->Colors[ImGuiCol_TitleBg]              = ImVec4(1.00f, 1.00f, 1.00f, 0.80f);
-      style->Colors[ImGuiCol_TitleBgCollapsed]     = ImVec4(0.78f, 0.78f, 0.78f, 0.39f);
-      style->Colors[ImGuiCol_TitleBgActive]        = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-      style->Colors[ImGuiCol_MenuBarBg]            = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
-      style->Colors[ImGuiCol_ScrollbarBg]          = ImVec4(0.20f, 0.25f, 0.30f, 0.60f);
-      style->Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
-      style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
-      style->Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
-      style->Colors[ImGuiCol_ComboBg]              = ImVec4(0.78f, 0.78f, 0.78f, 0.98f);
-      style->Colors[ImGuiCol_CheckMark]            = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
-      style->Colors[ImGuiCol_SliderGrab]           = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
-      style->Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
-      style->Colors[ImGuiCol_Button]               = ImVec4(0.00f, 0.00f, 0.00f, 0.27f);
-      style->Colors[ImGuiCol_ButtonHovered]        = ImVec4(0.00f, 0.59f, 0.80f, 0.43f);
-      style->Colors[ImGuiCol_ButtonActive]         = ImVec4(0.00f, 0.47f, 0.71f, 0.67f);
-      style->Colors[ImGuiCol_Header]               = ImVec4(0.71f, 0.71f, 0.71f, 0.39f);
-      style->Colors[ImGuiCol_HeaderHovered]        = ImVec4(0.20f, 0.51f, 0.67f, 1.00f);
-      style->Colors[ImGuiCol_HeaderActive]         = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
-      style->Colors[ImGuiCol_Separator]            = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_SeparatorHovered]     = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
-      style->Colors[ImGuiCol_SeparatorActive]      = ImVec4(0.08f, 0.39f, 0.55f, 1.00f);
-      style->Colors[ImGuiCol_ResizeGrip]           = ImVec4(0.00f, 0.00f, 0.00f, 0.78f);
-      style->Colors[ImGuiCol_ResizeGripHovered]    = ImVec4(0.27f, 0.59f, 0.75f, 0.78f);
-      style->Colors[ImGuiCol_ResizeGripActive]     = ImVec4(0.08f, 0.39f, 0.55f, 0.78f);
-      style->Colors[ImGuiCol_CloseButton]          = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-      style->Colors[ImGuiCol_CloseButtonHovered]   = ImVec4(0.71f, 0.71f, 0.71f, 0.60f);
-      style->Colors[ImGuiCol_CloseButtonActive]    = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-      style->Colors[ImGuiCol_PlotLines]            = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-      style->Colors[ImGuiCol_PlotLinesHovered]     = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_PlotHistogram]        = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-      style->Colors[ImGuiCol_TextSelectedBg]       = ImVec4(0.27f, 0.59f, 0.75f, 1.00f);
-      style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.00f, 0.00f, 0.00f, 0.35f);
-   }
+   float game_ResWidth;
+   float game_ResHeight;
+   float baseResWidth;
+   float baseResHeight;
 
    void WINAPI beginScene(LPDIRECT3DDEVICE9 pDevice) {
-      if (!D3D9HookSettings::isImguiInitialized) {
+      if (!isImguiInitialized) {
          ImGui_ImplDX9_Init(windowHandle, d3dDevice);
 
          ImGuiIO& io = ImGui::GetIO();
@@ -151,19 +87,19 @@ namespace D3D9Hook {
          io.Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Italic_compressed_data, CooperHewitt_Italic_compressed_size, 64.0f);
          io.FontDefault = NULL;
 
-         doImGuiStyle();
-         D3D9HookSettings::isImguiInitialized = true;
+         ImGui::LoadStyle();
+         isImguiInitialized = true;
       }
 
       ImGui_ImplDX9_NewFrame();
    }
    void WINAPI endScene(LPDIRECT3DDEVICE9 pDevice) {
-      if (D3D9HookSettings::isImguiInitialized) {
+      if (isImguiInitialized) {
          ImGuiIO& io = ImGui::GetIO();
 
-         if (D3D9HookSettings::Options::isMainWindowVisible) {
-            io.MousePos.x      = (float)(*game_MousePosX) * ((float)resWidth / baseResWidth);
-            io.MousePos.y      = (float)(*game_MousePosY) * ((float)resHeight / baseResHeight);
+         if (isMainWindowVisible) {
+            io.MousePos.x      = (float)(*game_MousePosX) * ((float)game_ResWidth / baseResWidth);
+            io.MousePos.y      = (float)(*game_MousePosY) * ((float)game_ResHeight / baseResHeight);
             io.MouseDrawCursor = io.WantCaptureMouse;
 
             if (showUserGuide) {
@@ -189,9 +125,9 @@ namespace D3D9Hook {
                ImGui::BulletText("Click on the button at the top-right of this window to close it.");
                ImGui::End();
             }
-            if (D3D9HookSettings::Options::opt_CustomCamera) {
+            if (Settings::visibleMenus[HookOptions::CustomCamera]) {
                ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-               ImGui::Begin("Custom Camera", &D3D9HookSettings::Options::opt_CustomCamera, ImVec2(200.0f, 200.0f), 0.8f);
+               ImGui::Begin("Custom Camera", &Settings::visibleMenus[HookOptions::CustomCamera], ImVec2(200.0f, 200.0f), 0.8f);
                ImGui::PushItemWidth(-1);
 
                ImGui::TextWrapped("Camera");
@@ -214,9 +150,9 @@ namespace D3D9Hook {
                ImGui::PopItemWidth();
                ImGui::End();
             }
-            if (D3D9HookSettings::Options::opt_ReplayMenu) {
+            if (Settings::visibleMenus[HookOptions::Replay]) {
                ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-               ImGui::Begin("Replay System", &D3D9HookSettings::Options::opt_ReplayMenu, ImVec2(160.0f, 180.0f), 0.8f);
+               ImGui::Begin("Replay System", &Settings::visibleMenus[HookOptions::Replay], ImVec2(160.0f, 180.0f), 0.8f);
 
                if (ImGui::Checkbox("Record", &Mods::ReplaySystem::Record::isRecording)) {
                   if (Mods::ReplaySystem::Record::isRecording)
@@ -242,8 +178,11 @@ namespace D3D9Hook {
             ImGui::SetNextWindowPos(ImVec2(60, 60), ImGuiCond_Once);
             ImGui::Begin("RockportEd", (bool*)0, ImVec2(200.0f, 140.0f), 0.9f);
 
-            ImGui::Checkbox("Camera Settings", &D3D9HookSettings::Options::opt_CustomCamera);
-            ImGui::Checkbox("Replay Menu", &D3D9HookSettings::Options::opt_ReplayMenu);
+            ImGui::Checkbox("Camera Settings", &Settings::visibleMenus[HookOptions::CustomCamera]);
+            ImGui::Checkbox("Replay Menu", &Settings::visibleMenus[HookOptions::Replay]);
+            ImGui::Checkbox("New HUD", &Settings::enabledOptions[HookOptions::NewHUD]);
+            ImGui::TextWrapped("Gameplay Speed");
+            ImGui::SliderFloat("##GameplaySpeed", Mods::GameInfo::gameplaySpeed, 0.0f, 1.5f);
 
             ImGui::End();
          }
@@ -251,7 +190,7 @@ namespace D3D9Hook {
             io.MouseDrawCursor = false;
          }
 
-         if (Mods::NewHUD::confirmSuitableness(io.DeltaTime)) {
+         if (Settings::enabledOptions[HookOptions::NewHUD] && Mods::NewHUD::confirmSuitableness(io.DeltaTime)) {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
@@ -260,7 +199,7 @@ namespace D3D9Hook {
             const float rpmPercentage           = (*Mods::NewHUD::rpm - 1000.0f) / 9000.0f;
             const float rpmToTextColorIntensity = rpmPercentage * 1.0f;
             const float throttlePercentage      = *Mods::NewHUD::throttlePercentage / 100.0f;
-            const float nos = *Mods::NewHUD::nos;
+            const float nos                     = *Mods::NewHUD::nos;
 
             // RPM
             {
@@ -275,7 +214,7 @@ namespace D3D9Hook {
                ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-               ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 70.0f), ImGuiCond_Once);
+               ImGui::SetNextWindowPos(ImVec2(game_ResWidth - 160.0f, game_ResHeight - 70.0f), ImGuiCond_Once);
                ImGui::Begin("##RPM", (bool*)0, ImVec2(150.0f, 60.0f), 0.0f,
                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
                             | ImGuiWindowFlags_ShowBorders);
@@ -306,14 +245,13 @@ namespace D3D9Hook {
                ImGui::PopStyleVar();
             }
 
-
             // Speed
             {
                static char speed[4];
 
                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-               ImGui::SetNextWindowPos(ImVec2(resWidth - 160.0f, resHeight - 150.0f), ImGuiCond_Once);
+               ImGui::SetNextWindowPos(ImVec2(game_ResWidth - 160.0f, game_ResHeight - 150.0f), ImGuiCond_Once);
                ImGui::Begin("##Speed", (bool*)0, ImVec2(150.0f, 90.0f), 0.0f,
                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
 
@@ -361,7 +299,7 @@ namespace D3D9Hook {
                }
                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-               ImGui::SetNextWindowPos(ImVec2(resWidth - 175.0f, resHeight - 55.0f), ImGuiCond_Once);
+               ImGui::SetNextWindowPos(ImVec2(game_ResWidth - 175.0f, game_ResHeight - 55.0f), ImGuiCond_Once);
                ImGui::Begin("##Gear", (bool*)0, ImVec2(30.0f, 30.0f), 0.0f,
                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs
                             | ImGuiWindowFlags_ShowBorders);
@@ -408,7 +346,7 @@ namespace D3D9Hook {
       }
    }
    void WINAPI beforeReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
-      if (D3D9HookSettings::isImguiInitialized)
+      if (isImguiInitialized)
          ImGui_ImplDX9_InvalidateDeviceObjects();
    }
    void WINAPI afterReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
@@ -416,64 +354,42 @@ namespace D3D9Hook {
 
       if (!pDevice || pDevice->TestCooperativeLevel() != D3D_OK) {
          ImGui_ImplDX9_Shutdown();
-         D3D9HookSettings::isImguiInitialized = false;
+         isImguiInitialized = false;
       }
 
       ImGui_ImplDX9_CreateDeviceObjects();
    }
 
    LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-      // disable ALT menu
+      // Disable ALT menu
       if (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU)
          return TRUE;
-      // don't let window lose focus
+      // Disable game's 'stop on focus loss'
       if (uMsg == WM_ACTIVATEAPP) {
          if (wParam == FALSE)
             return TRUE;
       }
-      // disable windows mouse
+      // Disable Windows mouse
       if (uMsg == WM_SETCURSOR && LOWORD(lParam) == HTCLIENT) {
          SetCursor(NULL);
          return TRUE;
       }
 
-      /* windowed resize testing stuff
-      if (uMsg == WM_SIZE) {
-         RECT rect;
-         GetClientRect(windowHandle, &rect);
-
-         resWidth = (float)rect.right;
-         resHeight = (float)rect.bottom;
-         newAsceptRatio = resWidth / resHeight;
-         hor3DScale = 1.0f / (newAsceptRatio / (4.0f / 3.0f));
-
-         Memory::openMemoryAccess(0x8AE8F8, 4);
-         *(float*)0x8AE8F8 = 480.0f * newAsceptRatio;
-         Memory::restoreMemoryAccess();
-
-         return TRUE;
-      }
-      */
-
-      if (D3D9HookSettings::isImguiInitialized) {
+      if (isImguiInitialized) {
          ImGuiIO io = ImGui::GetIO();
 
          if (!(io.WantTextInput | io.WantCaptureKeyboard)) {
             if (uMsg == WM_KEYUP) {
                if (wParam == VK_INSERT && !(io.WantTextInput | io.WantCaptureKeyboard))
-                  D3D9HookSettings::Options::isMainWindowVisible = !D3D9HookSettings::Options::isMainWindowVisible;
+                  isMainWindowVisible = !isMainWindowVisible;
             }
             else if (uMsg == WM_KEYDOWN) {
                switch (wParam) {
-                  case VK_END:
+                  case VK_PAUSE:
                   {
-                     static bool mybool = false;
-                     mybool             = !mybool;
-                     d3dDevice->SetRenderState(D3DRS_FILLMODE, mybool ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
-                  }
-                  break;
-                  default:
+                     *Mods::GameInfo::gameplaySpeed = 0.0f;
                      break;
+                  }
                }
 
                if (Mods::NewHUD::gear
@@ -496,7 +412,7 @@ namespace D3D9Hook {
             }
          }
 
-         if (D3D9HookSettings::Options::isMainWindowVisible) {
+         if (isMainWindowVisible) {
             ImGui_ImplDX9_WndProcHandler(hWnd, uMsg, wParam, lParam);
 
             if (io.WantCaptureMouse) {
@@ -515,20 +431,20 @@ namespace D3D9Hook {
                   case WM_RBUTTONUP:
                   case WM_XBUTTONDOWN:
                   case WM_XBUTTONUP:
-                     D3D9HookSettings::blockMouse = true;
+                     Settings::blockMouse = true;
                      return TRUE;
                }
             }
             else {
-               D3D9HookSettings::blockMouse = false;
+               Settings::blockMouse = false;
             }
 
             if (/*io.WantCaptureKeyboard ||*/ io.WantTextInput) {
-               D3D9HookSettings::blockKeyboard = true;
+               Settings::blockKeyboard = true;
                return TRUE;
             }
             else {
-               D3D9HookSettings::blockKeyboard = false;
+               Settings::blockKeyboard = false;
             }
          }
       }
@@ -536,74 +452,26 @@ namespace D3D9Hook {
       return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
    }
 
-   /* 1:1 WS Fix
+   int gameResolutionCave() {
+      int currentResIndex = *(int*)Memory::makeAbsolute(0x50181C);
+      if (currentResIndex < 5) {
+         DWORD* newResolutionSetupAddrs;
+         newResolutionSetupAddrs = (DWORD*)Memory::makeAbsolute(0x2C2870);
+         game_ResWidth                = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x0A);
+         game_ResHeight               = (float)*(int*)(newResolutionSetupAddrs[currentResIndex] + 0x10);
 
-   // fix fov on resize hook
-   Memory::writeCall(0x2CF4EA, (DWORD)hkFovFix, false);
-   Memory::writeRaw(0x2CF4EF, false, 4, 0x90, 0x83, 0xF9, 0x01); // cmp ecx,    1
-   Memory::writeNop(0x2CF4F3, 3, false);
-
-   Memory::openMemoryAccess(0x6CF568, 4);
-   *(DWORD*)0x6CF568 = (DWORD)&flt1;
-   Memory::restoreMemoryAccess();
-
-   Memory::openMemoryAccess(0x6CF57A, 4);
-   *(DWORD*)0x6CF57A = (DWORD)&flt2;
-   Memory::restoreMemoryAccess();
-
-   Memory::openMemoryAccess(0x6CF5DE, 4);
-   *(DWORD*)0x6CF5DE = (DWORD)&flt3;
-   Memory::restoreMemoryAccess();
-
-   Memory::openMemoryAccess(0x6DA8B1, 4);
-   *(DWORD*)0x6DA8B1 = (DWORD)&dx;
-   Memory::restoreMemoryAccess();
-
-   float ver3DScale = 0.75f;
-   float mirrorScale = 0.4f;
-   float f1234 = 1.25f;
-   float f06 = 0.6f;
-   float f1 = 1.0f; // horizontal for vehicle reflection
-   float flt1 = 0.0f;
-   float flt2 = 0.0f;
-   float flt3 = 0.0f;
-
-   void hkFovFix() {
-      DWORD dummyVar = 0;
-      __asm {
-         mov eax, [edi + 0x60]
-         mov[dummyVar], ecx
-      }
-      if (dummyVar == 1 || dummyVar == 4) { //Headlights stretching, reflections etc
-         flt1 = hor3DScale;
-         flt2 = f06;
-         flt3 = f1234;
-      }
-      else {
-         if (dummyVar > 10) {
-            flt1 = f1;
-            flt2 = 0.5f;
-            flt3 = 1.0f;
-            _asm fld ds : f1
-            return;
+         int ratio = (int)((game_ResWidth / game_ResHeight) * 100);
+         if (ratio == 177) { // 16:9
+            baseResWidth  = 850.0f;
+            baseResHeight = 480.0f;
          }
-         else {
-            flt1 = 1.0f;
-            flt2 = 0.5f;
-            flt3 = 1.0f;
+         else if (ratio == 133) { // 4:3
+            baseResWidth  = 640.0f - 3;
+            baseResHeight = 480.0f - 5;
          }
       }
-
-
-      if (dummyVar == 3) //if rearview mirror
-         _asm fld ds : mirrorScale
-      else
-         _asm fld ds : ver3DScale
+      return currentResIndex;
    }
-
-   const WORD dx = 16400;
-   */
-
    DWORD WINAPI Init(LPVOID) {
       Memory::writeCall(0x2C27D0, (DWORD)gameResolutionCave, false);
 
@@ -613,7 +481,7 @@ namespace D3D9Hook {
 
       HMODULE hMirrorHook = nullptr;
       while (!hMirrorHook) {
-         hMirrorHook = GetModuleHandle(L"MirrorHook.asi");
+         hMirrorHook = GetModuleHandle("MirrorHook.asi");
          Sleep(100);
       }
 
@@ -626,6 +494,7 @@ namespace D3D9Hook {
          d3dDevice = MirrorHook::D3D9::GetD3D9Device();
          Sleep(100);
       }
+
       d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
       MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::BeforeReset, &beforeReset);
       MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::AfterReset, &afterReset);

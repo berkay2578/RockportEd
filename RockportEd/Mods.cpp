@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "Mods.h"
 #include "Memory.h"
-#include "D3D9Hook_Settings.h"
 #include "DInput8Hook.h"
 
 using std::map;
@@ -11,7 +10,7 @@ using std::vector;
 
 namespace Mods {
    namespace ThingsIHaveNoIdeaWhereToPutButAreAlsoVeryImportantIThink {
-      int newGear = 1;
+      int newGear = 2;
       DWORD jmpBackAddr = NULL;
 
       void __declspec(naked) gearHook() {
@@ -40,19 +39,23 @@ namespace Mods {
    }
    // TODO: migrate stuff in newhud to this
    namespace GameInfo {
-      BYTE* key_Accelerate              = nullptr;
-      BYTE* key_Brake                   = nullptr;
-      BYTE* key_GearDown                = nullptr;
-      BYTE* key_GearUp                  = nullptr;
+      BYTE*  key_Accelerate              = nullptr;
+      BYTE*  key_Brake                   = nullptr;
+      BYTE*  key_GearDown                = nullptr;
+      BYTE*  key_GearUp                  = nullptr;
 
-      bool* isManualTransmissionEnabled = nullptr;
-      bool* isGameWindowInactive        = nullptr;
+      float* gameplaySpeed               = nullptr;
+
+      bool*  isManualTransmissionEnabled = nullptr;
+      bool*  isGameWindowInactive        = nullptr;
 
       void Init() {
          key_Accelerate = (BYTE*)Memory::makeAbsolute(0x51F420);
          key_Brake      = (BYTE*)Memory::makeAbsolute(0x51F454);
          key_GearDown   = (BYTE*)Memory::makeAbsolute(0x51F58C);
          key_GearUp     = (BYTE*)Memory::makeAbsolute(0x51F5C0);
+
+         gameplaySpeed  = (float*)Memory::makeAbsolute(0x501B1C);
 
          while (!isManualTransmissionEnabled) {
             isManualTransmissionEnabled = (bool*)Memory::readPointer(0x51CF90, 2, 0x10, 0x91);
@@ -63,7 +66,7 @@ namespace Mods {
       }
    }
    namespace Camera {
-      int* activeCamera                 = nullptr;
+      int* activeCamera = nullptr;
       map<int, map<char*, float*>> data ={};
 
       void Init() {
