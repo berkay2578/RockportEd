@@ -31,6 +31,9 @@ namespace Memory {
    }
 
    DWORD* readPointer(const DWORD& baseOffset, const int offsetCount, ...) {
+      if (!baseAddress)
+         return nullptr;
+
       DWORD* pointer = (DWORD*)makeAbsolute(baseOffset);
       if (!*pointer)
          return nullptr;
@@ -41,7 +44,7 @@ namespace Memory {
          for (int i = 0; i < offsetCount; i++) {
             pointer = (DWORD*)(*pointer + va_arg(offsets, int));
             if (!pointer) {
-               pointer = nullptr;
+               pointer = nullptr; // ?
                break;
             }
          }

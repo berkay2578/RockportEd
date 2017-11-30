@@ -1,15 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="D3D9Hook.h">
-      <Filter>D3D9Hook</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="Mods.h">
-      <Filter>D3D9Hook\Toggle</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>default</Filter>
     </ClInclude>
@@ -17,78 +8,168 @@
       <Filter>default</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui.h">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
-      <Filter>D3D9Hook\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="DInput8Hook.h">
-      <Filter>D3D9Hook\DInput8Hook</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\dx9\imgui_impl_dx9.h">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_user.h">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClInclude>
     <ClInclude Include="imgui_ext.h">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\GameInternals.h">
+      <Filter>Helpers\Game Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Gameplay\Camera.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Gameplay\Gameplay.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Gameplay\Variables.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Data\Variables.h">
+      <Filter>Helpers\Game Internals\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Data\Data.h">
+      <Filter>Helpers\Game Internals\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Config\Player.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Config\Controls.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Config\Config.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Config\Gameplay.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Gameplay\Player.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Game Internals\Gameplay\Object.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="WndProcHook.h">
+      <Filter>Helpers\WndProc</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>Helpers\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="FixAnnoyances.hpp">
+      <Filter>Extensions\WndProc</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Helpers\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D9Extension.h">
+      <Filter>Extensions\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="DI8Extension.h">
+      <Filter>Extensions\DInput8</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsColoursType.hpp">
+      <Filter>Helpers\Settings\Type</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="D3D9Hook.cpp">
-      <Filter>D3D9Hook</Filter>
-    </ClCompile>
-    <ClCompile Include="Mods.cpp">
-      <Filter>D3D9Hook\Toggle</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
-      <Filter>Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>default</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_demo.cpp">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>D3D9Hook\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="DInput8Hook.cpp">
-      <Filter>D3D9Hook\DInput8Hook</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClCompile>
     <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_user.cpp">
-      <Filter>D3D9Hook\imgui</Filter>
+      <Filter>Helpers\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="WndProcHook.cpp">
+      <Filter>Helpers\WndProc</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>Helpers\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Helpers\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="D3D9Extension.cpp">
+      <Filter>Extensions\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="DI8Extension.cpp">
+      <Filter>Extensions\DInput8</Filter>
+    </ClCompile>
+    <ClCompile Include="WndProcExtensions.hpp">
+      <Filter>Extensions\WndProc</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsType.hpp">
+      <Filter>Helpers\Settings\Type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="D3D9Hook">
-      <UniqueIdentifier>{d828252d-5890-4a66-ab97-133d53c6f3e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="D3D9Hook\Toggle">
-      <UniqueIdentifier>{81ed320d-28d3-4fca-9d5c-974e1400119f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="default">
       <UniqueIdentifier>{dea0fb78-a8ea-4f81-8f01-cbf7bbe8ced1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="D3D9Hook\imgui">
-      <UniqueIdentifier>{781621c3-2b2b-4035-869e-7e843858f024}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="D3D9Hook\DInput8Hook">
-      <UniqueIdentifier>{57411f28-00b1-4030-bb66-13e27a6c1e3b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Helpers">
       <UniqueIdentifier>{556c61bc-759d-4ce9-b726-be679b8815d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Game Internals">
+      <UniqueIdentifier>{7f483287-08c8-4a1c-87bb-11f832a8a909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Game Internals\Config">
+      <UniqueIdentifier>{2aec23fb-a8ba-479e-86e5-49e08da53dc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Game Internals\Gameplay">
+      <UniqueIdentifier>{4af78ddc-bb59-440c-bc94-bdca5fd43271}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Game Internals\Data">
+      <UniqueIdentifier>{11c6c12e-4114-49eb-a3a9-7930fe4f0f7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\imgui">
+      <UniqueIdentifier>{781621c3-2b2b-4035-869e-7e843858f024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Memory">
+      <UniqueIdentifier>{07590150-8365-4e29-8ecd-21ff8a20ac46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\WndProc">
+      <UniqueIdentifier>{8c03c334-ca38-4eba-88c7-746bdb2b85e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Settings">
+      <UniqueIdentifier>{d1c61172-7aab-4a8f-857c-4164da9d438e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extensions">
+      <UniqueIdentifier>{d828252d-5890-4a66-ab97-133d53c6f3e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extensions\DInput8">
+      <UniqueIdentifier>{57411f28-00b1-4030-bb66-13e27a6c1e3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extensions\D3D9">
+      <UniqueIdentifier>{f6066eda-d2e7-4d23-85f8-36e335383349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extensions\WndProc">
+      <UniqueIdentifier>{dbf5c9f1-d047-4d47-99a0-0cb28977acaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Settings\Type">
+      <UniqueIdentifier>{8a89d68b-dcc7-47b2-b351-c2fd85b77188}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
