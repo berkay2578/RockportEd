@@ -9,7 +9,7 @@
 
 namespace Settings {
    SettingsType settingsType;
-   string settingsFile = std::experimental::filesystem::current_path().u8string() + string("\\RockportEd_Settings.xml");
+   const string settingsFile = std::experimental::filesystem::current_path().u8string() + string("\\RockportEd_Settings.xml");
 
    bool loadSettings() {
       try {

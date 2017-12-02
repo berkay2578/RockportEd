@@ -8,8 +8,9 @@ using std::vector;
 
 namespace Hooks {
    namespace WndProc {
-      WNDPROC         origWndProc = nullptr;
-      vector<WNDPROC> extensions  = vector<WNDPROC>();
+      HWND            windowHandle = nullptr;
+      WNDPROC         origWndProc  = nullptr;
+      vector<WNDPROC> extensions   = vector<WNDPROC>();
 
       void addExtension(LPVOID extensionAddress) {
          extensions.push_back(reinterpret_cast<WNDPROC>(extensionAddress));
@@ -40,7 +41,8 @@ namespace Hooks {
          while (!MirrorHook::D3D9::IsReady()) {
             Sleep(100);
          }
-         origWndProc = (WNDPROC)SetWindowLongPtrA(MirrorHook::D3D9::GetWindowHandle(), GWL_WNDPROC, (LONG_PTR)&hkWndProc);
+         windowHandle = MirrorHook::D3D9::GetWindowHandle();
+         origWndProc = (WNDPROC)SetWindowLongPtrA(windowHandle, GWL_WNDPROC, (LONG_PTR)&hkWndProc);
 
          return TRUE;
       }

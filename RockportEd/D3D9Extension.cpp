@@ -1,26 +1,27 @@
 #include "stdafx.h"
 #include "D3D9Extension.h"
+// Helpers
 #include "Memory.h"
-#include "Game Internals\GameInternals.h"
-
-#include <map>
-using std::map;
-
-#include <d3d9.h>
-#include MIRRORHOOK_DEFINITIONS_PATH
-#include "WndProcHook.h"
 #include "Settings.h"
-
+#include "WndProcHook.h"
+#include "Game Internals\GameInternals.h"
+// Drawing Helpers
 #include "imgui\imgui.h"
 #include "imgui_ext.h"
 #include "imgui\extra_fonts\RobotoMedium.hpp"
 #include "imgui\extra_fonts\Aramis_Book_Italic.hpp"
+
+#include <d3d9.h>
+#include MIRRORHOOK_DEFINITIONS_PATH
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #include "imgui\dx9\imgui_impl_dx9.h"
 
 //SetWindowSubClass
 #include <commctrl.h>
+
+#include <map>
+using std::map;
 
 namespace Extensions {
    namespace D3D9 {
@@ -40,15 +41,13 @@ namespace Extensions {
       }
 
       // Hook variables
-      LPDIRECT3DDEVICE9 d3dDevice    = nullptr;
-      HWND              windowHandle = nullptr;
-      WNDPROC           origWndProc  = nullptr;
+      LPDIRECT3DDEVICE9 d3dDevice = nullptr;
 
       // Namespace variables
       bool isImguiInitialized  = false;
       bool isMainWindowVisible = true;
       ImGuiIO* imguiIO         = nullptr;
-      bool showUserGuide       = false;
+      bool isFirstTimeUser     = false;
       char* cameras[7]         =
       {
          "Bumper",
@@ -65,24 +64,51 @@ namespace Extensions {
 
       void WINAPI beginScene(LPDIRECT3DDEVICE9 pDevice) {
          if (!isImguiInitialized) {
-            ImGui_ImplDX9_Init(windowHandle, d3dDevice);
+            ImGui_ImplDX9_Init(Hooks::WndProc::windowHandle, d3dDevice);
 
             ImGuiIO& io = ImGui::GetIO();
             io.IniFilename = NULL;
             io.Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 14.0f);
             io.Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 16.0f);
-            io.Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 80.0f); // maybe use futura instead
+            io.Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 80.0f);
             io.FontDefault = NULL;
 
             ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_RGB
                                        | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();
+            imguiIO = &ImGui::GetIO();
             isImguiInitialized = true;
          }
 
          ImGui_ImplDX9_NewFrame();
       }
 
+      void showUserGuide() {
+         if (isFirstTimeUser) {
+            ImGui::Begin("User Guide", &isFirstTimeUser);
+            ImGui::BulletText("Press Insert to show/hide RockportEd.");
+            ImGui::BulletText("Double-click on title bar to collapse windows.");
+            ImGui::BulletText("Click and drag on lower right corner to resize windows.");
+            ImGui::BulletText("Click and drag on any empty space to move windows.");
+            ImGui::BulletText("Mouse Wheel to scroll.");
+            ImGui::BulletText("TAB/SHIFT+TAB to cycle through keyboard editable fields.");
+            ImGui::BulletText("CTRL+Click on a slider to input text.");
+            ImGui::BulletText(
+               "While editing text:\n"
+               "- Hold SHIFT+Left/Right or use mouse to select text\n"
+               "- CTRL+Left/Right to word jump\n"
+               "- CTRL+A or double-click to select all\n"
+               "- CTRL+X, CTRL+C, CTRL+V clipboard\n"
+               "- CTRL+Z, CTRL+Y to undo/redo\n"
+               "- ESCAPE to cancel\n"
+               "- You can apply arithmetic operators +,*,/ on numerical values.\n");
+            ImGui::BulletText("Click on the button at the top-right of this window to close it.");
+            ImGui::End();
+
+            Settings::settingsType.isFirstTimeUser = false;
+            Settings::saveSettings();
+         }
+      }
       void customCamera() {
          ImGui::Checkbox("Camera Settings", &State::visibleMenus[HookOption::CustomCamera]);
          if (State::visibleMenus[HookOption::CustomCamera]) {
@@ -175,36 +201,12 @@ namespace Extensions {
 
       void WINAPI endScene(LPDIRECT3DDEVICE9 pDevice) {
          if (isImguiInitialized) {
-            imguiIO = &ImGui::GetIO();
             GameInternals::Gameplay::Player::getCarPowerData(carPowerData);
 
             if (isMainWindowVisible) {
                imguiIO->MouseDrawCursor = imguiIO->WantCaptureMouse;
 
-               if (showUserGuide) {
-                  ImGui::Begin("User Guide", &showUserGuide);
-                  ImGui::BulletText("Press Insert to show/hide RockportEd.");
-                  ImGui::BulletText("Double-click on title bar to collapse windows.");
-                  ImGui::BulletText("Click and drag on lower right corner to resize windows.");
-                  ImGui::BulletText("Click and drag on any empty space to move windows.");
-                  ImGui::BulletText("Mouse Wheel to scroll.");
-                  ImGui::BulletText("TAB/SHIFT+TAB to cycle through keyboard editable fields.");
-                  ImGui::BulletText("CTRL+Click on a slider to input text.");
-                  ImGui::BulletText(
-                     "While editing text:\n"
-                     "- Hold SHIFT+Left/Right or use mouse to select text\n"
-                     "- CTRL+Left/Right to word jump\n"
-                     "- CTRL+A or double-click to select all\n"
-                     "- CTRL+X, CTRL+C, CTRL+V clipboard\n"
-                     "- CTRL+Z, CTRL+Y to undo/redo\n"
-                     "- ESCAPE to cancel\n"
-                     "- You can apply arithmetic operators +,*,/ on numerical values.\n");
-                  ImGui::BulletText("Click on the button at the top-right of this window to close it.");
-                  ImGui::End();
-
-                  Settings::settingsType.isFirstTimeUser = false;
-                  Settings::saveSettings();
-               }
+               showUserGuide();
 
                ImGui::SetNextWindowPos(ImVec2(imguiIO->DisplaySize.x - 10.0f, 5.0f), ImGuiCond_Once, ImVec2(1.0f, 0.0f));
                ImGui::Begin("RockportEd", nullptr);
@@ -264,49 +266,49 @@ namespace Extensions {
             if (State::enabledOptions[HookOption::NewHUD]) {
                using namespace GameInternals::Gameplay::Player;
 
-               //ImGui::Begin("New HUD Color Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+               ImGui::Begin("New HUD Color Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                static bool useGradients = false;
                static bool drawForegroundOnBackground = true;
-               /*ImGui::Checkbox("Use gradients", &useGradients);
+               ImGui::Checkbox("Use gradients", &useGradients);
                ImGui::SameLine(); ImGui::Checkbox("Draw foregrounds on top of the backgrounds", &drawForegroundOnBackground);
 
-               ImGui::ColorEdit4("rpmGauge_BackColor", &rpmGauge_BackColor.Value.x);
+               ImGui::ColorEdit4("rpmGauge_BackColor", &Settings::settingsType.colours.hudColours.rpmGauge_BackColour.Value.x);
 
-               ImGui::ColorEdit4("rpmGauge_NormalRange_Background_Color1", &rpmGauge_NormalRange_Background_Color1.Value.x);
+               ImGui::ColorEdit4("rpmGauge_NormalRange_Background_Color1", &Settings::settingsType.colours.hudColours.rpmGauge_NormalRange_Background_Colour.Value.x);
                if (useGradients)
-                  ImGui::ColorEdit4("rpmGauge_NormalRange_Background_Color2", &rpmGauge_NormalRange_Background_Color2.Value.x);
+                  ImGui::ColorEdit4("rpmGauge_NormalRange_Background_Colour_GradientEnd", &Settings::settingsType.colours.hudColours.rpmGauge_NormalRange_Background_Colour_GradientEnd.Value.x);
 
-               ImGui::ColorEdit4("rpmGauge_NormalRange_Foreground_Color1", &rpmGauge_NormalRange_Foreground_Color1.Value.x);
+               ImGui::ColorEdit4("rpmGauge_NormalRange_Foreground_Colour", &Settings::settingsType.colours.hudColours.rpmGauge_NormalRange_Foreground_Colour.Value.x);
                if (useGradients)
-                  ImGui::ColorEdit4("rpmGauge_NormalRange_Foreground_Color2", &rpmGauge_NormalRange_Foreground_Color2.Value.x);
+                  ImGui::ColorEdit4("rpmGauge_NormalRange_Foreground_Colour_GradientEnd", &Settings::settingsType.colours.hudColours.rpmGauge_NormalRange_Foreground_Colour_GradientEnd.Value.x);
 
-               ImGui::ColorEdit4("rpmGauge_Redline_Background_Color1", &rpmGauge_Redline_Background_Color1.Value.x);
+               ImGui::ColorEdit4("rpmGauge_Redline_Background_Colour", &Settings::settingsType.colours.hudColours.rpmGauge_Redline_Background_Colour.Value.x);
                if (useGradients)
-                  ImGui::ColorEdit4("rpmGauge_Redline_Background_Color2", &rpmGauge_Redline_Background_Color2.Value.x);
+                  ImGui::ColorEdit4("rpmGauge_Redline_Background_Colour_GradientEnd", &Settings::settingsType.colours.hudColours.rpmGauge_Redline_Background_Colour_GradientEnd.Value.x);
 
-               ImGui::ColorEdit4("rpmGauge_Redline_Foreground_Color1", &rpmGauge_Redline_Foreground_Color1.Value.x);
+               ImGui::ColorEdit4("rpmGauge_Redline_Foreground_Colour", &Settings::settingsType.colours.hudColours.rpmGauge_Redline_Foreground_Colour.Value.x);
                if (useGradients)
-                  ImGui::ColorEdit4("rpmGauge_Redline_Foreground_Color2", &rpmGauge_Redline_Foreground_Color2.Value.x);
+                  ImGui::ColorEdit4("rpmGauge_Redline_Foreground_Colour_GradientEnd", &Settings::settingsType.colours.hudColours.rpmGauge_Redline_Foreground_Colour_GradientEnd.Value.x);
 
-               ImGui::ColorEdit4("rpmGauge_Needle_Foreground_Color", &rpmGauge_Needle_Foreground_Color.Value.x);
+               ImGui::ColorEdit4("rpmGauge_Needle_Foreground_Color", &Settings::settingsType.colours.hudColours.rpmGauge_Needle_Foreground_Colour.Value.x);
                ImGui::Separator();
 
-               ImGui::ColorEdit4("speedDisplay_UnitTypeText_Color", &speedDisplay_UnitTypeText_Color.Value.x);
-               ImGui::ColorEdit4("speedDisplay_FillerText_Color", &speedDisplay_FillerText_Color.Value.x);
-               ImGui::ColorEdit4("speedDisplay_ValueText_Color", &speedDisplay_ValueText_Color.Value.x);
+               ImGui::ColorEdit4("speedDisplay_UnitTypeText_Color", &Settings::settingsType.colours.hudColours.speedDisplay_UnitTypeText_Colour.Value.x);
+               ImGui::ColorEdit4("speedDisplay_FillerText_Color", &Settings::settingsType.colours.hudColours.speedDisplay_FillerText_Colour.Value.x);
+               ImGui::ColorEdit4("speedDisplay_ValueText_Color", &Settings::settingsType.colours.hudColours.speedDisplay_ValueText_Colour.Value.x);
                ImGui::Separator();
 
-               ImGui::ColorEdit4("nosBar_Background_Color", &nosBar_Background_Color.Value.x);
-               ImGui::ColorEdit4("nosBar_Value_Background_Color", &nosBar_Value_Background_Color.Value.x);
-               ImGui::ColorEdit4("nosBar_Value_Foreground_Color", &nosBar_Value_Foreground_Color.Value.x);
+               ImGui::ColorEdit4("nosBar_Background_Color", &Settings::settingsType.colours.hudColours.nosBar_Background_Colour.Value.x);
+               ImGui::ColorEdit4("nosBar_Value_Background_Color", &Settings::settingsType.colours.hudColours.nosBar_Value_Background_Colour.Value.x);
+               ImGui::ColorEdit4("nosBar_Value_Foreground_Color", &Settings::settingsType.colours.hudColours.nosBar_Value_Foreground_Colour.Value.x);
 
                ImGui::End();
-               */
+
                GameInternals::Config::Player::setManualTransmissionEnabled(true);
 
                const float sz = (imguiIO->DisplaySize.x / imguiIO->DisplaySize.x) * 90.0f;
-               ImGui::SetNextWindowSize(ImVec2(sz * 3.0f, sz * 3.0f), ImGuiCond_Once);
-               //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4());
+               //ImGui::SetNextWindowSize(ImVec2(sz * 3.0f, sz * 3.0f), ImGuiCond_Once);
+               ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4());
                ImGui::Begin("##HUD", nullptr, ImGuiWindowFlags_NoTitleBar);
 
             #define DegreeToRadianMultiplier 0.0174532925f
@@ -608,11 +610,12 @@ namespace Extensions {
                }
 
                ImGui::End();
-               //ImGui::PopStyleColor();
+               ImGui::PopStyleColor();
             }
             ImGui::Render();
          }
       }
+
       void WINAPI beforeReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
          if (isImguiInitialized)
             ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -629,42 +632,14 @@ namespace Extensions {
          ImGui_ImplDX9_CreateDeviceObjects();
       }
 
-      LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-         /*if (uMsg == WM_KEYDOWN && wParam == VK_A) {
-            D3DPRESENT_PARAMETERS md3dPP;
-            md3dPP.AutoDepthStencilFormat = D3DFMT_D24S8;
-            md3dPP.BackBufferFormat = D3DFMT_A8R8G8B8;
-            md3dPP.BackBufferCount = 1;
-            md3dPP.BackBufferWidth = 500;
-            md3dPP.BackBufferHeight = 790;
-            md3dPP.EnableAutoDepthStencil = TRUE;
-            md3dPP.Flags = NULL;
-            md3dPP.FullScreen_RefreshRateInHz = NULL;
-            md3dPP.hDeviceWindow = windowHandle;
-            md3dPP.MultiSampleQuality = 7;
-            md3dPP.MultiSampleType = D3DMULTISAMPLE_NONMASKABLE;
-            md3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-            md3dPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
-            md3dPP.Windowed = TRUE;
-            d3dDevice->Reset(&md3dPP);
-            return TRUE;
-         }*/
-
+      LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
          if (isImguiInitialized) {
-            ImGuiIO& io = ImGui::GetIO();
-
-            if (!(io.WantTextInput | io.WantCaptureKeyboard)) {
+            if (!(imguiIO->WantTextInput | imguiIO->WantCaptureKeyboard)) {
                if (uMsg == WM_KEYUP) {
-                  if (wParam == VK_INSERT && !(io.WantTextInput | io.WantCaptureKeyboard))
-                     isMainWindowVisible = !isMainWindowVisible;
-               }
-               else if (uMsg == WM_KEYDOWN) {
                   switch (wParam) {
-                     case VK_PAUSE:
-                        {
-                           //     *Mods::GameInfo::gameplaySpeed = 0.0f;
-                           break;
-                        }
+                     case VK_INSERT:
+                        isMainWindowVisible = !isMainWindowVisible;
+                        break;
                   }
                }
             }
@@ -673,8 +648,7 @@ namespace Extensions {
                ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
             }
          }
-
-         return CallWindowProc(origWndProc, hWnd, uMsg, wParam, lParam);
+         return FALSE;
       }
 
       DWORD WINAPI Init(LPVOID) {
@@ -690,39 +664,15 @@ namespace Extensions {
             d3dDevice = MirrorHook::D3D9::GetD3D9Device();
             Sleep(100);
          }
-
          d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-         MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::BeforeReset, &beforeReset);
-         MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::AfterReset, &afterReset);
-         MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::BeginScene, &beginScene);
-         MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::EndScene, &endScene);
+         MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::BeginScene, &beginScene);
+         MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::EndScene, &endScene);
+         MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::BeforeReset, &beforeReset);
+         MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::AfterReset, &afterReset);
 
-         windowHandle = MirrorHook::D3D9::GetWindowHandle();
-         Hooks::WndProc::addExtension(&hkWndProc);
+         Hooks::WndProc::addExtension(&wndProcExtension);
 
-         showUserGuide = Settings::settingsType.isFirstTimeUser;
-
-         if (*(bool*)0x982BF0) { // Proper windowed
-            RECT o_cRect, n_cRect, n_wRect;
-            GetClientRect(windowHandle, &o_cRect);
-
-            DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE) | WS_OVERLAPPEDWINDOW & (~WS_SIZEBOX & ~WS_MAXIMIZEBOX);
-            SetWindowLongPtr(windowHandle, GWL_STYLE, wStyle);
-
-            // make window change style
-            SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
-
-            GetWindowRect(windowHandle, &n_wRect);
-            GetClientRect(windowHandle, &n_cRect);
-            int n_wWidth  = n_wRect.right - n_wRect.left;
-            int n_wHeight = n_wRect.bottom - n_wRect.top;
-            int dif_wWidth  = o_cRect.right - n_cRect.right;
-            int dif_wHeight = o_cRect.bottom - n_cRect.bottom;
-            int newWidth  = n_wWidth + dif_wWidth;
-            int newHeight = n_wHeight + dif_wHeight;
-
-            SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE | SWP_DRAWFRAME);
-         }
+         isFirstTimeUser = Settings::settingsType.isFirstTimeUser;
 
          return TRUE;
       }

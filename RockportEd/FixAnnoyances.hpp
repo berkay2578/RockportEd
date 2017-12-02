@@ -10,7 +10,7 @@ namespace Extensions {
          static bool disableStopOnFocusLoss = false;
          static bool disableWindowsMouse    = true;
 
-         static LRESULT CALLBACK wndProcExtender(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+         static LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             switch (uMsg) {
                case WM_SYSCOMMAND:
                   if ((wParam & 0xFFF0) == SC_KEYMENU && disableAltMenu) {
@@ -33,7 +33,7 @@ namespace Extensions {
          }
 
          static void Init() {
-            Hooks::WndProc::addExtension(&wndProcExtender);
+            Hooks::WndProc::addExtension(&wndProcExtension);
          }
       }
    }

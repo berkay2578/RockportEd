@@ -55,17 +55,17 @@ namespace Extensions {
             hMirrorHook = GetModuleHandle("MirrorHook.asi");
             Sleep(100);
          }
-         while (!MirrorHook::DirectInput8::IsReady()) {
+         while (!MirrorHook::DI8::IsReady()) {
             Sleep(100);
          }
 
-         MirrorHook::DirectInput8::AddDirectInput8Extender(
-            MirrorHook::DirectInput8::DirectInput8Device::Keyboard,
-            MirrorHook::DirectInput8::DirectInput8Extender::GetDeviceState,
+         MirrorHook::DI8::AddExtension(
+            MirrorHook::DI8::DI8Device::Keyboard,
+            MirrorHook::DI8::DI8Extension::GetDeviceState,
             &getDeviceState_Keyboard);
-         MirrorHook::DirectInput8::AddDirectInput8Extender(
-            MirrorHook::DirectInput8::DirectInput8Device::Mouse,
-            MirrorHook::DirectInput8::DirectInput8Extender::GetDeviceState,
+         MirrorHook::DI8::AddExtension(
+            MirrorHook::DI8::DI8Device::Mouse,
+            MirrorHook::DI8::DI8Extension::GetDeviceState,
             &getDeviceState_Mouse);
 
          return TRUE;
