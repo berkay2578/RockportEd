@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "D3D9Extension.h"
+#include "InGameMenu.h"
 // Helpers
 #include "Memory.h"
 #include "Settings.h"
@@ -24,47 +24,37 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 using std::map;
 
 namespace Extensions {
-   namespace D3D9 {
+   namespace InGameMenu {
+      enum class MenuOption {
+         CustomCamera,
+         GameplayOptions,
+         NewHUD
+      };
+
       namespace State {
-         map<HookOption, bool> enabledOptions =
+         map<MenuOption, bool> enabledOptions =
          {
-            { HookOption::CustomCamera,    false },
-            { HookOption::GameplayOptions, false },
-            { HookOption::NewHUD,          false }
+            { MenuOption::NewHUD,          false }
          };
-         map<HookOption, bool> visibleMenus =
+         map<MenuOption, bool> visibleMenus =
          {
-            { HookOption::CustomCamera,    false },
-            { HookOption::GameplayOptions, false },
-            { HookOption::NewHUD,          false }
+            { MenuOption::CustomCamera,    false },
+            { MenuOption::GameplayOptions, false },
+            { MenuOption::NewHUD,          false }
          };
       }
 
-      // Hook variables
-      LPDIRECT3DDEVICE9 d3dDevice = nullptr;
-
-      // Namespace variables
       bool isImguiInitialized  = false;
       bool isMainWindowVisible = true;
       ImGuiIO* imguiIO         = nullptr;
       bool isFirstTimeUser     = false;
-      char* cameras[7]         =
-      {
-         "Bumper",
-         "Hood",
-         "Near",
-         "Far",
-         "Challenge Entry",
-         "Speedbreaker",
-         "Pullback"
-      };
 
       // Game variables
       GameInternals::CarPowerData* carPowerData = nullptr;
 
       void WINAPI beginScene(LPDIRECT3DDEVICE9 pDevice) {
          if (!isImguiInitialized) {
-            ImGui_ImplDX9_Init(Hooks::WndProc::windowHandle, d3dDevice);
+            ImGui_ImplDX9_Init(Hooks::WndProc::windowHandle, pDevice);
 
             ImGuiIO& io = ImGui::GetIO();
             io.IniFilename = NULL;
@@ -73,8 +63,8 @@ namespace Extensions {
             io.Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 80.0f);
             io.FontDefault = NULL;
 
-            ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_RGB
-                                       | ImGuiColorEditFlags_PickerHueWheel);
+            ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview
+                                       | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();
             imguiIO = &ImGui::GetIO();
             isImguiInitialized = true;
@@ -110,36 +100,82 @@ namespace Extensions {
          }
       }
       void customCamera() {
-         ImGui::Checkbox("Camera Settings", &State::visibleMenus[HookOption::CustomCamera]);
-         if (State::visibleMenus[HookOption::CustomCamera]) {
-            static int* activeCameraId = nullptr;
-            activeCameraId = GameInternals::Gameplay::Camera::getActiveCameraIdAsPointer();
-
-            ImGui::SetNextWindowSize(ImVec2(0.0f, 284.0f), ImGuiCond_Once);
-            ImGui::SetNextWindowPos(ImVec2(imguiIO->DisplaySize.x - 10.0f, 5.0f * 2 + 120.0f), ImGuiCond_Once, ImVec2(1.0f, 0.0f));
-            ImGui::Begin("Custom Camera", &State::visibleMenus[HookOption::CustomCamera]);
+         ImGui::Checkbox("Camera Settings", &State::visibleMenus[MenuOption::CustomCamera]);
+         if (State::visibleMenus[MenuOption::CustomCamera]) {
+            ImGui::SetNextWindowSize(ImVec2(240.0f, 400.0f), ImGuiCond_Once);
+            ImGui::SetNextWindowPos(ImVec2(10.0f * 2 + 200.0f, 5.0f), ImGuiCond_Once);
+            ImGui::Begin("Custom Camera", &State::visibleMenus[MenuOption::CustomCamera]);
 
             ImGui::PushItemWidth(-1);
-            if (activeCameraId) {
-               ImGui::TextWrapped("Camera");
-               ImGui::Combo("##CameraCombo", activeCameraId, cameras, 7);
 
-               static GameInternals::CameraData* activeCameraData = nullptr;
-               if (GameInternals::Gameplay::Camera::getCameraDataById(*activeCameraId, activeCameraData)) {
-                  ImGui::TextWrapped("X");
-                  ImGui::SliderFloat("##CameraX", &activeCameraData->posX, -70.0f, 70.0f);
-                  ImGui::TextWrapped("Z");
-                  ImGui::SliderFloat("##CameraZ", &activeCameraData->posZ, -70.0f, 70.0f);
-                  ImGui::TextWrapped("FOV");
-                  ImGui::SliderFloat("##CameraFov", &activeCameraData->fov, 25.0f, 135.0f);
+            static int* activeCameraIndex = nullptr;
+            activeCameraIndex = GameInternals::Gameplay::Camera::getActiveCameraIndexAsPointer();
+            if (activeCameraIndex) {
+               ImGui::TextWrapped("Camera Index"); ImGui::SameLine();
+               ImGui::SliderInt("##CameraIndex", activeCameraIndex, 0, 6);
+
+               static GameInternals::CameraInfo* activeCameraData = nullptr;
+               if (GameInternals::Gameplay::Camera::getActiveCameraInfo(activeCameraData)) {
+                  ImGui::TextWrapped("Camera Name: %s", activeCameraData->collectionName);
+
+                  static bool isAdvanced = false;
+                  ImGui::Checkbox("Display advanced options", &isAdvanced);
+
+                  ImGui::TextWrapped("Stiffness");
+                  ImGui::SliderFloat("##CameraStiffness", &activeCameraData->stiffness[0], 0.0f, 1.0f);
+                  if (isAdvanced) {
+                     ImGui::Text("STIFFNESS[1]"); ImGui::SameLine();
+                     ImGui::SliderFloat("##CameraStiffness_1", &activeCameraData->stiffness[1], 0.0f, 1.0f);
+                  }
+
                   ImGui::TextWrapped("Horizontal angle");
-                  ImGui::SliderFloat("##CameraHorAngle", &activeCameraData->horizontalAngle, -45.0f, 45.0f, "%.3f deg");
+                  ImGui::SliderFloat("##CameraHorizontalAngle", &activeCameraData->angle[0], -45.0f, 45.0f, "%.3f deg");
+                  if (isAdvanced) {
+                     ImGui::Text("ANGLE[1]"); ImGui::SameLine();
+                     ImGui::SliderFloat("##CameraHorizontalAngle_1", &activeCameraData->angle[1], -45.0f, 45.0f, "%.3f deg");
+                  }
+
+                  ImGui::TextWrapped("Distance");
+                  ImGui::SliderFloat("##CameraDistance", &activeCameraData->lag[0], -100.0f, 100.0f);
+                  if (isAdvanced) {
+                     ImGui::Text("LAG[1]"); ImGui::SameLine();
+                     ImGui::SliderFloat("##CameraDistance_1", &activeCameraData->lag[1], -100.0f, 100.0f);
+                  }
+
+                  ImGui::TextWrapped("FOV");
+                  ImGui::SliderFloat("##CameraFOV", &activeCameraData->fov[0], 25.0f, 135.0f);
+                  if (isAdvanced) {
+                     ImGui::Text("FOV[1]"); ImGui::SameLine();
+                     ImGui::SliderFloat("##CameraFOV_1", &activeCameraData->fov[1], 25.0f, 135.0f);
+                  }
+
+                  ImGui::TextWrapped("Height");
+                  ImGui::SliderFloat("##CameraHeight", &activeCameraData->height[0], 0.0f, 100.0f);
+                  if (isAdvanced) {
+                     ImGui::Text("HEIGHT[1]"); ImGui::SameLine();
+                     ImGui::SliderFloat("##CameraHeight_1", &activeCameraData->height[1], 0.0f, 100.0f);
+                  }
+
                   ImGui::TextWrapped("Vertical angle");
-                  ImGui::SliderFloat("##CameraVerAngle", &activeCameraData->verticalAngle, -45.0f, 45.0f, "%.3f deg");
+                  ImGui::SliderFloat("##CameraLateOffset", &activeCameraData->lateOffset[0], -89.0f, 89.0f, "%.3f deg");
+                  if (isAdvanced) {
+                     ImGui::Text("LATEOFFSET[1]"); ImGui::SameLine();
+                     ImGui::SliderFloat("##CameraLateOffset_1", &activeCameraData->lateOffset[1], -89.0f, 89.0f);
+                  }
+
+                  ImGui::Checkbox("Tilting", &activeCameraData->tilting[0]);
+                  if (isAdvanced) {
+                     ImGui::Checkbox("TILTING[1]", &activeCameraData->tilting[1]);
+                  }
+
+                  ImGui::Checkbox("Selectable", &activeCameraData->selectable[0]);
+                  if (isAdvanced) {
+                     ImGui::Checkbox("SELECTABLE[1]", &activeCameraData->selectable[1]);
+                  }
                }
                else {
                   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-                  ImGui::TextWrapped("Active camera cannot be customized (yet).");
+                  ImGui::TextWrapped("CameraInfo not yet initialized by the game.");
                   ImGui::PopStyleColor();
                }
             }
@@ -153,45 +189,53 @@ namespace Extensions {
          }
       }
       void gameplayOptions() {
-         ImGui::Checkbox("Gameplay Options", &State::visibleMenus[HookOption::GameplayOptions]);
-         if (State::visibleMenus[HookOption::GameplayOptions]) {
+         ImGui::Checkbox("Gameplay Options", &State::visibleMenus[MenuOption::GameplayOptions]);
+         if (State::visibleMenus[MenuOption::GameplayOptions]) {
             ImGui::SetNextWindowSize(ImVec2(0.0f, 160.0f), ImGuiCond_Once);
-            ImGui::SetNextWindowPos(ImVec2(imguiIO->DisplaySize.x - 10.0f, 5.0f * 3 + 120.0f + 284.0f), ImGuiCond_Once, ImVec2(1.0f, 0.0f));
-            ImGui::Begin("Gameplay Options", &State::visibleMenus[HookOption::GameplayOptions]);
+            ImGui::SetNextWindowPos(ImVec2(10.0f, 5.0f * 2 + 120.0f), ImGuiCond_Once);
+            ImGui::Begin("Gameplay Options", &State::visibleMenus[MenuOption::GameplayOptions]);
 
             ImGui::PushItemWidth(-1);
 
-            ImGui::TextWrapped("Traffic refresh interval (in seconds)");
-            static float* trafficRefreshInterval = nullptr;
+            // Traffic refresh interval
+            {
+               ImGui::TextWrapped("Traffic refresh interval (in seconds)");
+               static float* trafficRefreshInterval = nullptr;
 
-            trafficRefreshInterval = GameInternals::Gameplay::Variables::getTrafficRefreshIntervalAsPointer();
-            if (trafficRefreshInterval) {
-               ImGui::SliderFloat("##TrafficRefreshInterval", trafficRefreshInterval, 1.0f, 640.0f);
-            }
-            else {
-               ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-               ImGui::TextWrapped("Traffic AI not yet initialized by the game.");
-               ImGui::PopStyleColor();
+               trafficRefreshInterval = GameInternals::Gameplay::Variables::getTrafficRefreshIntervalAsPointer();
+               if (trafficRefreshInterval) {
+                  ImGui::SliderFloat("##TrafficRefreshInterval", trafficRefreshInterval, 1.0f, 640.0f);
+               }
+               else {
+                  ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                  ImGui::TextWrapped("Traffic AI not yet initialized by the game.");
+                  ImGui::PopStyleColor();
+               }
             }
 
             ImGui::Separator();
 
-            static bool allowToRedlineRPM = false;
-            if (!carPowerData)
-               ImGui::PushItemDisabled();
+            // Allow to redline RPM
+            // TODO: Increase car's max rpm instead of the general RPM multiplier
+            // TODO: This function works on checkbox interaction, which means it doesn't update itself. Fix that
+            {
+               static bool allowToRedlineRPM = false;
+               if (!carPowerData)
+                  ImGui::PushItemDisabled();
 
-            if (ImGui::Checkbox("Allow to redline RPM", &allowToRedlineRPM)) {
-               float newVal = allowToRedlineRPM ?
-                  ((10000.0f / carPowerData->maximumRPM) * carPowerData->maximumPossibleRPM) - 1000.0f
-                  : 9000.0f;
-               GameInternals::Gameplay::Variables::setSomeRpmConstant(newVal);
-            }
+               if (ImGui::Checkbox("Allow to redline RPM", &allowToRedlineRPM)) {
+                  float newVal = allowToRedlineRPM ?
+                     ((10000.0f / carPowerData->maximumRPM) * carPowerData->maximumPossibleRPM) - 1000.0f
+                     : 9000.0f;
+                  GameInternals::Gameplay::Variables::setSomeRpmConstant(newVal);
+               }
 
-            if (!carPowerData) {
-               ImGui::PopItemDisabled();
-               ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-               ImGui::TextWrapped("Car power data is not yet found in game's memory.");
-               ImGui::PopStyleColor();
+               if (!carPowerData) {
+                  ImGui::PopItemDisabled();
+                  ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                  ImGui::TextWrapped("Car power data is not yet found in game's memory.");
+                  ImGui::PopStyleColor();
+               }
             }
 
             ImGui::PopItemWidth();
@@ -201,6 +245,14 @@ namespace Extensions {
 
       void WINAPI endScene(LPDIRECT3DDEVICE9 pDevice) {
          if (isImguiInitialized) {
+            ImGui::SetNextWindowPos(ImVec2(imguiIO->DisplaySize.x - 5.0f, 5.0f), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+            ImGui::Begin("##Huh", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs);
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "RockportEd debug build");
+            ImGui::Bullet(); ImGui::TextWrapped("Allow to redline rpm should be disabled when entering gameplay. Only enable it during gameplay.");
+            ImGui::Bullet(); ImGui::TextWrapped("Menu input <-> game input handling is broken.");
+            ImGui::End();
+
+            // TODO: Optmize new hud code, structuer it blabla
             GameInternals::Gameplay::Player::getCarPowerData(carPowerData);
 
             if (isMainWindowVisible) {
@@ -208,15 +260,15 @@ namespace Extensions {
 
                showUserGuide();
 
-               ImGui::SetNextWindowPos(ImVec2(imguiIO->DisplaySize.x - 10.0f, 5.0f), ImGuiCond_Once, ImVec2(1.0f, 0.0f));
+               ImGui::SetNextWindowPos(ImVec2(10.0f, 5.0f), ImGuiCond_Once);
                ImGui::Begin("RockportEd", nullptr);
 
                customCamera();
                gameplayOptions();
-               ImGui::Checkbox("New HUD", &State::enabledOptions[HookOption::NewHUD]);
+               ImGui::Checkbox("New HUD", &State::enabledOptions[MenuOption::NewHUD]);
 
                ImGui::End();
-
+               /*
                ImGui::Begin("_DEBUG-2", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                static float newRideHeight = 0.0f;
                static PhyicsTuning abc = { 0 };
@@ -257,13 +309,13 @@ namespace Extensions {
                   }
                }
 
-               ImGui::End();
+               ImGui::End();*/
             }
             else {
                imguiIO->MouseDrawCursor = false;
             }
 
-            if (State::enabledOptions[HookOption::NewHUD]) {
+            if (State::enabledOptions[MenuOption::NewHUD] && carPowerData) {
                using namespace GameInternals::Gameplay::Player;
 
                ImGui::Begin("New HUD Color Editor", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -304,9 +356,9 @@ namespace Extensions {
 
                ImGui::End();
 
-               GameInternals::Config::Player::setManualTransmissionEnabled(true);
+               //GameInternals::Config::Player::setManualTransmissionEnabled(true);
 
-               const float sz = (imguiIO->DisplaySize.x / imguiIO->DisplaySize.x) * 90.0f;
+               const float sz = 1.0f * 90.0f;
                //ImGui::SetNextWindowSize(ImVec2(sz * 3.0f, sz * 3.0f), ImGuiCond_Once);
                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4());
                ImGui::Begin("##HUD", nullptr, ImGuiWindowFlags_NoTitleBar);
@@ -327,7 +379,7 @@ namespace Extensions {
                   static const float rpmFinalAngle_FullRange     = 365.0f;
                   static const float rpmAngleDiff_BeginningToFinal_FullRange = rpmFinalAngle_FullRange - rpmBeginningAngle_FullRange;
 
-                  const float rpmValueCurrent = getCarRPM();
+                  const float rpmValueCurrent = getCarRPM(carPowerData);
 
                   const float rpmBeginningValue_Redline             = carPowerData->maximumRPM;
                   const float rpmBeginningAngle_Redline             = rpmBeginningAngle_FullRange + ((rpmBeginningValue_Redline / rpmValueMaximum) * rpmAngleDiff_BeginningToFinal_FullRange);
@@ -644,24 +696,22 @@ namespace Extensions {
                }
             }
 
-            if (isMainWindowVisible) {
+            if (isMainWindowVisible)
                ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-            }
          }
          return FALSE;
       }
 
       DWORD WINAPI Init(LPVOID) {
-         HMODULE hMirrorHook = nullptr;
-         while (!hMirrorHook) {
-            hMirrorHook = GetModuleHandle("MirrorHook.asi");
-            Sleep(100);
-         }
-         while (!MirrorHook::D3D9::IsReady()) {
-            Sleep(100);
-         }
+         HANDLE hMirrorHook          = nullptr;
+         LPDIRECT3DDEVICE9 d3dDevice = nullptr;
          while (!d3dDevice) {
-            d3dDevice = MirrorHook::D3D9::GetD3D9Device();
+            if (!hMirrorHook) {
+               hMirrorHook = GetModuleHandle("MirrorHook.asi");
+            }
+            else {
+               d3dDevice = MirrorHook::D3D9::GetD3D9Device();
+            }
             Sleep(100);
          }
          d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
@@ -673,7 +723,6 @@ namespace Extensions {
          Hooks::WndProc::addExtension(&wndProcExtension);
 
          isFirstTimeUser = Settings::settingsType.isFirstTimeUser;
-
          return TRUE;
       }
    }

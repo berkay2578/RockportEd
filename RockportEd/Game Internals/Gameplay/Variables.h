@@ -17,7 +17,7 @@ namespace GameInternals {
          }
 
          static float* getTrafficRefreshIntervalAsPointer() {
-            auto pBase = (float*)Memory::readPointer(0x50DCC0, 3, 0x58, 0x3DC, 0x134);
+            auto pBase = (float*)Memory::readPointer(0x50DCBC, 4, 0x8, 0x3DC, 0xF0, 0x4); // +4 is SpawnTime, +10 is SpawnHighway etc.
             if (!pBase)
                return nullptr;
 

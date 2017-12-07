@@ -41,14 +41,16 @@ namespace Memory {
       if (offsetCount > 0) {
          va_list offsets;
          va_start(offsets, offsetCount);
-         for (int i = 0; i < offsetCount; i++) {
+         for (int i = 0; i < offsetCount - 1; i++) {
             pointer = (DWORD*)(*pointer + va_arg(offsets, int));
-            if (!pointer) {
-               pointer = nullptr; // ?
+            if (!*pointer) {
+               pointer = nullptr;
                break;
             }
          }
 
+         if (pointer)
+            pointer = (DWORD*)(*pointer + va_arg(offsets, int));
          va_end(offsets);
       }
 

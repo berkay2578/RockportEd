@@ -73,9 +73,6 @@
     <ClInclude Include="Settings.h">
       <Filter>Helpers\Settings</Filter>
     </ClInclude>
-    <ClInclude Include="D3D9Extension.h">
-      <Filter>Extensions\D3D9</Filter>
-    </ClInclude>
     <ClInclude Include="DI8Extension.h">
       <Filter>Extensions\DInput8</Filter>
     </ClInclude>
@@ -84,6 +81,9 @@
     </ClInclude>
     <ClInclude Include="WindowedModeImprovements.hpp">
       <Filter>Extensions\WndProc</Filter>
+    </ClInclude>
+    <ClInclude Include="InGameMenu.h">
+      <Filter>Extensions\InGame Menu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -115,9 +115,6 @@
       <Filter>Helpers\Settings</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="D3D9Extension.cpp">
-      <Filter>Extensions\D3D9</Filter>
-    </ClCompile>
     <ClCompile Include="DI8Extension.cpp">
       <Filter>Extensions\DInput8</Filter>
     </ClCompile>
@@ -126,6 +123,9 @@
     </ClCompile>
     <ClCompile Include="SettingsType.hpp">
       <Filter>Helpers\Settings\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="InGameMenu.cpp">
+      <Filter>Extensions\InGame Menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -165,14 +165,14 @@
     <Filter Include="Extensions\DInput8">
       <UniqueIdentifier>{57411f28-00b1-4030-bb66-13e27a6c1e3b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Extensions\D3D9">
-      <UniqueIdentifier>{f6066eda-d2e7-4d23-85f8-36e335383349}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Extensions\WndProc">
       <UniqueIdentifier>{dbf5c9f1-d047-4d47-99a0-0cb28977acaf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Helpers\Settings\Type">
       <UniqueIdentifier>{8a89d68b-dcc7-47b2-b351-c2fd85b77188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extensions\InGame Menu">
+      <UniqueIdentifier>{f6066eda-d2e7-4d23-85f8-36e335383349}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

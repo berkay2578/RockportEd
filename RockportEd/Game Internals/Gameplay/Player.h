@@ -26,9 +26,12 @@ namespace GameInternals {
       namespace Player {
          static float* carSpeed = (float*)(0x5142C8 + 0x400000);
 
+         static DWORD* getCarPowerBase() {
+            return Memory::readPointer(0x5142D0, 1, 0x20);
+         }
          static bool getCarPowerData(CarPowerData*& out_CarPowerData) {
-            auto pBase = Data::getCarPowerBase();
-            if (!pBase) {
+            auto pBase = getCarPowerBase();
+            if (!pBase || *pBase == 0xEEEEEEEE) {
                out_CarPowerData = nullptr;
                return false;
             }
@@ -36,15 +39,14 @@ namespace GameInternals {
             out_CarPowerData = (CarPowerData*)*pBase;
             return true;
          }
-         static float getCarRPM() {
-            CarPowerData* cpd = nullptr;
-            if (getCarPowerData(cpd)) {
-               return max(
-                  (cpd->alignedCurrentRPM / 10000.0f) * cpd->maximumRPM,
-                  cpd->minimumRPM
-               );
-            }
-            return -1.0f;
+         static float getCarRPM(CarPowerData* cpd) {
+            if (!cpd)
+               return -1.0f;
+
+            return max(
+               (cpd->alignedCurrentRPM / 10000.0f) * cpd->maximumRPM,
+               cpd->minimumRPM
+            );
          }
 
          static float getCarSpeed(const SpeedUnit& targetUnit) {
@@ -54,14 +56,13 @@ namespace GameInternals {
                   return v * 2.23694f;
                case SpeedUnit::KMH:
                   return v * 3.6f;
-               case SpeedUnit::MPS:
-                  return v;
             }
+            return v;
          }
 
          static float* getCarNOSAsPointer() {
             auto pBase = Data::readPointerBase2();
-            if (!pBase)
+            if (!pBase || !*pBase)
                return nullptr;
 
             return (float*)(*pBase + 0xA4);

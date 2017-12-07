@@ -10,9 +10,7 @@ namespace GameInternals {
       static DWORD* readPointerBase2() { // vtable of many floats
          return Memory::readPointer(0x513E80, 2, 0x8, 0x60);
       }
-      static DWORD* getCarPowerBase() {
-         return Memory::readPointer(0x5142D0, 1, 0x20);
-      }
+      // This is not a definitive pointer. On modified game files, this will lead to a different address.
       static DWORD* getCameraBase() {
          return Memory::readPointer(0x51DCC8, 1, 0xF4);
       }

@@ -2,13 +2,7 @@
 #include <WinDef.h>
 
 namespace Extensions {
-   namespace D3D9 {
-      enum class HookOption {
-         CustomCamera,
-         GameplayOptions,
-         NewHUD
-      };
-
+   namespace InGameMenu {
       DWORD WINAPI Init(LPVOID);
 
       struct PhyicsTuning {
