@@ -255,6 +255,25 @@ namespace Extensions {
             // TODO: Optmize new hud code, structuer it blabla
             GameInternals::Gameplay::Player::getCarPowerData(carPowerData);
 
+            /*ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            float* colSky = (float*)Memory::readPointer(0x5B392C, 2, 0xC8, 0x70);
+            if (colSky) {
+               static int step = 0;
+               ImGui::InputInt("step", &step, 0x4, 0x10, ImGuiInputTextFlags_CharsHexadecimal);
+               colSky += step;
+               ImGui::ColorEdit4("Color", colSky);
+               static bool discoSky = false;
+               ImGui::Checkbox("Disco", &discoSky);
+               if (discoSky) {
+                  float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                  float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                  float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                  colSky[0] = r; colSky[1] = g; colSky[2] = b;
+               }
+            }
+
+            ImGui::End();*/
+
             if (isMainWindowVisible) {
                imguiIO->MouseDrawCursor = imguiIO->WantCaptureMouse;
 
@@ -268,6 +287,31 @@ namespace Extensions {
                ImGui::Checkbox("New HUD", &State::enabledOptions[MenuOption::NewHUD]);
 
                ImGui::End();
+
+
+               ImGui::Begin("TimeOfDayLighting DEBUG", nullptr);
+               DWORD* curLighting = Memory::readPointer(0x5B392C, 1, 0xC4);
+               if (curLighting) {
+                  TimeOfDayLighting* todInstance = *(TimeOfDayLighting**)(*curLighting + 0x18);
+                  ImGui::ColorEdit4("SpecularColour", todInstance->SpecularColour);
+                  ImGui::ColorEdit4("DiffuseColour", todInstance->DiffuseColour);
+                  ImGui::ColorEdit4("AmbientColour", todInstance->AmbientColour);
+                  ImGui::ColorEdit4("FogHazeColour", todInstance->FogHazeColour);
+                  ImGui::ColorEdit4("FixedFunctionSkyColour", todInstance->FixedFunctionSkyColour);
+                  ImGui::SliderFloat("FogDistanceScale", &todInstance->FogDistanceScale, -100.0f, 100.0f);
+                  ImGui::SliderFloat("FogHazeColourScale", &todInstance->FogHazeColourScale, -100.0f, 100.0f);
+                  ImGui::SliderFloat("FogSkyColourScale", &todInstance->FogSkyColourScale, -100.0f, 100.0f);
+                  ImGui::SliderFloat("EnvSkyBrightness", &todInstance->EnvSkyBrightness, -100.0f, 100.0f);
+                  ImGui::SliderFloat("CarSpecScale", &todInstance->CarSpecScale, -100.0f, 100.0f);
+                  ImGui::ColorEdit4("FogSkyColour", todInstance->FogSkyColour);
+
+                  ImGui::SliderFloat("FogInLightScatter", (float*)(*curLighting + 0x40), -100.0f, 100.0f);
+                  ImGui::SliderFloat("FogSunFalloff", (float*)(*curLighting + 0x4C), -100.0f, 100.0f);
+               }
+               // each TimeOfDayLighting is 70 bytes
+               // you can change the weather by changing the value of the pointer "curLighting" with one of the stuff after the AA AA AA AA AA AA stuff
+               ImGui::End();
+
                /*
                ImGui::Begin("_DEBUG-2", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                static float newRideHeight = 0.0f;
@@ -686,6 +730,9 @@ namespace Extensions {
 
       LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
          if (isImguiInitialized) {
+            if (isMainWindowVisible)
+               ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+
             if (!(imguiIO->WantTextInput | imguiIO->WantCaptureKeyboard)) {
                if (uMsg == WM_KEYUP) {
                   switch (wParam) {
@@ -695,9 +742,6 @@ namespace Extensions {
                   }
                }
             }
-
-            if (isMainWindowVisible)
-               ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
          }
          return FALSE;
       }
