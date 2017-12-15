@@ -9,7 +9,7 @@ namespace ImGui {
       style->AntiAliasedShapes = true;
       style->Alpha             = 0.9f;
       style->WindowTitleAlign  = ImVec2(0.0f, 0.5f);
-      style->WindowMinSize     = ImVec2(200.0f, 120.0f);
+      style->WindowMinSize     = ImVec2(150.0f, 100.0f);
 
       style->WindowPadding       = ImVec2(10.0f, 10.0f);
       style->WindowRounding      = 2.0f;
@@ -69,13 +69,19 @@ namespace ImGui {
       style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
    }
 
-   bool SliderUInt(const char* label, unsigned int* v, unsigned int v_min, unsigned int v_max, const char* display_format) {
-      if (!display_format)
-         display_format = "%.0f";
-      float v_f = (float)*v;
-      bool value_changed = SliderFloat(label, &v_f, (float)v_min, (float)v_max, display_format, 1.0f);
-      *v = (unsigned int)v_f;
-      return value_changed;
+   bool customGetter_Vector(void* vec, int idx, const char** out_text) {
+      auto& vector = *static_cast<std::vector<std::string>*>(vec);
+      if (idx < 0 || idx >= static_cast<int>(vector.size())) {
+         return false;
+      }
+      *out_text = vector.at(idx).c_str();
+      return true;
+   };
+   bool Combo(const char* label, int* currIndex, std::vector<std::string>& values) {
+      if (values.empty()) {
+         return false;
+      }
+      return Combo(label, currIndex, customGetter_Vector, static_cast<void*>(&values), values.size());
    }
 
    void PushItemDisabled() {

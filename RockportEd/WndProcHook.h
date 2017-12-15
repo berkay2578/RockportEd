@@ -6,6 +6,6 @@ namespace Hooks {
       extern HWND windowHandle;
       void addExtension(LPVOID extenderAddress);
 
-      DWORD WINAPI Init(LPVOID);
+      void Init();
    }
 }

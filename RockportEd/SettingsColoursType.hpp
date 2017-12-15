@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 #include "imgui\imgui.h"
 // (De)Serialization
 #include <cereal\archives\xml.hpp>

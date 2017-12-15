@@ -1,8 +1,7 @@
 #pragma once
 #include "stdafx.h"
-#include "Memory.h"
+// Helpers
 #include "WndProcHook.h"
-
 #include "Game Internals\Data\Variables.h"
 #include MIRRORHOOK_DEFINITIONS_PATH
 
@@ -102,7 +101,7 @@ namespace Extensions {
             }
          }
 
-         inline void updateValues(const float newWidth, const float newHeight) {
+         inline void updateValues(const float& newWidth, const float& newHeight) {
             float aspectRatio = newWidth / newHeight;
 
             // Resolution

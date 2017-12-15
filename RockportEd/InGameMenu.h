@@ -1,24 +1,11 @@
 #pragma once
-#include <WinDef.h>
+#include "_BaseInGameMenuItem.hpp"
 
 namespace Extensions {
    namespace InGameMenu {
-      DWORD WINAPI Init(LPVOID);
+      extern std::vector<_BaseInGameMenuItem*> items;
+      void Init();
 
-      struct TimeOfDayLighting {
-         float SpecularColour[4];
-         float DiffuseColour[4];
-         float AmbientColour[4];
-         float FogHazeColour[4];
-         float FixedFunctionSkyColour[4];
-         float FogDistanceScale;
-         float FogHazeColourScale;
-         float FogSkyColourScale;
-         float EnvSkyBrightness;
-         float CarSpecScale;
-         BYTE  unk[0x4 * 3];
-         float FogSkyColour[4];
-      };
       struct PhyicsTuning {
          float steering = 0.0f;
          float handling = 0.0f;

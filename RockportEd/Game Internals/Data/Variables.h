@@ -8,6 +8,7 @@ namespace GameInternals {
          static bool* resetGameWindow    = (bool*)(0x582C39 + 0x400000);
          static bool* gameWindowInactive = (bool*)(0x582C50 + 0x400000);
          static bool* gameplayActive     = (bool*)(0x4F40C4 + 0x400000);
+         static bool* gameplayAccessed   = (bool*)(0x51CD38 + 0x400000);
          static bool* drawHUD            = (bool*)(0x17CAA8 + 0x400000); // really ghetto way, this is actually an assigment in a function
 
          static bool isFadeScreenOn() {
@@ -18,6 +19,9 @@ namespace GameInternals {
          }
          static bool isGameplayActive() {
             return *gameplayActive;
+         }
+         static bool isGameplayAccessed() {
+            return *gameplayAccessed;
          }
 
          static bool isResetGameWindow() {

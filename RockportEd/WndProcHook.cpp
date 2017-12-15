@@ -1,16 +1,12 @@
 #include "stdafx.h"
 #include "WndProcHook.h"
-
-#include <vector>
-using std::vector;
-
 #include MIRRORHOOK_DEFINITIONS_PATH
 
 namespace Hooks {
    namespace WndProc {
-      HWND            windowHandle = nullptr;
-      WNDPROC         origWndProc  = nullptr;
-      vector<WNDPROC> extensions   = vector<WNDPROC>();
+      HWND                 windowHandle = nullptr;
+      WNDPROC              origWndProc  = nullptr;
+      std::vector<WNDPROC> extensions   = std::vector<WNDPROC>();
 
       void addExtension(LPVOID extensionAddress) {
          extensions.push_back(reinterpret_cast<WNDPROC>(extensionAddress));
@@ -32,7 +28,7 @@ namespace Hooks {
          return CallWindowProcA(origWndProc, hWnd, uMsg, wParam, lParam);
       }
 
-      DWORD WINAPI Init(LPVOID) {
+      void Init() {
          HMODULE hMirrorHook = nullptr;
          while (!hMirrorHook) {
             hMirrorHook = GetModuleHandleA("MirrorHook.asi");
@@ -43,8 +39,6 @@ namespace Hooks {
          }
          windowHandle = MirrorHook::D3D9::GetWindowHandle();
          origWndProc = (WNDPROC)SetWindowLongPtrA(windowHandle, GWL_WNDPROC, (LONG_PTR)&hkWndProc);
-
-         return TRUE;
       }
    }
 }

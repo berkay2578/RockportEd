@@ -4,9 +4,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>default</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>default</Filter>
-    </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>Helpers\imgui</Filter>
     </ClInclude>
@@ -85,6 +82,36 @@
     <ClInclude Include="InGameMenu.h">
       <Filter>Extensions\InGame Menu</Filter>
     </ClInclude>
+    <ClInclude Include="Game Internals\Gameplay\World.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeOfDayLightingPresetType.hpp">
+      <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsType.hpp">
+      <Filter>Helpers\Settings\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions.h">
+      <Filter>Extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="LightingEditor.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraEditor.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="GameplayOptions.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="_BaseInGameMenuItem.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="_LoadInGameMenuItems.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraInfoPresetType.hpp">
+      <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -120,9 +147,6 @@
     </ClCompile>
     <ClCompile Include="WndProcExtensions.hpp">
       <Filter>Extensions\WndProc</Filter>
-    </ClCompile>
-    <ClCompile Include="SettingsType.hpp">
-      <Filter>Helpers\Settings\Type</Filter>
     </ClCompile>
     <ClCompile Include="InGameMenu.cpp">
       <Filter>Extensions\InGame Menu</Filter>
@@ -173,6 +197,12 @@
     </Filter>
     <Filter Include="Extensions\InGame Menu">
       <UniqueIdentifier>{f6066eda-d2e7-4d23-85f8-36e335383349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Settings\Object">
+      <UniqueIdentifier>{38b90e11-780d-4d94-9767-31d6f346b9e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extensions\InGame Menu\Items">
+      <UniqueIdentifier>{4c7537b2-dfff-4fd8-91ec-fdf2ffd8a759}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

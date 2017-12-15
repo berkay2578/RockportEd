@@ -8,9 +8,9 @@
 #include <cereal\archives\xml.hpp>
 
 namespace Settings {
-   SettingsType settingsType;
+   SettingsType settingsType = {};
    // TODO: Get path properly
-   const string settingsFile = std::experimental::filesystem::current_path().u8string() + string("\\RockportEd_Settings.xml");
+   const std::string settingsFile = std::experimental::filesystem::current_path().u8string() + std::string("\\RockportEd_Settings.xml");
 
    bool loadSettings() {
       try {
