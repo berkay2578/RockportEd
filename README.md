@@ -1,20 +1,21 @@
 # RockportEd
 An addon to NFS: Most Wanted (2005) with the goal of enhancing the gameplay and adding new general customization options.
 
-## How does it work?
-It currently utilizes the [ASI Loader by ThirteenAG](https://github.com/ThirteenAG/Ultimate-ASI-Loader) to be injected to the game memory.
-After it is injected, it utilizes [MirrorHook](https://github.com/berkay2578/MirrorHook) to have a functioning overlay-UI without interfering with game's own controls.
-The UI is drawn with the wonderful [dear imgui](https://github.com/ocornut/imgui).
+## How to make it work?
+1. Get [MirrorHook](https://github.com/berkay2578/MirrorHook).
+2. Get an ASI Loader like [the one by ThirteenAG](https://github.com/ThirteenAG/Ultimate-ASI-Loader) and get it to load MirrorHook and RockportEd. (or inject them to the process manually.)
+3. Voila. After MirrorHook initializes itself, RockportEd will show itself using the wonderful [dear imgui](https://github.com/ocornut/imgui).
 
 ## Development dependencies
 - [June 2010 DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 - [MirrorHook](https://github.com/berkay2578/MirrorHook)
 - C++14 compliant compiler [e.g., VS2015 and above](https://www.visualstudio.com)
+- Universal CRT SDK
 
 ## How to set up
 - Set up MirrorHook first.
 - Change the `MIRRORHOOK_DEFINITIONS_PATH` inside `stdafx.h`.
-- Change the parameters of `copy` in Post-Build Event command or remove it.
+- Change the parameters of the `copy` command in Post-Build Event or remove it.
 - Compile.
 
 ## Notes

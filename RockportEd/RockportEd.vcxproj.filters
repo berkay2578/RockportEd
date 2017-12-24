@@ -4,152 +4,158 @@
     <ClInclude Include="stdafx.h">
       <Filter>default</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imconfig.h">
-      <Filter>Helpers\imgui</Filter>
+    <ClInclude Include="Extensions\InGame Menu\Items\_BaseInGameMenuItem.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui.h">
-      <Filter>Helpers\imgui</Filter>
+    <ClInclude Include="Extensions\InGame Menu\Items\_LoadInGameMenuItems.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
-      <Filter>Helpers\imgui</Filter>
+    <ClInclude Include="Extensions\InGame Menu\Items\CameraEditor.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\dx9\imgui_impl_dx9.h">
-      <Filter>Helpers\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_user.h">
-      <Filter>Helpers\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_ext.h">
-      <Filter>Helpers\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\GameInternals.h">
-      <Filter>Helpers\Game Internals</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Gameplay\Camera.h">
-      <Filter>Helpers\Game Internals\Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Gameplay\Gameplay.h">
-      <Filter>Helpers\Game Internals\Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Gameplay\Variables.h">
-      <Filter>Helpers\Game Internals\Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Data\Variables.h">
-      <Filter>Helpers\Game Internals\Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Data\Data.h">
-      <Filter>Helpers\Game Internals\Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Config\Player.h">
-      <Filter>Helpers\Game Internals\Config</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Config\Controls.h">
-      <Filter>Helpers\Game Internals\Config</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Config\Config.h">
-      <Filter>Helpers\Game Internals\Config</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Config\Gameplay.h">
-      <Filter>Helpers\Game Internals\Config</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Gameplay\Player.h">
-      <Filter>Helpers\Game Internals\Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Gameplay\Object.h">
-      <Filter>Helpers\Game Internals\Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="WndProcHook.h">
-      <Filter>Helpers\WndProc</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory.h">
-      <Filter>Helpers\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="FixAnnoyances.hpp">
-      <Filter>Extensions\WndProc</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Helpers\Settings</Filter>
-    </ClInclude>
-    <ClInclude Include="DI8Extension.h">
+    <ClInclude Include="Extensions\DInput8\DI8Extension.h">
       <Filter>Extensions\DInput8</Filter>
     </ClInclude>
-    <ClInclude Include="SettingsColoursType.hpp">
-      <Filter>Helpers\Settings\Type</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowedModeImprovements.hpp">
-      <Filter>Extensions\WndProc</Filter>
-    </ClInclude>
-    <ClInclude Include="InGameMenu.h">
-      <Filter>Extensions\InGame Menu</Filter>
-    </ClInclude>
-    <ClInclude Include="Game Internals\Gameplay\World.h">
-      <Filter>Helpers\Game Internals\Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="TimeOfDayLightingPresetType.hpp">
-      <Filter>Helpers\Settings\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="SettingsType.hpp">
-      <Filter>Helpers\Settings\Type</Filter>
-    </ClInclude>
-    <ClInclude Include="Extensions.h">
+    <ClInclude Include="Extensions\Extensions.h">
       <Filter>Extensions</Filter>
     </ClInclude>
-    <ClInclude Include="LightingEditor.hpp">
+    <ClInclude Include="Extensions\WndProc\FixAnnoyances.hpp">
+      <Filter>Extensions\WndProc</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp">
       <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
-    <ClInclude Include="CameraEditor.hpp">
+    <ClInclude Include="Extensions\InGame Menu\Items\LightingEditor.hpp">
       <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
-    <ClInclude Include="GameplayOptions.hpp">
-      <Filter>Extensions\InGame Menu\Items</Filter>
+    <ClInclude Include="Extensions\WndProc\WndProcExtensions.hpp">
+      <Filter>Extensions\WndProc</Filter>
     </ClInclude>
-    <ClInclude Include="_BaseInGameMenuItem.hpp">
-      <Filter>Extensions\InGame Menu\Items</Filter>
+    <ClInclude Include="Extensions\WndProc\WindowedModeImprovements.hpp">
+      <Filter>Extensions\WndProc</Filter>
     </ClInclude>
-    <ClInclude Include="_LoadInGameMenuItems.hpp">
-      <Filter>Extensions\InGame Menu\Items</Filter>
+    <ClInclude Include="Extensions\InGame Menu\InGameMenu.h">
+      <Filter>Extensions\InGame Menu</Filter>
     </ClInclude>
-    <ClInclude Include="CameraInfoPresetType.hpp">
+    <ClInclude Include="Helpers\Game Internals\Config\Config.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Config\Controls.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Config\Gameplay.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Config\Player.h">
+      <Filter>Helpers\Game Internals\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Object\CameraInfoPresetType.hpp">
       <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\imconfig.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\imgui.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\dx9\imgui_impl_dx9.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\imgui_internal.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\imgui_user.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Data\Data.h">
+      <Filter>Helpers\Game Internals\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Object\TimeOfDayLightingPresetType.hpp">
+      <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\stb_truetype.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\stb_rect_pack.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\imgui\stb_textedit.h">
+      <Filter>Helpers\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\WndProc\WndProcHook.h">
+      <Filter>Helpers\WndProc</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Type\SettingsType.hpp">
+      <Filter>Helpers\Settings\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Type\SettingsColoursType.hpp">
+      <Filter>Helpers\Settings\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Settings.h">
+      <Filter>Helpers\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Memory\Memory.h">
+      <Filter>Helpers\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Gameplay.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\GameInternals.h">
+      <Filter>Helpers\Game Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Camera.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Player.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Gameplay\World.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Data\Variables.h">
+      <Filter>Helpers\Game Internals\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Variables.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Object.h">
+      <Filter>Helpers\Game Internals\Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>default</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
-      <Filter>Helpers\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_demo.cpp">
-      <Filter>Helpers\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>Helpers\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
-      <Filter>Helpers\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_user.cpp">
-      <Filter>Helpers\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="WndProcHook.cpp">
-      <Filter>Helpers\WndProc</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
-      <Filter>Helpers\Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="Settings.cpp">
-      <Filter>Helpers\Settings</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="DI8Extension.cpp">
+    <ClCompile Include="Extensions\DInput8\DI8Extension.cpp">
       <Filter>Extensions\DInput8</Filter>
     </ClCompile>
-    <ClCompile Include="WndProcExtensions.hpp">
-      <Filter>Extensions\WndProc</Filter>
-    </ClCompile>
-    <ClCompile Include="InGameMenu.cpp">
+    <ClCompile Include="Extensions\InGame Menu\InGameMenu.cpp">
       <Filter>Extensions\InGame Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui.cpp">
+      <Filter>Helpers\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui_demo.cpp">
+      <Filter>Helpers\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui_draw.cpp">
+      <Filter>Helpers\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\dx9\imgui_impl_dx9.cpp">
+      <Filter>Helpers\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui_user.cpp">
+      <Filter>Helpers\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\WndProc\WndProcHook.cpp">
+      <Filter>Helpers\WndProc</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\Settings\Settings.cpp">
+      <Filter>Helpers\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers\Memory\Memory.cpp">
+      <Filter>Helpers\Memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

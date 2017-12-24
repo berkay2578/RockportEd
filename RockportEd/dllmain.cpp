@@ -1,15 +1,23 @@
 #include "stdafx.h"
 // Helpers
-#include "Game Internals\GameInternals.h"
-#include "Settings.h"
-#include "WndProcHook.h"
+#include "Helpers\Game Internals\GameInternals.h"
+#include "Helpers\Settings\Settings.h"
+#include "Helpers\WndProc\WndProcHook.h"
 // Extensions
-#include "InGameMenu.h"
-#include "_LoadInGameMenuItems.hpp"
-#include "DI8Extension.h"
-#include "WndProcExtensions.hpp"
+#include "Extensions\InGame Menu\InGameMenu.h"
+#include "Extensions\InGame Menu\Items\_LoadInGameMenuItems.hpp"
+#include "Extensions\DInput8\DI8Extension.h"
+#include "Extensions\WndProc\WndProcExtensions.hpp"
 
 DWORD WINAPI Init(LPVOID) {
+   // MirrorHook
+   HMODULE hMirrorHook = nullptr;
+   while (!hMirrorHook) {
+      hMirrorHook = GetModuleHandleA("MirrorHook.asi");
+      Sleep(100);
+   }
+   MirrorHook::PrepareFor(MirrorHook::Game::MostWanted);
+
    // Helpers
    Memory::Init();
    Settings::loadSettings();
@@ -21,9 +29,12 @@ DWORD WINAPI Init(LPVOID) {
    Extensions::DI8::Init();
 
    // InGameMenu Items
-   Extensions::InGameMenu::loadItemsToInGameMenu();
+   Extensions::InGameMenu::loadItemsToInGameMenu();   
+
+   static std::string copyright = "Copyright (c) 2017 Berkay Yiðit - berkay(2578). Greetz to GamerZ, still learning from him somehow. Bads.tm and SpeedyHeart are honestly the most annoying, egomaniac people I've ever had contact with, may god help them.";
    return TRUE;
 }
+
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID) {
    if (ul_reason_for_call == DLL_PROCESS_ATTACH) {

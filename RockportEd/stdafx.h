@@ -10,6 +10,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "Memory.h"
-// Project-wide macros
+#include "Helpers\Memory\Memory.h"
+// MirrorHook Definitions
 #define MIRRORHOOK_DEFINITIONS_PATH "..\..\MirrorHook\MirrorHook\inc\Definitions.hpp"

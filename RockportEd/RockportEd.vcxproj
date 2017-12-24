@@ -106,7 +106,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
@@ -153,7 +153,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)inc;$(ProjectDir)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -164,7 +164,8 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableParallelCodeGeneration>
+      </EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -254,78 +255,48 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CameraInfoPresetType.hpp" />
-    <ClInclude Include="_BaseInGameMenuItem.hpp" />
-    <ClInclude Include="CameraEditor.hpp" />
-    <ClInclude Include="Extensions.h" />
-    <ClInclude Include="Game Internals\Gameplay\World.h" />
-    <ClInclude Include="GameplayOptions.hpp" />
-    <ClInclude Include="InGameMenu.h" />
-    <ClInclude Include="DI8Extension.h" />
-    <ClInclude Include="FixAnnoyances.hpp" />
-    <ClInclude Include="Game Internals\Config\Config.h" />
-    <ClInclude Include="Game Internals\Config\Controls.h" />
-    <ClInclude Include="Game Internals\Config\Gameplay.h" />
-    <ClInclude Include="Game Internals\Config\Player.h" />
-    <ClInclude Include="Game Internals\Data\Data.h" />
-    <ClInclude Include="Game Internals\Data\Variables.h" />
-    <ClInclude Include="Game Internals\GameInternals.h" />
-    <ClInclude Include="Game Internals\Gameplay\Camera.h" />
-    <ClInclude Include="Game Internals\Gameplay\Gameplay.h" />
-    <ClInclude Include="Game Internals\Gameplay\Object.h" />
-    <ClInclude Include="Game Internals\Gameplay\Player.h" />
-    <ClInclude Include="Game Internals\Gameplay\Variables.h" />
-    <ClInclude Include="imgui\dx9\imgui_impl_dx9.h" />
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imgui_user.h" />
-    <ClInclude Include="imgui_ext.h" />
-    <ClInclude Include="LightingEditor.hpp" />
-    <ClInclude Include="Memory.h" />
-    <ClInclude Include="Settings.h" />
-    <ClInclude Include="SettingsType.hpp" />
-    <ClInclude Include="SettingsColoursType.hpp" />
+    <ClInclude Include="Extensions\DInput8\DI8Extension.h" />
+    <ClInclude Include="Extensions\Extensions.h" />
+    <ClInclude Include="Extensions\InGame Menu\InGameMenu.h" />
+    <ClInclude Include="Extensions\InGame Menu\Items\CameraEditor.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\LightingEditor.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\_BaseInGameMenuItem.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\_LoadInGameMenuItems.hpp" />
+    <ClInclude Include="Extensions\WndProc\FixAnnoyances.hpp" />
+    <ClInclude Include="Extensions\WndProc\WindowedModeImprovements.hpp" />
+    <ClInclude Include="Extensions\WndProc\WndProcExtensions.hpp" />
+    <ClInclude Include="Helpers\Game Internals\Config\Config.h" />
+    <ClInclude Include="Helpers\Game Internals\Config\Controls.h" />
+    <ClInclude Include="Helpers\Game Internals\Config\Gameplay.h" />
+    <ClInclude Include="Helpers\Game Internals\Config\Player.h" />
+    <ClInclude Include="Helpers\Game Internals\Data\Data.h" />
+    <ClInclude Include="Helpers\Game Internals\Data\Variables.h" />
+    <ClInclude Include="Helpers\Game Internals\GameInternals.h" />
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Camera.h" />
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Gameplay.h" />
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Object.h" />
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Player.h" />
+    <ClInclude Include="Helpers\Game Internals\Gameplay\Variables.h" />
+    <ClInclude Include="Helpers\Game Internals\Gameplay\World.h" />
+    <ClInclude Include="Helpers\imgui\dx9\imgui_impl_dx9.h" />
+    <ClInclude Include="Helpers\imgui\imconfig.h" />
+    <ClInclude Include="Helpers\imgui\imgui.h" />
+    <ClInclude Include="Helpers\imgui\imgui_internal.h" />
+    <ClInclude Include="Helpers\imgui\imgui_user.h" />
+    <ClInclude Include="Helpers\imgui\stb_rect_pack.h" />
+    <ClInclude Include="Helpers\imgui\stb_textedit.h" />
+    <ClInclude Include="Helpers\imgui\stb_truetype.h" />
+    <ClInclude Include="Helpers\Memory\Memory.h" />
+    <ClInclude Include="Helpers\Settings\Object\CameraInfoPresetType.hpp" />
+    <ClInclude Include="Helpers\Settings\Object\TimeOfDayLightingPresetType.hpp" />
+    <ClInclude Include="Helpers\Settings\Settings.h" />
+    <ClInclude Include="Helpers\Settings\Type\SettingsColoursType.hpp" />
+    <ClInclude Include="Helpers\Settings\Type\SettingsType.hpp" />
+    <ClInclude Include="Helpers\WndProc\WndProcHook.h" />
     <ClInclude Include="stdafx.h" />
-    <ClCompile Include="WndProcExtensions.hpp" />
-    <ClInclude Include="TimeOfDayLightingPresetType.hpp" />
-    <ClInclude Include="WindowedModeImprovements.hpp" />
-    <ClInclude Include="WndProcHook.h" />
-    <ClInclude Include="_LoadInGameMenuItems.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="InGameMenu.cpp" />
-    <ClCompile Include="DI8Extension.cpp" />
-    <ClCompile Include="imgui\dx9\imgui_impl_dx9.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_demo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_user.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -346,13 +317,30 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Memory.cpp" />
-    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Extensions\DInput8\DI8Extension.cpp" />
+    <ClCompile Include="Extensions\InGame Menu\InGameMenu.cpp" />
+    <ClCompile Include="Helpers\imgui\dx9\imgui_impl_dx9.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Helpers\imgui\imgui_user.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Helpers\Memory\Memory.cpp" />
+    <ClCompile Include="Helpers\Settings\Settings.cpp" />
+    <ClCompile Include="Helpers\WndProc\WndProcHook.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="WndProcHook.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
