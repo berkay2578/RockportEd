@@ -88,9 +88,6 @@
     <ClInclude Include="Helpers\Settings\Type\SettingsType.hpp">
       <Filter>Helpers\Settings\Type</Filter>
     </ClInclude>
-    <ClInclude Include="Helpers\Settings\Type\SettingsColoursType.hpp">
-      <Filter>Helpers\Settings\Type</Filter>
-    </ClInclude>
     <ClInclude Include="Helpers\Settings\Settings.h">
       <Filter>Helpers\Settings</Filter>
     </ClInclude>
@@ -120,6 +117,12 @@
     </ClInclude>
     <ClInclude Include="Helpers\Game Internals\Gameplay\Object.h">
       <Filter>Helpers\Game Internals\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions\InGame Menu\Items\CarConfigurator.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

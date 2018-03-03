@@ -194,16 +194,17 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)inc</AdditionalIncludeDirectories>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)inc;$(ProjectDir)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <ControlFlowGuard>false</ControlFlowGuard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <CreateHotpatchableImage>false</CreateHotpatchableImage>
+      <CreateHotpatchableImage>
+      </CreateHotpatchableImage>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -255,10 +256,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Debug.hpp" />
     <ClInclude Include="Extensions\DInput8\DI8Extension.h" />
     <ClInclude Include="Extensions\Extensions.h" />
     <ClInclude Include="Extensions\InGame Menu\InGameMenu.h" />
     <ClInclude Include="Extensions\InGame Menu\Items\CameraEditor.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\CarConfigurator.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\LightingEditor.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\_BaseInGameMenuItem.hpp" />
@@ -291,7 +294,6 @@
     <ClInclude Include="Helpers\Settings\Object\CameraInfoPresetType.hpp" />
     <ClInclude Include="Helpers\Settings\Object\TimeOfDayLightingPresetType.hpp" />
     <ClInclude Include="Helpers\Settings\Settings.h" />
-    <ClInclude Include="Helpers\Settings\Type\SettingsColoursType.hpp" />
     <ClInclude Include="Helpers\Settings\Type\SettingsType.hpp" />
     <ClInclude Include="Helpers\WndProc\WndProcHook.h" />
     <ClInclude Include="stdafx.h" />
@@ -321,18 +323,28 @@
     <ClCompile Include="Extensions\InGame Menu\InGameMenu.cpp" />
     <ClCompile Include="Helpers\imgui\dx9\imgui_impl_dx9.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Helpers\imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Helpers\imgui\imgui_demo.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Helpers\imgui\imgui_draw.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Helpers\imgui\imgui_user.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Helpers\Memory\Memory.cpp" />
     <ClCompile Include="Helpers\Settings\Settings.cpp" />

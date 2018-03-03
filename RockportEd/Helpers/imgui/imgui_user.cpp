@@ -1,19 +1,25 @@
 #include "imgui.h"
 #include "imgui_internal.h"
+#include <vector>
 
 namespace ImGui {
    void LoadStyle() {
       ImGuiStyle* style = &ImGui::GetStyle();
 
       style->AntiAliasedLines  = true;
-      style->AntiAliasedShapes = true;
+      style->AntiAliasedFill   = true;
       style->Alpha             = 0.9f;
       style->WindowTitleAlign  = ImVec2(0.0f, 0.5f);
       style->WindowMinSize     = ImVec2(150.0f, 100.0f);
 
+      style->ChildBorderSize  = 0.0f;
+      style->FrameBorderSize  = 0.0f;
+      style->PopupBorderSize  = 0.4f;
+      style->WindowBorderSize = 0.0f;
+
       style->WindowPadding       = ImVec2(10.0f, 10.0f);
       style->WindowRounding      = 2.0f;
-      style->ChildWindowRounding = 1.0f;
+      style->ChildRounding       = 1.0f;
       style->FramePadding        = ImVec2(4.0f, 3.0f);
       style->FrameRounding       = 0.0f;
       style->ItemSpacing         = ImVec2(8.0f, 4.0f);
@@ -27,8 +33,8 @@ namespace ImGui {
       style->Colors[ImGuiCol_Text]                 = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
       style->Colors[ImGuiCol_TextDisabled]         = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
       style->Colors[ImGuiCol_WindowBg]             = ImVec4(0.06f, 0.06f, 0.06f, 0.70f);
-      style->Colors[ImGuiCol_ChildWindowBg]        = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
-      style->Colors[ImGuiCol_PopupBg]              = ImVec4(0.00f, 0.00f, 0.00f, 0.94f);
+      style->Colors[ImGuiCol_ChildBg]              = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
+      style->Colors[ImGuiCol_PopupBg]              = ImVec4(0.14f, 0.14f, 0.14f, 0.99f);
       style->Colors[ImGuiCol_Border]               = ImVec4(1.00f, 1.00f, 1.00f, 0.39f);
       style->Colors[ImGuiCol_BorderShadow]         = ImVec4(0.00f, 0.00f, 0.00f, 0.10f);
       style->Colors[ImGuiCol_FrameBg]              = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
@@ -42,7 +48,6 @@ namespace ImGui {
       style->Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.31f, 0.31f, 0.31f, 0.80f);
       style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.51f, 0.51f, 0.51f, 0.80f);
       style->Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
-      style->Colors[ImGuiCol_ComboBg]              = ImVec4(0.14f, 0.14f, 0.14f, 0.99f);
       style->Colors[ImGuiCol_CheckMark]            = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
       style->Colors[ImGuiCol_SliderGrab]           = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
       style->Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);

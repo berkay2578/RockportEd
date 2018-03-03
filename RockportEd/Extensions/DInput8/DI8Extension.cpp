@@ -14,11 +14,12 @@ namespace Extensions {
       void WINAPI getDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
          DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
          if (GameInternals::Data::Variables::isGameWindowInactive() || imguiIO->WantCaptureMouse) {
-            ZeroMemory(lpvData, sizeof(DIMOUSESTATE));
+            ZeroMemory(mouseState->rgbButtons, 4);
          }
       }
 
       void Init() {
+         *GameInternals::Data::Variables::gameWindowInactive = true;
          MirrorHook::DI8::AddExtension(
             MirrorHook::DI8::DI8Device::Keyboard,
             MirrorHook::DI8::DI8Extension::GetDeviceState,

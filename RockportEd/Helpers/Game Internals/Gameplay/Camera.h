@@ -7,22 +7,22 @@
 namespace GameInternals {
    struct CameraInfo {
       _CAMERA_INFO_ARRAY_DESCRIPTOR(STIFFNESS);
-      float Stiffness[2];
+      float stiffness[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(ANGLE);
-      float Angle[2];
+      float angle[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(LAG);
-      float Lag[2];
+      float lag[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(FOV);
-      float Fov[2];
+      float fov[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(HEIGHT);
-      float Height[2];
+      float height[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(LATEOFFSET);
-      float LateOffset[2];
+      float lateOffset[2];
       char* collectionName;
       _CAMERA_INFO_ARRAY_DESCRIPTOR(TILTING);
-      bool Tilting[2];
+      bool tilting[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(SELECTABLE);
-      bool Selectable[2];
+      bool selectable[2];
    };
 
    namespace Gameplay {

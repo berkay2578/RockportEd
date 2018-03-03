@@ -7,48 +7,48 @@
 #include <cereal\archives\xml.hpp>
 
 struct CameraInfoPreset {
-   float Stiffness[2];
-   float Angle[2];
-   float Lag[2];
-   float Fov[2];
-   float Height[2];
-   float LateOffset[2];
-   bool Tilting[2];
-   bool Selectable[2];
+   float stiffness[2];
+   float angle[2];
+   float lag[2];
+   float fov[2];
+   float height[2];
+   float lateOffset[2];
+   bool tilting[2];
+   bool selectable[2];
 
    void loadToCameraInfo(GameInternals::CameraInfo* cameraInfoInstance) {
-      memcpy_s(cameraInfoInstance->Stiffness, sizeof(float) * 2, Stiffness, sizeof(float) * 2);
-      memcpy_s(cameraInfoInstance->Angle, sizeof(float) * 2, Angle, sizeof(float) * 2);
-      memcpy_s(cameraInfoInstance->Lag, sizeof(float) * 2, Lag, sizeof(float) * 2);
-      memcpy_s(cameraInfoInstance->Fov, sizeof(float) * 2, Fov, sizeof(float) * 2);
-      memcpy_s(cameraInfoInstance->Height, sizeof(float) * 2, Height, sizeof(float) * 2);
-      memcpy_s(cameraInfoInstance->LateOffset, sizeof(float) * 2, LateOffset, sizeof(float) * 2);
-      memcpy_s(cameraInfoInstance->Tilting, sizeof(bool) * 2, Tilting, sizeof(bool) * 2);
-      memcpy_s(cameraInfoInstance->Selectable, sizeof(bool) * 2, Selectable, sizeof(bool) * 2);
+      memcpy_s(cameraInfoInstance->stiffness, sizeof(float) * 2, stiffness, sizeof(float) * 2);
+      memcpy_s(cameraInfoInstance->angle, sizeof(float) * 2, angle, sizeof(float) * 2);
+      memcpy_s(cameraInfoInstance->lag, sizeof(float) * 2, lag, sizeof(float) * 2);
+      memcpy_s(cameraInfoInstance->fov, sizeof(float) * 2, fov, sizeof(float) * 2);
+      memcpy_s(cameraInfoInstance->height, sizeof(float) * 2, height, sizeof(float) * 2);
+      memcpy_s(cameraInfoInstance->lateOffset, sizeof(float) * 2, lateOffset, sizeof(float) * 2);
+      memcpy_s(cameraInfoInstance->tilting, sizeof(bool) * 2, tilting, sizeof(bool) * 2);
+      memcpy_s(cameraInfoInstance->selectable, sizeof(bool) * 2, selectable, sizeof(bool) * 2);
    }
    CameraInfoPreset& operator=(GameInternals::CameraInfo* cameraInfoInstance) {
-      memcpy_s(Stiffness, sizeof(float) * 2, cameraInfoInstance->Stiffness, sizeof(float) * 2);
-      memcpy_s(Angle, sizeof(float) * 2, cameraInfoInstance->Angle, sizeof(float) * 2);
-      memcpy_s(Lag, sizeof(float) * 2, cameraInfoInstance->Lag, sizeof(float) * 2);
-      memcpy_s(Fov, sizeof(float) * 2, cameraInfoInstance->Fov, sizeof(float) * 2);
-      memcpy_s(Height, sizeof(float) * 2, cameraInfoInstance->Height, sizeof(float) * 2);
-      memcpy_s(LateOffset, sizeof(float) * 2, cameraInfoInstance->LateOffset, sizeof(float) * 2);
-      memcpy_s(Tilting, sizeof(bool) * 2, cameraInfoInstance->Tilting, sizeof(bool) * 2);
-      memcpy_s(Selectable, sizeof(bool) * 2, cameraInfoInstance->Selectable, sizeof(bool) * 2);
+      memcpy_s(stiffness, sizeof(float) * 2, cameraInfoInstance->stiffness, sizeof(float) * 2);
+      memcpy_s(angle, sizeof(float) * 2, cameraInfoInstance->angle, sizeof(float) * 2);
+      memcpy_s(lag, sizeof(float) * 2, cameraInfoInstance->lag, sizeof(float) * 2);
+      memcpy_s(fov, sizeof(float) * 2, cameraInfoInstance->fov, sizeof(float) * 2);
+      memcpy_s(height, sizeof(float) * 2, cameraInfoInstance->height, sizeof(float) * 2);
+      memcpy_s(lateOffset, sizeof(float) * 2, cameraInfoInstance->lateOffset, sizeof(float) * 2);
+      memcpy_s(tilting, sizeof(bool) * 2, cameraInfoInstance->tilting, sizeof(bool) * 2);
+      memcpy_s(selectable, sizeof(bool) * 2, cameraInfoInstance->selectable, sizeof(bool) * 2);
       return *this;
    }
 
    template <class Archive>
    void serialize(Archive& archive) {
       archive(
-         CEREAL_NVP(Stiffness),
-         CEREAL_NVP(Angle),
-         CEREAL_NVP(Lag),
-         CEREAL_NVP(Fov),
-         CEREAL_NVP(Height),
-         CEREAL_NVP(LateOffset),
-         CEREAL_NVP(Tilting),
-         CEREAL_NVP(Selectable)
+         CEREAL_NVP(stiffness),
+         CEREAL_NVP(angle),
+         CEREAL_NVP(lag),
+         CEREAL_NVP(fov),
+         CEREAL_NVP(height),
+         CEREAL_NVP(lateOffset),
+         CEREAL_NVP(tilting),
+         CEREAL_NVP(selectable)
       );
    }
 };

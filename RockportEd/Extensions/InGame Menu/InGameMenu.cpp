@@ -5,15 +5,13 @@
 #include "Helpers\Settings\Settings.h"
 #include "Helpers\WndProc\WndProcHook.h"
 // dear imgui
-#include "Helpers\imgui\imgui_ext.h"
 #include "Helpers\imgui\extra_fonts\RobotoMedium.hpp"
-//#include "Helpers\imgui\extra_fonts\Aramis_Book_Italic.hpp"
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #include "Helpers\imgui\dx9\imgui_impl_dx9.h"
 
 namespace Extensions {
    namespace InGameMenu {
-      std::vector<_BaseInGameMenuItem*> items ={};
+      std::vector<_BaseInGameMenuItem*> items = {};
 
       bool isImguiInitialized  = false;
       bool isMainWindowVisible = true;
@@ -57,7 +55,7 @@ namespace Extensions {
             imguiIO->IniFilename = NULL;
 
             ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions
-                                       | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
+               | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();
             isImguiInitialized = true;
          }
@@ -70,7 +68,8 @@ namespace Extensions {
             ImGui::Begin("##Huh", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs);
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "RockportEd debug build");
             ImGui::Bullet(); ImGui::TextWrapped("Menu input <-> game input RETURN(Enter) KeyUp is broken.");
-            ImGui::Bullet(); ImGui::TextWrapped("Lighting Editor only works on some save games and is unstable. TODO: Update pointer to a vtable*.");
+            //ImGui::Bullet(); ImGui::TextWrapped("Lighting Editor only works on some save games and is unstable. TODO: Update pointer to a vtable*.");
+            ImGui::Bullet(); ImGui::TextWrapped("For KuruHS, not meant for any other use.");
             ImGui::End();
 
             if (isMainWindowVisible) {
@@ -86,59 +85,6 @@ namespace Extensions {
                   }
                }
                ImGui::End();
-
-               /* DEBUGGGGGGGGGG: That's the way, aha, aha. I like it, aha, aha.
-               struct PhyicsTuning {
-                  float steering = 0.0f;
-                  float handling = 0.0f;
-                  float brakes = 0.0f;
-                  float rideheight = 0.0f;
-                  float aero = 0.0f;
-                  float nos = 0.0f;
-                  float turbo = 0.0f;
-               };
-
-               ImGui::Begin("_DEBUG-2", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-               static float newRideHeight = 0.0f;
-               static PhyicsTuning abc = { 0 };
-               static DWORD addr_abc = (DWORD)&abc;
-
-               if (ImGui::SliderFloat("NewRideHeight", &newRideHeight, -6.0f, 12.0f)) {
-                  static GameInternals::ObjectData* playerData = nullptr;
-                  if (GameInternals::Gameplay::Object::getObjectData(playerData)) {
-                     if (newRideHeight > abc.rideheight && !playerData->z_Velocity)
-                        playerData->z_Position += 0.005f;
-                  }
-                  abc.rideheight = newRideHeight;
-                  __asm {
-                     push eax
-                     push ebx
-                     push ecx
-                     push edx
-
-                     push 0x10
-
-                     mov edx, 0x227400 + 0x400000 // Event::__nw(uint)
-                     call edx
-                     add esp, 0x4
-
-                     //mov ebx, [eax - 0x4]
-                     mov ebx, [addr_abc]
-                     push ebx // arg 2
-                     push 0x0   // arg 1
-                     mov ecx, eax // inner function variable
-
-                     mov edx, 0x225840 + 0x400000 // ETuneVehicle::ETuneVehicle(uint,Physics::Tunings const *)
-                     call edx
-
-                     pop edx
-                     pop ecx
-                     pop ebx
-                     pop eax
-                  }
-               }
-
-               ImGui::End();*/
             } else {
                imguiIO->MouseDrawCursor = false;
             }

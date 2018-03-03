@@ -27,19 +27,21 @@ namespace GameInternals {
       float angular_Velocity;
       float x_LiftForce;
 
-      float mass;
+      float grip;
    };
 
    namespace Gameplay {
       namespace Object {
-         static DWORD objectData_firstInstance = 0x5386C8 + 0x400000;
+         static ObjectData* objectDatas = (ObjectData*)(0x5386C8 + 0x400000);
 
-         static bool getObjectData(ObjectData*& out_CarData, const int& offset = 0) {
-            auto v = (ObjectData*)(objectData_firstInstance + (offset * 0xB0));
-            if (!v)
+         static bool getObjectData(ObjectData*& out_ObjectData, const int& offset = 0) {
+            auto v = &objectDatas[offset];
+            if (!v) {
+               out_ObjectData = nullptr;
                return false;
+            }
 
-            out_CarData = v;
+            out_ObjectData = v;
             return true;
          }
       }

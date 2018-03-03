@@ -7,8 +7,8 @@ namespace GameInternals {
          static bool* fadeScreenOn       = (bool*)(0x51CAE4 + 0x400000); // FadeScreen::IsFadeScreenOn
          static bool* resetGameWindow    = (bool*)(0x582C39 + 0x400000);
          static bool* gameWindowInactive = (bool*)(0x582C50 + 0x400000);
-         static bool* gameplayActive     = (bool*)(0x4F40C4 + 0x400000);
-         static bool* gameplayAccessed   = (bool*)(0x51CD38 + 0x400000);
+         //broken, doesn't work if player doesn't use the first save file slot... static bool* gameplayActive     = (bool*)(0x4F40C4 + 0x400000);
+         //broken, doesn't work if player doesn't use the first save file slot... static bool* gameplayAccessed   = (bool*)(0x51CD38 + 0x400000);
          static bool* drawHUD            = (bool*)(0x17CAA8 + 0x400000); // really ghetto way, this is actually an assigment in a function
 
          static bool isFadeScreenOn() {
@@ -17,12 +17,12 @@ namespace GameInternals {
          static bool isGameWindowInactive() {
             return *gameWindowInactive;
          }
-         static bool isGameplayActive() {
-            return *gameplayActive;
-         }
-         static bool isGameplayAccessed() {
-            return *gameplayAccessed;
-         }
+         //static bool isGameplayActive() {
+         //   return *gameplayActive;
+         //}
+         //static bool isGameplayAccessed() {
+         //   return *gameplayAccessed;
+         //}
 
          static bool isResetGameWindow() {
             return *resetGameWindow;

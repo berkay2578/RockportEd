@@ -9,9 +9,9 @@ namespace Extensions {
    namespace InGameMenu {
       struct LightingEditor : _BaseInGameMenuItem {
       private:
-         DWORD* curLighting_pt1 = nullptr;
+         DWORD * curLighting_pt1 = nullptr;
          DWORD* curLighting_pt2 = nullptr;
-         BYTE*  renderSun_code  = nullptr;
+         //BYTE*  renderSun_code  = nullptr;
 
          std::vector<std::string> lightingHashes              = std::vector<std::string>();
          std::map<int, DWORD>     lightingDefinitionAddresses = {};
@@ -22,9 +22,6 @@ namespace Extensions {
 
       public:
          const virtual void loadData() override {
-            while (!GameInternals::Data::Variables::isGameplayAccessed()) {
-               Sleep(50);
-            }
             const DWORD* todLightingsArray = nullptr;
             while (!todLightingsArray) {
                todLightingsArray = Memory::readPointer(0x5B392C, 3, 0xEC, 0x14, 0x1C);
@@ -37,8 +34,7 @@ namespace Extensions {
                DWORD hash = *(DWORD*)(*todLightingsArray + step);
                if (hash == 0xAAAAAAAA) {
                   break;
-               }
-               else if (hash) {
+               } else if (hash) {
                   char* strHash = new char[10 + 1];
                   sprintf_s(strHash, 10 + 1, "0x%08X", hash);
                   std::string strHash_proper(strHash);
@@ -75,15 +71,9 @@ namespace Extensions {
                Sleep(1);
             }
 
-            while (!curLighting_pt1 || !curLighting_pt2) {
-               curLighting_pt1 = Memory::readPointer(0x5B392C, 1, 0xC4);
-               curLighting_pt2 = Memory::readPointer(0x5B392C, 1, 0xC8);
-               Sleep(10);
-            }
-            renderSun_code = (BYTE*)Memory::makeAbsolute(0x2D0516 + 0x1);
-            Memory::openMemoryAccess((DWORD)renderSun_code, 1);
+            //renderSun_code = (BYTE*)Memory::makeAbsolute(0x2D0516 + 0x1);
 
-            for (auto const& lightingDefinition : lightingDefinitionAddresses) {
+            /*for (auto const& lightingDefinition : lightingDefinitionAddresses) {
                if (*curLighting_pt1 == lightingDefinition.second) {
                   currentLightingIndex = lightingDefinition.first;
 
@@ -92,17 +82,19 @@ namespace Extensions {
                      auto iter = Settings::settingsType.todPresets.find(strHash);
                      if (iter != Settings::settingsType.todPresets.end()) {
                         TimeOfDayLightingPreset* todSettings = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
-                        *renderSun_code = todSettings->RenderSun ? 0x85 : 0x84;
+                        //*renderSun_code = todSettings->RenderSun ? 0x85 : 0x84;
                      }
                   }
                   break;
                }
-            }
+            }*/
             hasLoadedData = true;
          }
          const virtual void displayMenu() override {
             ImGui::Checkbox("Lighting Editor", &isEnabled);
             if (isEnabled) {
+               curLighting_pt1 = Memory::readPointer(0x5B392C, 1, 0xC4);
+               curLighting_pt2 = Memory::readPointer(0x5B392C, 1, 0xC8);
                if (curLighting_pt1 && curLighting_pt2) {
                   ImGui::SetNextWindowSize(ImVec2(280.0f, 395.0f), ImGuiCond_Once);
                   ImGui::SetNextWindowPos(ImVec2(10.0f * 3 + 200.0f + 240.0f, 5.0f), ImGuiCond_Once);
@@ -120,16 +112,16 @@ namespace Extensions {
                         todInstance         = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
                         todSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
 
-                        *renderSun_code                    = todSettingsInstance->RenderSun ? 0x85 : 0x84;
+                        //*renderSun_code                    = todSettingsInstance->RenderSun ? 0x85 : 0x84;
                         *(float*)(*curLighting_pt1 + 0x40) = todSettingsInstance->FogInLightScatter;
                         *(float*)(*curLighting_pt1 + 0x4C) = todSettingsInstance->FogSunFalloff;
                      }
                      ImGui::PopItemWidth();
 
-                     if (ImGui::Checkbox("Render the sun", &todSettingsInstance->RenderSun)) {
+                     /*if (ImGui::Checkbox("Render the sun", &todSettingsInstance->RenderSun)) {
                         *renderSun_code = todSettingsInstance->RenderSun ? 0x85 : 0x84;
                      }
-                     ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
+                     ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();*/
                      if (ImGui::Button("Save Preset")) {
                         todSettingsInstance->FogInLightScatter = *(float*)(*curLighting_pt1 + 0x40);
                         todSettingsInstance->FogSunFalloff     = *(float*)(*curLighting_pt1 + 0x4C);
@@ -147,11 +139,11 @@ namespace Extensions {
                      ImGui::DragFloat("FogHazeColourScale", &todInstance->FogHazeColourScale, 10.0f, 0.0f, 1000.0f);
                      ImGui::DragFloat("FogSkyColourScale", &todInstance->FogSkyColourScale, 10.0f, 0.0f, 1000.0f);
                      ImGui::SliderFloat("EnvSkyBrightness", &todInstance->EnvSkyBrightness, 0.0f, 10.0f);
-                     ImGui::DragFloat("CarSpecScale", &todInstance->CarSpecScale, 0.5f, 0.0f, 100.0f);
+                     ImGui::DragFloat("CarSpecScale", &todInstance->CarSpecScale, 0.25f, 0.0f, 100.0f);
                      ImGui::ColorEdit4("FogSkyColour", todInstance->FogSkyColour);
 
                      ImGui::SliderFloat("FogInLightScatter", (float*)(*curLighting_pt1 + 0x40), 0.0f, 100.0f);
-                     ImGui::SliderFloat("FogSunFalloff", (float*)(*curLighting_pt1 + 0x4C), 0.0f, 1.0f);
+                     ImGui::SliderFloat("FogSunFalloff", (float*)(*curLighting_pt1 + 0x4C), 0.0f, 100.0f);
                   }
                   ImGui::End();
                }
