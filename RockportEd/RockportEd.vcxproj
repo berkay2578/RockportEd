@@ -256,12 +256,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Debug.hpp" />
     <ClInclude Include="Extensions\DInput8\DI8Extension.h" />
     <ClInclude Include="Extensions\Extensions.h" />
     <ClInclude Include="Extensions\InGame Menu\InGameMenu.h" />
     <ClInclude Include="Extensions\InGame Menu\Items\CameraEditor.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\CarConfigurator.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\Debug.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\LightingEditor.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\_BaseInGameMenuItem.hpp" />
@@ -292,6 +292,7 @@
     <ClInclude Include="Helpers\imgui\stb_truetype.h" />
     <ClInclude Include="Helpers\Memory\Memory.h" />
     <ClInclude Include="Helpers\Settings\Object\CameraInfoPresetType.hpp" />
+    <ClInclude Include="Helpers\Settings\Object\GameModificationsPreferencesType.hpp" />
     <ClInclude Include="Helpers\Settings\Object\TimeOfDayLightingPresetType.hpp" />
     <ClInclude Include="Helpers\Settings\Settings.h" />
     <ClInclude Include="Helpers\Settings\Type\SettingsType.hpp" />

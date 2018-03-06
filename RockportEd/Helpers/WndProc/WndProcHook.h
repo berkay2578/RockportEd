@@ -1,8 +1,8 @@
 #pragma once
 #include <WinDef.h>
 
-namespace Hooks {
-   namespace WndProc {
+namespace Helpers {
+   namespace WndProcHook {
       extern HWND windowHandle;
       void addExtension(LPVOID extenderAddress);
 

@@ -21,8 +21,7 @@ namespace Settings {
          std::ifstream ifs(settingsFile);
          cereal::XMLInputArchive iarchive(ifs);
          iarchive(cereal::make_nvp("Settings", settingsType));
-      }
-      catch (std::runtime_error e) {
+      } catch (std::runtime_error e) {
          MessageBox(NULL, e.what(), "Error during loading settings.", MB_ICONERROR | MB_OK);
          return false;
       }
@@ -34,8 +33,7 @@ namespace Settings {
          std::ofstream ofs(settingsFile);
          cereal::XMLOutputArchive oarchive(ofs);
          oarchive(cereal::make_nvp("Settings", settingsType));
-      }
-      catch (std::runtime_error e) {
+      } catch (std::runtime_error e) {
          MessageBox(NULL, e.what(), "Error during saving settings.", MB_ICONERROR | MB_OK);
          return false;
       }

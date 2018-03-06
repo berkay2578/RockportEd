@@ -13,7 +13,7 @@ namespace GameInternals {
       float FogSkyColourScale;
       float EnvSkyBrightness;
       float CarSpecScale;
-      BYTE  unk[0x4 * 3];
+      BYTE  __unk[0x4 * 3];
       float FogSkyColour[4];
    };
 

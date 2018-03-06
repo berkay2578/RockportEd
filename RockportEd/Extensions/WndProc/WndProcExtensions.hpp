@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
-// Extension base
+#include "Extensions\Extensions.h"
+// Helpers
 #include "Helpers\WndProc\WndProcHook.h"
 // Extensions
 #include "FixAnnoyances.hpp"
@@ -9,11 +10,12 @@
 namespace Extensions {
    namespace WndProc {
       static void InitAll() {
-         while (!Hooks::WndProc::windowHandle) {
+         while (!Helpers::WndProcHook::windowHandle) {
             Sleep(100);
          }
          FixAnnoyances::Init();
-         WindowedModeImprovements::Init();
+         if (Settings::settingsType.preferences.WindowedModePreferences.EnableWindowedModeImprovements)
+            WindowedModeImprovements::Init();
       }
    }
 }

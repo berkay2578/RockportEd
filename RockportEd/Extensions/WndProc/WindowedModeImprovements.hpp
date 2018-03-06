@@ -47,7 +47,7 @@ namespace Extensions {
             static float flt3        = 0.00f;
             static const WORD dx     = 16400;
 
-            static void hkFovFix() {
+            static void hkFOVFix() {
                static DWORD dummyVar;
                __asm {
                   mov eax, [edi + 0x60]
@@ -57,16 +57,14 @@ namespace Extensions {
                   flt1 = hor3DScale;
                   flt2 = f06;
                   flt3 = f1234;
-               }
-               else {
+               } else {
                   if (dummyVar > 10) {
                      flt1 = f1;
                      flt2 = 0.5f;
                      flt3 = 1.0f;
                      _asm fld ds : f1
                      return;
-                  }
-                  else {
+                  } else {
                      flt1 = 1.0f;
                      flt2 = 0.5f;
                      flt3 = 1.0f;
@@ -79,7 +77,7 @@ namespace Extensions {
                   _asm fld ds : ver3DScale
             }
             static void Init() {
-               Memory::writeCall(0x2CF4EA, (DWORD)hkFovFix, false);
+               Memory::writeCall(0x2CF4EA, (DWORD)hkFOVFix, false);
                Memory::writeRaw(0x2CF4EF, false, 4, 0x90, 0x83, 0xF9, 0x01);
                Memory::writeNop(0x2CF4F3, 3, false);
 
@@ -192,14 +190,14 @@ namespace Extensions {
          static LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             switch (uMsg) {
                case WM_SIZE:
-                  {
-                     updateValues((float)LOWORD(lParam), (float)HIWORD(lParam));
+               {
+                  updateValues((float)LOWORD(lParam), (float)HIWORD(lParam));
 
-                     isResizing = true;
-                     GameInternals::Data::Variables::setDrawHUD(false);
-                     GameInternals::Data::Variables::setResetGameWindow(true);
-                  }
-                  return TRUE;
+                  isResizing = true;
+                  GameInternals::Data::Variables::setDrawHUD(false);
+                  GameInternals::Data::Variables::setResetGameWindow(true);
+               }
+               return TRUE;
             }
             return FALSE;
          }
@@ -214,17 +212,17 @@ namespace Extensions {
          static void Init() {
             if (*(bool*)Memory::makeAbsolute(0x53E84C)) {
                RECT o_cRect, n_cRect, n_wRect;
-               GetClientRect(Hooks::WndProc::windowHandle, &o_cRect);
+               GetClientRect(Helpers::WndProcHook::windowHandle, &o_cRect);
 
                // Change style
-               DWORD wStyle = GetWindowLongPtr(Hooks::WndProc::windowHandle, GWL_STYLE) | WS_OVERLAPPEDWINDOW;
-               SetWindowLongPtr(Hooks::WndProc::windowHandle, GWL_STYLE, wStyle);
+               DWORD wStyle = GetWindowLongPtr(Helpers::WndProcHook::windowHandle, GWL_STYLE) | WS_OVERLAPPEDWINDOW;
+               SetWindowLongPtr(Helpers::WndProcHook::windowHandle, GWL_STYLE, wStyle);
                // Refresh window
-               SetWindowPos(Hooks::WndProc::windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_DRAWFRAME);
+               SetWindowPos(Helpers::WndProcHook::windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_DRAWFRAME);
 
                // Correct window<->client size diff
-               GetWindowRect(Hooks::WndProc::windowHandle, &n_wRect);
-               GetClientRect(Hooks::WndProc::windowHandle, &n_cRect);
+               GetWindowRect(Helpers::WndProcHook::windowHandle, &n_wRect);
+               GetClientRect(Helpers::WndProcHook::windowHandle, &n_cRect);
                int n_wWidth  = n_wRect.right - n_wRect.left;
                int n_wHeight = n_wRect.bottom - n_wRect.top;
                int dif_cWidth  = o_cRect.right - n_cRect.right;
@@ -232,16 +230,16 @@ namespace Extensions {
                int newWidth  = n_wWidth + dif_cWidth;
                int newHeight = n_wHeight + dif_cHeight;
                // Resize window
-               SetWindowPos(Hooks::WndProc::windowHandle, HWND_TOP, 0, 0, newWidth, newHeight, SWP_NOMOVE | SWP_DRAWFRAME);
+               SetWindowPos(Helpers::WndProcHook::windowHandle, HWND_TOP, 0, 0, newWidth, newHeight, SWP_NOMOVE | SWP_DRAWFRAME);
 
                // TODO: Handle race condition with WSFix
                // Cannot trust `HANDLE asiFile = FindFirstFile("*.asi", fd);` from ThirteenAG's ASI loader because the user might not be using it
                RECT clientRect = { 0 };
-               GetClientRect(Hooks::WndProc::windowHandle, &clientRect);
+               GetClientRect(Helpers::WndProcHook::windowHandle, &clientRect);
                updateValues((float)clientRect.right, (float)clientRect.bottom);
                WSFixCode::Init();
 
-               Hooks::WndProc::addExtension(&wndProcExtension);
+               Helpers::WndProcHook::addExtension(&wndProcExtension);
                MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::AfterReset, &reset);
             }
          }

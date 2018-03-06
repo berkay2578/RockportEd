@@ -49,7 +49,7 @@ namespace Extensions {
 
       void WINAPI beginScene(LPDIRECT3DDEVICE9 pDevice) {
          if (!isImguiInitialized) {
-            ImGui_ImplDX9_Init(Hooks::WndProc::windowHandle, pDevice);
+            ImGui_ImplDX9_Init(Helpers::WndProcHook::windowHandle, pDevice);
             imguiIO->Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 14.0f);
             imguiIO->FontDefault = NULL;
             imguiIO->IniFilename = NULL;
@@ -68,15 +68,13 @@ namespace Extensions {
             ImGui::Begin("##Huh", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs);
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "RockportEd debug build");
             ImGui::Bullet(); ImGui::TextWrapped("Menu input <-> game input RETURN(Enter) KeyUp is broken.");
-            //ImGui::Bullet(); ImGui::TextWrapped("Lighting Editor only works on some save games and is unstable. TODO: Update pointer to a vtable*.");
-            ImGui::Bullet(); ImGui::TextWrapped("For KuruHS, not meant for any other use.");
             ImGui::End();
 
             if (isMainWindowVisible) {
                imguiIO->MouseDrawCursor = imguiIO->WantCaptureMouse;
                showUserGuide();
 
-               ImGui::SetNextWindowPos(ImVec2(10.0f, 5.0f), ImGuiCond_Once);
+               ImGui::SetNextWindowPos(ImVec2(5.0f, 5.0f), ImGuiCond_Once);
                if (ImGui::Begin("RockportEd", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                   for (auto item : items) {
                      if (item->hasLoadedData) {
@@ -109,6 +107,11 @@ namespace Extensions {
 
       LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
          if (isImguiInitialized) {
+            if (uMsg == WM_QUIT) {
+               ImGui_ImplDX9_Shutdown();
+               return FALSE;
+            }
+
             if (isMainWindowVisible)
                ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 
@@ -139,7 +142,7 @@ namespace Extensions {
          MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::BeforeReset, &beforeReset);
          MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::AfterReset, &afterReset);
 
-         Hooks::WndProc::addExtension(&wndProcExtension);
+         Helpers::WndProcHook::addExtension(&wndProcExtension);
       }
    }
 }

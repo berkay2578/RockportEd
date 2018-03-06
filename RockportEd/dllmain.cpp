@@ -21,7 +21,7 @@ DWORD WINAPI Init(LPVOID) {
    // Helpers
    Memory::Init();
    Settings::loadSettings();
-   Hooks::WndProc::Init();
+   Helpers::WndProcHook::Init();
 
    // Extensions
    Extensions::WndProc::InitAll();
@@ -31,7 +31,7 @@ DWORD WINAPI Init(LPVOID) {
    // InGameMenu Items
    Extensions::InGameMenu::loadItemsToInGameMenu();   
 
-   static std::string copyright = "Copyright (c) 2017 Berkay Yiðit - berkay(2578). Greetz to GamerZ, still learning from him somehow. Bads.tm and SpeedyHeart are honestly the most annoying, egomaniac people I've ever had contact with, may god help them.";
+   static std::string copyright = "Copyright (c) 2018 Berkay Yiðit - berkay(2578). Greetz to GamerZ, still learning from him somehow. SpeedyHeart is honestly the most annoying, egomaniac person I've ever had contact with, may god help them.";
    return TRUE;
 }
 

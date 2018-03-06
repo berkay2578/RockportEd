@@ -1,29 +1,26 @@
 #pragma once
 #include "stdafx.h"
+#include "Extensions\Extensions.h"
+// Helpers
 #include "Helpers\WndProc\WndProcHook.h"
 
 namespace Extensions {
    namespace WndProc {
       namespace FixAnnoyances {
-         // TODO: Expose on SettingsType
-         static bool disableAltMenu         = true;
-         static bool disableStopOnFocusLoss = false;
-         static bool disableWindowsMouse    = true;
-
          static LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             switch (uMsg) {
                case WM_SYSCOMMAND:
-                  if ((wParam & 0xFFF0) == SC_KEYMENU && disableAltMenu) {
+                  if ((wParam & 0xFFF0) == SC_KEYMENU && Settings::settingsType.preferences.WindowedModePreferences.DisableAltMenu) {
                      return TRUE;
                   }
                   break;
                case WM_ACTIVATEAPP:
-                  if (wParam == FALSE && disableStopOnFocusLoss) {
+                  if (wParam == FALSE && !Settings::settingsType.preferences.PauseGameplayOnOnFocusLoss) {
                      return TRUE;
                   }
                   break;
                case WM_SETCURSOR:
-                  if (LOWORD(lParam) == HTCLIENT && disableWindowsMouse) {
+                  if (LOWORD(lParam) == HTCLIENT && Settings::settingsType.preferences.WindowedModePreferences.DisableWindowsMouse) {
                      SetCursor(NULL);
                      return TRUE;
                   }
@@ -33,7 +30,7 @@ namespace Extensions {
          }
 
          static void Init() {
-            Hooks::WndProc::addExtension(&wndProcExtension);
+            Helpers::WndProcHook::addExtension(&wndProcExtension);
          }
       }
    }

@@ -351,3 +351,6 @@ ASALocalRun/
 *.exe
 *.out
 *.app
+
+# RockportEd InGameMenu Debug file
+RockportEd/Extensions/InGame Menu/Items/Debug.hpp

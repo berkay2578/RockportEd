@@ -26,21 +26,21 @@ namespace Extensions {
                      ImGui::TextWrapped("Object Data");
                      ImGui::Indent(5.0f);
                      {
-                        ImGui::SliderFloat("Gravity", &carObjectData->gravity, 0.1f, 3500.0f);
-                        ImGui::SliderFloat("Grip", &carObjectData->grip, 0.0001f, 0.003f, "%.6f");
+                        ImGui::SliderFloat("Gravity", &carObjectData->Gravity, 0.1f, 3500.0f);
+                        ImGui::SliderFloat("Grip", &carObjectData->Grip, 0.0001f, 0.003f, "%.6f");
                      }
                      ImGui::Unindent(5.0f);
 
                      ImGui::TextWrapped("Physics Tuning");
                      ImGui::Indent(5.0f);
                      {
-                        ImGui::SliderFloat("Steering", &carPhysicsTuning.steering, -10.0f, 10.0f);
-                        ImGui::SliderFloat("Handling", &carPhysicsTuning.handling, -10.0f, 10.0f);
-                        ImGui::SliderFloat("Brakes", &carPhysicsTuning.brakes, -10.0f, 10.0f);
-                        ImGui::SliderFloat("Ride Height", &carPhysicsTuning.rideHeight, -10.0f, 10.0f);
-                        ImGui::SliderFloat("Aerodynamics", &carPhysicsTuning.aerodynamics, -10.0f, 10.0f);
-                        ImGui::SliderFloat("NOS", &carPhysicsTuning.nos, -10.0f, 10.0f);
-                        ImGui::SliderFloat("Turbo", &carPhysicsTuning.turbo, -10.0f, 10.0f);
+                        ImGui::SliderFloat("Steering", &carPhysicsTuning.Steering, -10.0f, 10.0f);
+                        ImGui::SliderFloat("Handling", &carPhysicsTuning.Handling, -10.0f, 10.0f);
+                        ImGui::SliderFloat("Brakes", &carPhysicsTuning.Brakes, -10.0f, 10.0f);
+                        ImGui::SliderFloat("Ride Height", &carPhysicsTuning.RideHeight, -10.0f, 10.0f);
+                        ImGui::SliderFloat("Aerodynamics", &carPhysicsTuning.Aerodynamics, -10.0f, 10.0f);
+                        ImGui::SliderFloat("NOS", &carPhysicsTuning.NOS, -10.0f, 10.0f);
+                        ImGui::SliderFloat("Turbo", &carPhysicsTuning.Turbo, -10.0f, 10.0f);
                         if (ImGui::Button("Apply") || autoUpdate) {
                            GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(&carPhysicsTuning);
                            if (!autoUpdate)

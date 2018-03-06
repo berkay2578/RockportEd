@@ -12,22 +12,22 @@ namespace GameInternals {
       float z_Position;
       float x_Position;
 
-      BYTE unk1;
-      BYTE unk2;
-      BYTE unk3;
-      BYTE unk4;
+      BYTE __unk1;
+      BYTE __unk2;
+      BYTE __unk3;
+      BYTE __unk4;
 
       float y_Velocity;
       float z_Velocity;
       float x_Velocity;
 
-      float gravity;
+      float Gravity;
 
       float y_LiftForce;
       float angular_Velocity;
       float x_LiftForce;
 
-      float grip;
+      float Grip;
    };
 
    namespace Gameplay {

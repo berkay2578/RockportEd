@@ -2,8 +2,8 @@
 #include "WndProcHook.h"
 #include MIRRORHOOK_DEFINITIONS_PATH
 
-namespace Hooks {
-   namespace WndProc {
+namespace Helpers {
+   namespace WndProcHook {
       HWND                 windowHandle = nullptr;
       WNDPROC              origWndProc  = nullptr;
       std::vector<WNDPROC> extensions   = std::vector<WNDPROC>();

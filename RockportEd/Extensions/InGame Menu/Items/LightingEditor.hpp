@@ -96,8 +96,6 @@ namespace Extensions {
                curLighting_pt1 = Memory::readPointer(0x5B392C, 1, 0xC4);
                curLighting_pt2 = Memory::readPointer(0x5B392C, 1, 0xC8);
                if (curLighting_pt1 && curLighting_pt2) {
-                  ImGui::SetNextWindowSize(ImVec2(280.0f, 395.0f), ImGuiCond_Once);
-                  ImGui::SetNextWindowPos(ImVec2(10.0f * 3 + 200.0f + 240.0f, 5.0f), ImGuiCond_Once);
                   if (ImGui::Begin("Time of Day Lighting Editor", &isEnabled)) {
                      if (!todInstance)
                         todInstance = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);

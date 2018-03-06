@@ -15,7 +15,6 @@ namespace Extensions {
          const virtual void displayMenu() override {
             ImGui::Checkbox("Gameplay Options", &isEnabled);
             if (isEnabled) {
-               ImGui::SetNextWindowPos(ImVec2(10.0f, 5.0f * 2 + 100.0f), ImGuiCond_Once);
                if (ImGui::Begin("Gameplay Options", &isEnabled)) {
                   ImGui::PushItemWidth(-1.0f);
 
@@ -25,8 +24,7 @@ namespace Extensions {
                      trafficRefreshInterval = GameInternals::Gameplay::Variables::getTrafficRefreshIntervalAsPointer();
                      if (trafficRefreshInterval) {
                         ImGui::SliderFloat("##TrafficRefreshInterval", trafficRefreshInterval, 1.0f, 640.0f);
-                     }
-                     else {
+                     } else {
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
                         ImGui::TextWrapped("Traffic AI not yet initialized by the game.");
                         ImGui::PopStyleColor();

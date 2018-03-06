@@ -4,25 +4,25 @@
 
 namespace GameInternals {
    struct CarPhysicsTuning {
-      float steering     = 0.0f;
-      float handling     = 0.0f;
-      float brakes       = 0.0f;
-      float rideHeight   = 0.0f;
-      float aerodynamics = 0.0f;
-      float nos          = 0.0f;
-      float turbo        = 0.0f;
+      float Steering     = 0.0f;
+      float Handling     = 0.0f;
+      float Brakes       = 0.0f;
+      float RideHeight   = 0.0f;
+      float Aerodynamics = 0.0f;
+      float NOS          = 0.0f;
+      float Turbo        = 0.0f;
    };
    struct CarPowerData {
-      /*         struct align            */ BYTE unk[11 * 0x4];
-      float alignedCurrentRPM;           // 0x2C
-      /*         struct align            */ BYTE unk2[1 * 0x4];
-      float minimumRPM;                  // 0x34
-      float maximumPossibleRPM;          // 0x38
-      float maximumRPM;                  // 0x3C
-      float currentPedalInputPercentage; // 0x40
-      /*         struct align            */ BYTE unk3[19 * 0x4];
-      int   currentGear;                 // 0x8C
-      int   lastGear;                    // 0x90
+      /*         struct align            */ BYTE __unk[11 * 0x4];
+      float AlignedCurrentRPM;           // 0x2C
+      /*         struct align            */ BYTE __unk2[1 * 0x4];
+      float MinimumRPM;                  // 0x34
+      float MaximumPossibleRPM;          // 0x38
+      float MaximumRPM;                  // 0x3C
+      float CurrentPedalInputPercentage; // 0x40
+      /*         struct align            */ BYTE __unk3[19 * 0x4];
+      int   CurrentGear;                 // 0x8C
+      int   LastGear;                    // 0x90
    };
 
    enum class SpeedUnit : BYTE {
@@ -63,8 +63,8 @@ namespace GameInternals {
                   return -1.0f;
 
                return max(
-                  (cpd->alignedCurrentRPM / 10000.0f) * cpd->maximumRPM,
-                  cpd->minimumRPM
+                  (cpd->AlignedCurrentRPM / 10000.0f) * cpd->MaximumRPM,
+                  cpd->MinimumRPM
                );
             }
 
@@ -92,7 +92,7 @@ namespace GameInternals {
                return p ? *p : -1.0f;
             }
 
-            static void   setCarPhysicsTuning(const CarPhysicsTuning* newCarPhysicsTuning) {
+            static void setCarPhysicsTuning(const CarPhysicsTuning* newCarPhysicsTuning) {
                __asm {
                   push eax
                   push ebx

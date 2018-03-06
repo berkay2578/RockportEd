@@ -118,11 +118,14 @@
     <ClInclude Include="Helpers\Game Internals\Gameplay\Object.h">
       <Filter>Helpers\Game Internals\Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="Debug.hpp">
-      <Filter>Extensions\InGame Menu\Items</Filter>
-    </ClInclude>
     <ClInclude Include="Extensions\InGame Menu\Items\CarConfigurator.hpp">
       <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions\InGame Menu\Items\Debug.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Object\GameModificationsPreferencesType.hpp">
+      <Filter>Helpers\Settings\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
