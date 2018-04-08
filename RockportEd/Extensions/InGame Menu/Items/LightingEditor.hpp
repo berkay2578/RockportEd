@@ -6,13 +6,6 @@ using GameInternals::TimeOfDayLighting_Memory;
 // ImGui::VerticalSeparator
 #include "Helpers\imgui\imgui_internal.h"
 
-/*
-HUGE BUG
-BECAUSE I FORCE SUNFALLOFF AND THE OTHER VALUE MANUALLY, TODSETTINGSINSTANCE IS CREATED WITH 0 AND IS FORCED TO THEM
-I HAVE TO CHANGE THE STRUCT OF SETTINGS AND TIMEOFDAYLIGHTING TO HAVE THEM DONE AUTOMATICALLY
-SO THAT ROCKPORTED IS SELF-AWARE AND DOESNT FORCE 0 TO THEM
-*/
-
 namespace Extensions {
    namespace InGameMenu {
       class TimeOfDayEditor : public _BaseInGameMenuItem {
@@ -186,10 +179,10 @@ namespace Extensions {
                   ImGui::ColorEdit4("##FogSkyColour", todLightingMemoryInstance->TimeOfDayLightingInstance->FogSkyColour);
 
                   ImGui::Text("FogInLightScatter"); ImGui::SameLine(lineDiff);
-                  ImGui::SliderFloat("##FogInLightScatter", &todLightingMemoryInstance->FogInLightScatter, 0.0f, 100.0f);
+                  ImGui::SliderFloat("##FogInLightScatter", &todLightingMemoryInstance->FogInLightScatter, -100.0f, 100.0f);
 
                   ImGui::Text("FogSunFalloff"); ImGui::SameLine(lineDiff);
-                  ImGui::SliderFloat("##FogSunFalloff", &todLightingMemoryInstance->FogSunFalloff, 0.0f, 100.0f);
+                  ImGui::SliderFloat("##FogSunFalloff", &todLightingMemoryInstance->FogSunFalloff, -100.0f, 100.0f);
 
                   ImGui::PopItemWidth();
                } else {
