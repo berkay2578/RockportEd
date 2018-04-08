@@ -6,12 +6,15 @@
 #include "Helpers\WndProc\WndProcHook.h"
 // dear imgui
 #include "Helpers\imgui\extra_fonts\RobotoMedium.hpp"
+#include "Helpers\imgui\extra_fonts\CooperHewitt_Roman.hpp"
+#include "Helpers\imgui\extra_fonts\CooperHewitt_Bold.hpp"
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #include "Helpers\imgui\dx9\imgui_impl_dx9.h"
 
 namespace Extensions {
    namespace InGameMenu {
-      std::vector<_BaseInGameMenuItem*> items = {};
+      _BaseInGameMenuItem*              activeItem = nullptr;
+      std::vector<_BaseInGameMenuItem*> items      = {};
 
       bool isImguiInitialized  = false;
       bool isMainWindowVisible = true;
@@ -51,6 +54,8 @@ namespace Extensions {
          if (!isImguiInitialized) {
             ImGui_ImplDX9_Init(Helpers::WndProcHook::windowHandle, pDevice);
             imguiIO->Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 14.0f);
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Roman_compressed_data, CooperHewitt_Roman_compressed_size, 36.0f);
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Bold_compressed_data, CooperHewitt_Bold_compressed_size, 36.0f);
             imguiIO->FontDefault = NULL;
             imguiIO->IniFilename = NULL;
 
@@ -64,21 +69,39 @@ namespace Extensions {
       }
       void WINAPI endScene(LPDIRECT3DDEVICE9 pDevice) {
          if (isImguiInitialized) {
-            ImGui::SetNextWindowPos(ImVec2(imguiIO->DisplaySize.x - 5.0f, 5.0f), ImGuiCond_Always, ImVec2(1.0f, 0.0f));
-            ImGui::Begin("##Huh", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs);
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "RockportEd debug build");
-            ImGui::Bullet(); ImGui::TextWrapped("Menu input <-> game input RETURN(Enter) KeyUp is broken.");
-            ImGui::End();
-
             if (isMainWindowVisible) {
                imguiIO->MouseDrawCursor = imguiIO->WantCaptureMouse;
                showUserGuide();
 
                ImGui::SetNextWindowPos(ImVec2(5.0f, 5.0f), ImGuiCond_Once);
-               if (ImGui::Begin("RockportEd", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+               if (ImGui::Begin("##RockportEd_Main", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar)) {
+                  ImGui::PushFont(imguiIO->Fonts->Fonts[1]);
+                  ImGui::Text("Rockport");
+                  ImVec2 diff = ImGui::CalcTextSize("Rockport");
+                  ImGui::PopFont();
+                  ImGui::PushFont(imguiIO->Fonts->Fonts[2]);
+                  ImGui::SameLine(10.0f + diff.x); ImGui::SetCursorPosY(1.0f + ImGui::GetStyle().WindowPadding.y);
+                  ImGui::TextColored(ImVec4(1.0f, 0.565f, 0.0f, 1.0f), "Ed");
+                  ImGui::PopFont();
+                  ImGui::SameLine();
+                  const float buttonWidth = ImGui::GetCursorPos().x + ImGui::CalcTextSize("v1.0").x;
+                  ImGui::Text("v1.0");
+
+                  if (activeItem) {
+                     if (ImGui::Button("< Back"))
+                        activeItem = nullptr;
+                     else {
+                        activeItem->onFrame();
+                        if (activeItem->displayMenu())
+                           activeItem = nullptr;
+                     }
+                  }
                   for (auto item : items) {
                      if (item->hasLoadedData) {
-                        item->displayMenu();
+                        if (activeItem != item)
+                           item->onFrame();
+                        if (!activeItem && item->displayMenuItem(ImVec2(buttonWidth, 0.0f)))
+                           activeItem = item;
                      }
                   }
                }

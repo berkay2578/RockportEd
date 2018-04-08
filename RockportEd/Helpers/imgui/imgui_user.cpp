@@ -9,6 +9,7 @@ namespace ImGui {
       style->AntiAliasedLines  = true;
       style->AntiAliasedFill   = true;
       style->Alpha             = 0.9f;
+      style->ButtonTextAlign   = ImVec2(0.0f, 0.5f);
       style->WindowTitleAlign  = ImVec2(0.0f, 0.5f);
       style->WindowMinSize     = ImVec2(150.0f, 100.0f);
 

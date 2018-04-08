@@ -7,7 +7,6 @@
 #include <cereal\archives\xml.hpp>
 
 struct TimeOfDayLightingPreset {
-   bool  RenderSun = true;
    float FogDistanceScale;
    float FogSkyColour[4];
    float FogSkyColourScale;
@@ -40,7 +39,6 @@ struct TimeOfDayLightingPreset {
    template <class Archive>
    void serialize(Archive& archive) {
       archive(
-         CEREAL_NVP(RenderSun),
          CEREAL_NVP(SpecularColour),
          CEREAL_NVP(DiffuseColour),
          CEREAL_NVP(AmbientColour),

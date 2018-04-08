@@ -1,5 +1,4 @@
 #pragma once
-#include <WinDef.h>
 
 namespace GameInternals {
    struct ObjectData {
@@ -12,10 +11,7 @@ namespace GameInternals {
       float z_Position;
       float x_Position;
 
-      BYTE __unk1;
-      BYTE __unk2;
-      BYTE __unk3;
-      BYTE __unk4;
+      unsigned char unk[4];
 
       float y_Velocity;
       float z_Velocity;

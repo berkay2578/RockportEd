@@ -1,24 +1,24 @@
 #pragma once
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
+using GameInternals::TimeOfDay;
 using GameInternals::TimeOfDayLighting;
 // ImGui::VerticalSeparator
 #include "Helpers\imgui\imgui_internal.h"
 
 namespace Extensions {
    namespace InGameMenu {
-      struct LightingEditor : _BaseInGameMenuItem {
-      private:
-         DWORD * curLighting_pt1 = nullptr;
+      class TimeOfDayEditor : public _BaseInGameMenuItem {
+         DWORD* curLighting_pt1 = nullptr;
          DWORD* curLighting_pt2 = nullptr;
-         //BYTE*  renderSun_code  = nullptr;
 
          std::vector<std::string> lightingHashes              = std::vector<std::string>();
          std::map<int, DWORD>     lightingDefinitionAddresses = {};
          int                      currentLightingIndex        = 0;
 
-         TimeOfDayLighting*       todInstance         = nullptr;
-         TimeOfDayLightingPreset* todSettingsInstance = nullptr;
+         TimeOfDay*               todInstance                 = nullptr;
+         TimeOfDayLighting*       todLightingInstance         = nullptr;
+         TimeOfDayLightingPreset* todLightingSettingsInstance = nullptr;
 
       public:
          const virtual void loadData() override {
@@ -71,8 +71,6 @@ namespace Extensions {
                Sleep(1);
             }
 
-            //renderSun_code = (BYTE*)Memory::makeAbsolute(0x2D0516 + 0x1);
-
             /*for (auto const& lightingDefinition : lightingDefinitionAddresses) {
                if (*curLighting_pt1 == lightingDefinition.second) {
                   currentLightingIndex = lightingDefinition.first;
@@ -82,69 +80,100 @@ namespace Extensions {
                      auto iter = Settings::settingsType.todPresets.find(strHash);
                      if (iter != Settings::settingsType.todPresets.end()) {
                         TimeOfDayLightingPreset* todSettings = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
-                        //*renderSun_code = todSettings->RenderSun ? 0x85 : 0x84;
                      }
                   }
                   break;
                }
             }*/
+
+            todInstance = *(TimeOfDay**)(0x5B392C + 0x400000);
             hasLoadedData = true;
          }
-         const virtual void displayMenu() override {
-            ImGui::Checkbox("Lighting Editor", &isEnabled);
-            if (isEnabled) {
-               curLighting_pt1 = Memory::readPointer(0x5B392C, 1, 0xC4);
-               curLighting_pt2 = Memory::readPointer(0x5B392C, 1, 0xC8);
-               if (curLighting_pt1 && curLighting_pt2) {
-                  if (ImGui::Begin("Time of Day Lighting Editor", &isEnabled)) {
-                     if (!todInstance)
-                        todInstance = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
-                     if (!todSettingsInstance)
-                        todSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
 
-                     ImGui::Text("Current lighting:"); ImGui::SameLine(); ImGui::PushItemWidth(-1.0f);
-                     if (ImGui::Combo("##CurLighting", &currentLightingIndex, lightingHashes)) {
-                        *curLighting_pt1 = lightingDefinitionAddresses[currentLightingIndex];
-                        *curLighting_pt2 = *(DWORD*)(*curLighting_pt1 + 0x18);
+         const virtual void onFrame() override {}
 
-                        todInstance         = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
-                        todSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
+         const virtual bool displayMenuItem(const ImVec2& buttonSize) override {
+            return ImGui::Button("Time of Day Editor", buttonSize);
+         }
+         const virtual bool displayMenu() override {
+            curLighting_pt1 = Memory::readPointer(0x5B392C, 1, 0xC4);
+            curLighting_pt2 = Memory::readPointer(0x5B392C, 1, 0xC8);
+            if (curLighting_pt1 && curLighting_pt2) {
+               if (!todLightingInstance)
+                  todLightingInstance = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
+               if (!todLightingSettingsInstance)
+                  todLightingSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
+               if (todLightingInstance && todLightingSettingsInstance) {
+                  ImGui::Text("Current lighting:"); ImGui::SameLine();
+                  ImGui::PushItemWidth(-1.0f);
+                  if (ImGui::Combo("##CurLighting", &currentLightingIndex, lightingHashes)) {
+                     *curLighting_pt1 = lightingDefinitionAddresses[currentLightingIndex];
+                     *curLighting_pt2 = *(DWORD*)(*curLighting_pt1 + 0x18);
 
-                        //*renderSun_code                    = todSettingsInstance->RenderSun ? 0x85 : 0x84;
-                        *(float*)(*curLighting_pt1 + 0x40) = todSettingsInstance->FogInLightScatter;
-                        *(float*)(*curLighting_pt1 + 0x4C) = todSettingsInstance->FogSunFalloff;
-                     }
-                     ImGui::PopItemWidth();
+                     todLightingInstance         = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
+                     todLightingSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
 
-                     /*if (ImGui::Checkbox("Render the sun", &todSettingsInstance->RenderSun)) {
-                        *renderSun_code = todSettingsInstance->RenderSun ? 0x85 : 0x84;
-                     }
-                     ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();*/
-                     if (ImGui::Button("Save Preset")) {
-                        todSettingsInstance->FogInLightScatter = *(float*)(*curLighting_pt1 + 0x40);
-                        todSettingsInstance->FogSunFalloff     = *(float*)(*curLighting_pt1 + 0x4C);
-                        *todSettingsInstance                   = todInstance;
+                     *(float*)(*curLighting_pt1 + 0x40) = todLightingSettingsInstance->FogInLightScatter;
+                     *(float*)(*curLighting_pt1 + 0x4C) = todLightingSettingsInstance->FogSunFalloff;
+                  }
+                  ImGui::PopItemWidth();
+
+                  if (ImGui::Button("Save preset")) {
+                     todLightingSettingsInstance->FogInLightScatter = *(float*)(*curLighting_pt1 + 0x40);
+                     todLightingSettingsInstance->FogSunFalloff     = *(float*)(*curLighting_pt1 + 0x4C);
+                     *todLightingSettingsInstance                   = todLightingInstance;
+                     Settings::saveSettings();
+                  } ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
+                  if (ImGui::Button("Save preset for all")) {
+                     // save presets
+                     for (auto& preset : Settings::settingsType.todPresets) {
+                        preset.second.FogInLightScatter = *(float*)(*curLighting_pt1 + 0x40);
+                        preset.second.FogSunFalloff     = *(float*)(*curLighting_pt1 + 0x4C);
+                        preset.second                   = todLightingInstance;
                         Settings::saveSettings();
                      }
-                     ImGui::Separator();
+                     // apply to all
+                     for (auto& lightingDef : lightingDefinitionAddresses) {
+                        DWORD lighting = lightingDef.second;
 
-                     ImGui::ColorEdit4("SpecularColour", todInstance->SpecularColour);
-                     ImGui::ColorEdit4("DiffuseColour", todInstance->DiffuseColour);
-                     ImGui::ColorEdit4("AmbientColour", todInstance->AmbientColour);
-                     ImGui::ColorEdit4("FogHazeColour", todInstance->FogHazeColour);
-                     ImGui::ColorEdit4("FixedFunctionSkyColour", todInstance->FixedFunctionSkyColour);
-                     ImGui::DragFloat("FogDistanceScale", &todInstance->FogDistanceScale, 10.0f, -100.0f, 1000.0f);
-                     ImGui::DragFloat("FogHazeColourScale", &todInstance->FogHazeColourScale, 10.0f, 0.0f, 1000.0f);
-                     ImGui::DragFloat("FogSkyColourScale", &todInstance->FogSkyColourScale, 10.0f, 0.0f, 1000.0f);
-                     ImGui::SliderFloat("EnvSkyBrightness", &todInstance->EnvSkyBrightness, 0.0f, 10.0f);
-                     ImGui::DragFloat("CarSpecScale", &todInstance->CarSpecScale, 0.25f, 0.0f, 100.0f);
-                     ImGui::ColorEdit4("FogSkyColour", todInstance->FogSkyColour);
+                        TimeOfDayLighting* listTodInstance = *(TimeOfDayLighting**)(lighting + 0x18);
+                        *listTodInstance = todLightingInstance;
 
-                     ImGui::SliderFloat("FogInLightScatter", (float*)(*curLighting_pt1 + 0x40), 0.0f, 100.0f);
-                     ImGui::SliderFloat("FogSunFalloff", (float*)(*curLighting_pt1 + 0x4C), 0.0f, 100.0f);
+                        *(float*)(lighting + 0x40) = *(float*)(*curLighting_pt1 + 0x40);
+                        *(float*)(lighting + 0x4C) = *(float*)(*curLighting_pt1 + 0x4C);
+                     }
                   }
-                  ImGui::End();
+                  ImGui::Separator();
+                  float lineDiff = ImGui::CalcTextSize("FixedFunctionSkyColour:").x + ImGui::GetStyle().WindowPadding.x;
+                  ImGui::PushItemWidth(lineDiff);
+                  ImGui::Text("SpecularColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##SpecularColour", todLightingInstance->SpecularColour);
+                  ImGui::Text("DiffuseColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##DiffuseColour", todLightingInstance->DiffuseColour);
+                  ImGui::Text("AmbientColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##AmbientColour", todLightingInstance->AmbientColour);
+                  ImGui::Text("FogHazeColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##FogHazeColour", todLightingInstance->FogHazeColour);
+                  ImGui::Text("FixedFunctionSkyColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##FixedFunctionSkyColour", todLightingInstance->FixedFunctionSkyColour);
+                  ImGui::Text("FogDistanceScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##FogDistanceScale", &todLightingInstance->FogDistanceScale, 10.0f, -100.0f, 1000.0f);
+                  ImGui::Text("FogHazeColourScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##FogHazeColourScale", &todLightingInstance->FogHazeColourScale, 10.0f, 0.0f, 1000.0f);
+                  ImGui::Text("FogSkyColourScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##FogSkyColourScale", &todLightingInstance->FogSkyColourScale, 10.0f, 0.0f, 1000.0f);
+                  ImGui::Text("EnvSkyBrightness"); ImGui::SameLine(lineDiff); ImGui::SliderFloat("##EnvSkyBrightness", &todLightingInstance->EnvSkyBrightness, 0.0f, 10.0f);
+                  ImGui::Text("CarSpecScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##CarSpecScale", &todLightingInstance->CarSpecScale, 0.25f, 0.0f, 100.0f);
+                  ImGui::Text("FogSkyColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##FogSkyColour", todLightingInstance->FogSkyColour);
+
+                  ImGui::Text("FogInLightScatter"); ImGui::SameLine(lineDiff); ImGui::SliderFloat("##FogInLightScatter", (float*)(*curLighting_pt1 + 0x40), 0.0f, 100.0f);
+                  ImGui::Text("FogSunFalloff"); ImGui::SameLine(lineDiff); ImGui::SliderFloat("##FogSunFalloff", (float*)(*curLighting_pt1 + 0x4C), 0.0f, 100.0f);
+                  ImGui::PopItemWidth();
+               } else {
+                  ImGui::Text("There was an issue...");
                }
+               ImGui::Separator();
+               ImGui::Text("Time of Day");
+               ImGui::SliderFloat("skybox speed multiplier", &todInstance->SkyboxSpeedMultiplier, -100.0f, 100.0f);
+               ImGui::SliderInt("sun speed multiplier (w/ correlation to skybox speed)", &todInstance->SunSpeedMultiplier, -100.0f, 100.0f);
+               ImGui::SliderFloat("tod value", &todInstance->ToDValue, 0.0f, 1.0f);
+               ImGui::SliderAngle("sunangle", &todInstance->SunAngleInRads);
+               ImGui::SliderAngle("sunpos", &todInstance->SunPositionInRads);
+               return false;
+            } else {
+               return true;
             }
          }
       };
