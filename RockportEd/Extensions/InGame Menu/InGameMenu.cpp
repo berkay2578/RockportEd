@@ -39,6 +39,7 @@ namespace Extensions {
                   "- CTRL+Z, CTRL+Y to undo/redo\n"
                   "- ESCAPE to cancel\n"
                   "- You can apply arithmetic operators +,*,/ on numerical values.\n");
+               ImGui::BulletText("CTRL+MouseWheel to scale the UI.");
                ImGui::BulletText("Click on the button at the top-right of this window to close it.");
             }
             ImGui::End();
@@ -59,6 +60,7 @@ namespace Extensions {
             imguiIO->FontDefault = NULL;
             imguiIO->IniFilename = NULL;
 
+            imguiIO->FontAllowUserScaling = true;
             ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions
                | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();

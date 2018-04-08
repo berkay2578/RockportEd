@@ -3,10 +3,10 @@
 namespace GameInternals {
    struct TimeOfDay {
       float    SkyboxSpeedMultiplier;
-      int32_t  SunSpeedMultiplier;
-      float    ToDValue;
-      float    SunAngleInRads;
-      float    SunPositionInRads;
+      int32_t  TimeOfDaySpeedMultiplier;
+      float    TimeOfDayValue;
+      float    SunOrbitAngleInRads;
+      float    SunOrbitPositionInRads;
    };
    struct TimeOfDayLighting {
       float SpecularColour[4];
@@ -36,6 +36,14 @@ namespace GameInternals {
          CarSpecScale       = todInstance->CarSpecScale;
          return *this;
       }
+   };
+   struct TimeOfDayLighting_Memory {
+      unsigned char __unk[0x4 * 6];
+      TimeOfDayLighting* TimeOfDayLightingInstance;
+      unsigned char __unk2[0x4 * 9];
+      float FogInLightScatter;
+      unsigned char __unk3[0x4 * 2];
+      float FogSunFalloff;
    };
 
    namespace Gameplay {

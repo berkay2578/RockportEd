@@ -2,9 +2,16 @@
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
 using GameInternals::TimeOfDay;
-using GameInternals::TimeOfDayLighting;
+using GameInternals::TimeOfDayLighting_Memory;
 // ImGui::VerticalSeparator
 #include "Helpers\imgui\imgui_internal.h"
+
+/*
+HUGE BUG
+BECAUSE I FORCE SUNFALLOFF AND THE OTHER VALUE MANUALLY, TODSETTINGSINSTANCE IS CREATED WITH 0 AND IS FORCED TO THEM
+I HAVE TO CHANGE THE STRUCT OF SETTINGS AND TIMEOFDAYLIGHTING TO HAVE THEM DONE AUTOMATICALLY
+SO THAT ROCKPORTED IS SELF-AWARE AND DOESNT FORCE 0 TO THEM
+*/
 
 namespace Extensions {
    namespace InGameMenu {
@@ -14,11 +21,11 @@ namespace Extensions {
 
          std::vector<std::string> lightingHashes              = std::vector<std::string>();
          std::map<int, DWORD>     lightingDefinitionAddresses = {};
-         int                      currentLightingIndex        = 0;
+         int                      currentLightingIndex        = 7;
 
-         TimeOfDay*               todInstance                 = nullptr;
-         TimeOfDayLighting*       todLightingInstance         = nullptr;
-         TimeOfDayLightingPreset* todLightingSettingsInstance = nullptr;
+         TimeOfDay*                todInstance                 = nullptr;
+         TimeOfDayLighting_Memory* todLightingMemoryInstance   = nullptr;
+         TimeOfDayLightingPreset*  todLightingSettingsInstance = nullptr;
 
       public:
          const virtual void loadData() override {
@@ -45,23 +52,22 @@ namespace Extensions {
                   if (Settings::settingsType.todPresets.size() != 0) {
                      auto iter = Settings::settingsType.todPresets.find(strHash_proper);
                      if (iter != Settings::settingsType.todPresets.end()) {
-                        auto* gameInstance     = *(TimeOfDayLighting**)(lightingDefinitionAddresses[lightingIndex] + 0x18);
+                        auto* gameInstance     = *reinterpret_cast<TimeOfDayLighting_Memory**>(lightingDefinitionAddresses[lightingIndex]);
                         auto* settingsInstance = &iter->second;
 
-                        memcpy_s(gameInstance->SpecularColour, sizeof(float) * 4, settingsInstance->SpecularColour, sizeof(float) * 4);
-                        memcpy_s(gameInstance->DiffuseColour, sizeof(float) * 4, settingsInstance->DiffuseColour, sizeof(float) * 4);
-                        memcpy_s(gameInstance->AmbientColour, sizeof(float) * 4, settingsInstance->AmbientColour, sizeof(float) * 4);
-                        memcpy_s(gameInstance->FogSkyColour, sizeof(float) * 4, settingsInstance->FogSkyColour, sizeof(float) * 4);
-                        memcpy_s(gameInstance->FogHazeColour, sizeof(float) * 4, settingsInstance->FogHazeColour, sizeof(float) * 4);
-                        memcpy_s(gameInstance->FixedFunctionSkyColour, sizeof(float) * 4, settingsInstance->FixedFunctionSkyColour, sizeof(float) * 4);
-                        gameInstance->FogDistanceScale   = settingsInstance->FogDistanceScale;
-                        gameInstance->FogSkyColourScale  = settingsInstance->FogSkyColourScale;
-                        gameInstance->FogHazeColourScale = settingsInstance->FogHazeColourScale;
-                        gameInstance->EnvSkyBrightness   = settingsInstance->EnvSkyBrightness;
-                        gameInstance->CarSpecScale       = settingsInstance->CarSpecScale;
-
-                        *(float*)(lightingDefinitionAddresses[lightingIndex] + 0x40) = settingsInstance->FogInLightScatter;
-                        *(float*)(lightingDefinitionAddresses[lightingIndex] + 0x4C) = settingsInstance->FogSunFalloff;
+                        memcpy_s(gameInstance->TimeOfDayLightingInstance->SpecularColour, sizeof(float) * 4, settingsInstance->SpecularColour, sizeof(float) * 4);
+                        memcpy_s(gameInstance->TimeOfDayLightingInstance->DiffuseColour, sizeof(float) * 4, settingsInstance->DiffuseColour, sizeof(float) * 4);
+                        memcpy_s(gameInstance->TimeOfDayLightingInstance->AmbientColour, sizeof(float) * 4, settingsInstance->AmbientColour, sizeof(float) * 4);
+                        memcpy_s(gameInstance->TimeOfDayLightingInstance->FogSkyColour, sizeof(float) * 4, settingsInstance->FogSkyColour, sizeof(float) * 4);
+                        memcpy_s(gameInstance->TimeOfDayLightingInstance->FogHazeColour, sizeof(float) * 4, settingsInstance->FogHazeColour, sizeof(float) * 4);
+                        memcpy_s(gameInstance->TimeOfDayLightingInstance->FixedFunctionSkyColour, sizeof(float) * 4, settingsInstance->FixedFunctionSkyColour, sizeof(float) * 4);
+                        gameInstance->TimeOfDayLightingInstance->FogDistanceScale   = settingsInstance->FogDistanceScale;
+                        gameInstance->TimeOfDayLightingInstance->FogSkyColourScale  = settingsInstance->FogSkyColourScale;
+                        gameInstance->TimeOfDayLightingInstance->FogHazeColourScale = settingsInstance->FogHazeColourScale;
+                        gameInstance->TimeOfDayLightingInstance->EnvSkyBrightness   = settingsInstance->EnvSkyBrightness;
+                        gameInstance->TimeOfDayLightingInstance->CarSpecScale       = settingsInstance->CarSpecScale;
+                        gameInstance->FogInLightScatter                             = settingsInstance->FogInLightScatter;
+                        gameInstance->FogSunFalloff                                 = settingsInstance->FogSunFalloff;
                      }
                   }
                   lightingIndex++;
@@ -87,6 +93,9 @@ namespace Extensions {
             }*/
 
             todInstance = *(TimeOfDay**)(0x5B392C + 0x400000);
+
+            bool* TimeOfDaySwapEnable = (bool*)(0x4F86E8 + 0x400000);
+            Memory::writeRaw((DWORD)TimeOfDaySwapEnable, true, 1, 0x0);
             hasLoadedData = true;
          }
 
@@ -99,78 +108,100 @@ namespace Extensions {
             curLighting_pt1 = Memory::readPointer(0x5B392C, 1, 0xC4);
             curLighting_pt2 = Memory::readPointer(0x5B392C, 1, 0xC8);
             if (curLighting_pt1 && curLighting_pt2) {
-               if (!todLightingInstance)
-                  todLightingInstance = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
+               if (!todLightingMemoryInstance)
+                  todLightingMemoryInstance = *reinterpret_cast<TimeOfDayLighting_Memory**>(curLighting_pt1);
                if (!todLightingSettingsInstance)
                   todLightingSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
-               if (todLightingInstance && todLightingSettingsInstance) {
+               if (todLightingMemoryInstance && todLightingSettingsInstance) {
                   ImGui::Text("Current lighting:"); ImGui::SameLine();
                   ImGui::PushItemWidth(-1.0f);
                   if (ImGui::Combo("##CurLighting", &currentLightingIndex, lightingHashes)) {
                      *curLighting_pt1 = lightingDefinitionAddresses[currentLightingIndex];
                      *curLighting_pt2 = *(DWORD*)(*curLighting_pt1 + 0x18);
 
-                     todLightingInstance         = *(TimeOfDayLighting**)(*curLighting_pt1 + 0x18);
+                     todLightingMemoryInstance   = *reinterpret_cast<TimeOfDayLighting_Memory**>(curLighting_pt1);
                      todLightingSettingsInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
-
-                     *(float*)(*curLighting_pt1 + 0x40) = todLightingSettingsInstance->FogInLightScatter;
-                     *(float*)(*curLighting_pt1 + 0x4C) = todLightingSettingsInstance->FogSunFalloff;
                   }
                   ImGui::PopItemWidth();
 
                   if (ImGui::Button("Save preset")) {
-                     todLightingSettingsInstance->FogInLightScatter = *(float*)(*curLighting_pt1 + 0x40);
-                     todLightingSettingsInstance->FogSunFalloff     = *(float*)(*curLighting_pt1 + 0x4C);
-                     *todLightingSettingsInstance                   = todLightingInstance;
+                     todLightingSettingsInstance->FogInLightScatter = todLightingMemoryInstance->FogInLightScatter;
+                     todLightingSettingsInstance->FogSunFalloff     = todLightingMemoryInstance->FogSunFalloff;
+                     *todLightingSettingsInstance                   = todLightingMemoryInstance->TimeOfDayLightingInstance;
                      Settings::saveSettings();
                   } ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
                   if (ImGui::Button("Save preset for all")) {
                      // save presets
                      for (auto& preset : Settings::settingsType.todPresets) {
-                        preset.second.FogInLightScatter = *(float*)(*curLighting_pt1 + 0x40);
-                        preset.second.FogSunFalloff     = *(float*)(*curLighting_pt1 + 0x4C);
-                        preset.second                   = todLightingInstance;
+                        preset.second.FogInLightScatter = todLightingMemoryInstance->FogInLightScatter;
+                        preset.second.FogSunFalloff     = todLightingMemoryInstance->FogSunFalloff;
+                        preset.second                   = todLightingMemoryInstance->TimeOfDayLightingInstance;
                         Settings::saveSettings();
                      }
                      // apply to all
                      for (auto& lightingDef : lightingDefinitionAddresses) {
                         DWORD lighting = lightingDef.second;
 
-                        TimeOfDayLighting* listTodInstance = *(TimeOfDayLighting**)(lighting + 0x18);
-                        *listTodInstance = todLightingInstance;
-
-                        *(float*)(lighting + 0x40) = *(float*)(*curLighting_pt1 + 0x40);
-                        *(float*)(lighting + 0x4C) = *(float*)(*curLighting_pt1 + 0x4C);
+                        TimeOfDayLighting_Memory* listTodInstance   = *reinterpret_cast<TimeOfDayLighting_Memory**>(lighting);
+                        *listTodInstance->TimeOfDayLightingInstance = todLightingMemoryInstance->TimeOfDayLightingInstance;
+                        listTodInstance->FogInLightScatter          = todLightingMemoryInstance->FogInLightScatter;
+                        listTodInstance->FogSunFalloff              = todLightingMemoryInstance->FogSunFalloff;
                      }
                   }
                   ImGui::Separator();
                   float lineDiff = ImGui::CalcTextSize("FixedFunctionSkyColour:").x + ImGui::GetStyle().WindowPadding.x;
                   ImGui::PushItemWidth(lineDiff);
-                  ImGui::Text("SpecularColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##SpecularColour", todLightingInstance->SpecularColour);
-                  ImGui::Text("DiffuseColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##DiffuseColour", todLightingInstance->DiffuseColour);
-                  ImGui::Text("AmbientColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##AmbientColour", todLightingInstance->AmbientColour);
-                  ImGui::Text("FogHazeColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##FogHazeColour", todLightingInstance->FogHazeColour);
-                  ImGui::Text("FixedFunctionSkyColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##FixedFunctionSkyColour", todLightingInstance->FixedFunctionSkyColour);
-                  ImGui::Text("FogDistanceScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##FogDistanceScale", &todLightingInstance->FogDistanceScale, 10.0f, -100.0f, 1000.0f);
-                  ImGui::Text("FogHazeColourScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##FogHazeColourScale", &todLightingInstance->FogHazeColourScale, 10.0f, 0.0f, 1000.0f);
-                  ImGui::Text("FogSkyColourScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##FogSkyColourScale", &todLightingInstance->FogSkyColourScale, 10.0f, 0.0f, 1000.0f);
-                  ImGui::Text("EnvSkyBrightness"); ImGui::SameLine(lineDiff); ImGui::SliderFloat("##EnvSkyBrightness", &todLightingInstance->EnvSkyBrightness, 0.0f, 10.0f);
-                  ImGui::Text("CarSpecScale"); ImGui::SameLine(lineDiff); ImGui::DragFloat("##CarSpecScale", &todLightingInstance->CarSpecScale, 0.25f, 0.0f, 100.0f);
-                  ImGui::Text("FogSkyColour"); ImGui::SameLine(lineDiff); ImGui::ColorEdit4("##FogSkyColour", todLightingInstance->FogSkyColour);
 
-                  ImGui::Text("FogInLightScatter"); ImGui::SameLine(lineDiff); ImGui::SliderFloat("##FogInLightScatter", (float*)(*curLighting_pt1 + 0x40), 0.0f, 100.0f);
-                  ImGui::Text("FogSunFalloff"); ImGui::SameLine(lineDiff); ImGui::SliderFloat("##FogSunFalloff", (float*)(*curLighting_pt1 + 0x4C), 0.0f, 100.0f);
+                  ImGui::Text("SpecularColour"); ImGui::SameLine(lineDiff);
+                  ImGui::ColorEdit4("##SpecularColour", todLightingMemoryInstance->TimeOfDayLightingInstance->SpecularColour);
+
+                  ImGui::Text("DiffuseColour"); ImGui::SameLine(lineDiff);
+                  ImGui::ColorEdit4("##DiffuseColour", todLightingMemoryInstance->TimeOfDayLightingInstance->DiffuseColour);
+
+                  ImGui::Text("AmbientColour"); ImGui::SameLine(lineDiff);
+                  ImGui::ColorEdit4("##AmbientColour", todLightingMemoryInstance->TimeOfDayLightingInstance->AmbientColour);
+
+                  ImGui::Text("FogHazeColour"); ImGui::SameLine(lineDiff);
+                  ImGui::ColorEdit4("##FogHazeColour", todLightingMemoryInstance->TimeOfDayLightingInstance->FogHazeColour);
+
+                  ImGui::Text("FixedFunctionSkyColour"); ImGui::SameLine(lineDiff);
+                  ImGui::ColorEdit4("##FixedFunctionSkyColour", todLightingMemoryInstance->TimeOfDayLightingInstance->FixedFunctionSkyColour);
+
+                  ImGui::Text("FogDistanceScale"); ImGui::SameLine(lineDiff);
+                  ImGui::DragFloat("##FogDistanceScale", &todLightingMemoryInstance->TimeOfDayLightingInstance->FogDistanceScale, 10.0f, -100.0f, 1000.0f);
+
+                  ImGui::Text("FogHazeColourScale"); ImGui::SameLine(lineDiff);
+                  ImGui::DragFloat("##FogHazeColourScale", &todLightingMemoryInstance->TimeOfDayLightingInstance->FogHazeColourScale, 10.0f, 0.0f, 1000.0f);
+
+                  ImGui::Text("FogSkyColourScale"); ImGui::SameLine(lineDiff);
+                  ImGui::DragFloat("##FogSkyColourScale", &todLightingMemoryInstance->TimeOfDayLightingInstance->FogSkyColourScale, 10.0f, 0.0f, 1000.0f);
+
+                  ImGui::Text("EnvSkyBrightness"); ImGui::SameLine(lineDiff);
+                  ImGui::SliderFloat("##EnvSkyBrightness", &todLightingMemoryInstance->TimeOfDayLightingInstance->EnvSkyBrightness, 0.0f, 10.0f);
+
+                  ImGui::Text("CarSpecScale"); ImGui::SameLine(lineDiff);
+                  ImGui::DragFloat("##CarSpecScale", &todLightingMemoryInstance->TimeOfDayLightingInstance->CarSpecScale, 0.25f, 0.0f, 100.0f);
+
+                  ImGui::Text("FogSkyColour"); ImGui::SameLine(lineDiff);
+                  ImGui::ColorEdit4("##FogSkyColour", todLightingMemoryInstance->TimeOfDayLightingInstance->FogSkyColour);
+
+                  ImGui::Text("FogInLightScatter"); ImGui::SameLine(lineDiff);
+                  ImGui::SliderFloat("##FogInLightScatter", &todLightingMemoryInstance->FogInLightScatter, 0.0f, 100.0f);
+
+                  ImGui::Text("FogSunFalloff"); ImGui::SameLine(lineDiff);
+                  ImGui::SliderFloat("##FogSunFalloff", &todLightingMemoryInstance->FogSunFalloff, 0.0f, 100.0f);
+
                   ImGui::PopItemWidth();
                } else {
                   ImGui::Text("There was an issue...");
                }
                ImGui::Separator();
                ImGui::Text("Time of Day");
-               ImGui::SliderFloat("skybox speed multiplier", &todInstance->SkyboxSpeedMultiplier, -100.0f, 100.0f);
-               ImGui::SliderInt("sun speed multiplier (w/ correlation to skybox speed)", &todInstance->SunSpeedMultiplier, -100.0f, 100.0f);
-               ImGui::SliderFloat("tod value", &todInstance->ToDValue, 0.0f, 1.0f);
-               ImGui::SliderAngle("sunangle", &todInstance->SunAngleInRads);
-               ImGui::SliderAngle("sunpos", &todInstance->SunPositionInRads);
+               ImGui::SliderFloat("sky speed-mult", &todInstance->SkyboxSpeedMultiplier, -100.0f, 100.0f);
+               ImGui::SliderInt("tod speed-mult", &todInstance->TimeOfDaySpeedMultiplier, -100, 100);
+               ImGui::SliderFloat("tod value", &todInstance->TimeOfDayValue, 0.0f, 1.0f);
+               ImGui::SliderAngle("sun-orbitangle", &todInstance->SunOrbitAngleInRads);
+               ImGui::SliderAngle("sun-orbitpos", &todInstance->SunOrbitPositionInRads);
                return false;
             } else {
                return true;
