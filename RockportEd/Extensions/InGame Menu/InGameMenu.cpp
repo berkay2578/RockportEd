@@ -85,7 +85,7 @@ namespace Extensions {
                   ImGui::SameLine(10.0f + diff.x); ImGui::SetCursorPosY(1.0f + ImGui::GetStyle().WindowPadding.y);
                   ImGui::TextColored(ImVec4(1.0f, 0.565f, 0.0f, 1.0f), "Ed");
                   ImGui::PopFont();
-                  ImGui::SameLine();
+                  ImGui::SameLine(0.0f, 3.0f);
                   const float buttonWidth = ImGui::GetCursorPos().x + ImGui::CalcTextSize("v1.0").x;
                   ImGui::Text("v1.0");
 

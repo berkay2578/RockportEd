@@ -1,13 +1,6 @@
 #pragma once
 
 namespace GameInternals {
-   struct TimeOfDay {
-      float    SkyboxSpeedMultiplier;
-      int32_t  TimeOfDaySpeedMultiplier;
-      float    TimeOfDayValue;
-      float    SunOrbitAngleInRads;
-      float    SunOrbitPositionInRads;
-   };
    struct TimeOfDayLighting {
       float SpecularColour[4];
       float DiffuseColour[4];
@@ -39,11 +32,21 @@ namespace GameInternals {
    };
    struct TimeOfDayLighting_Memory {
       unsigned char __unk[0x4 * 6];
-      TimeOfDayLighting* TimeOfDayLightingInstance;
+      TimeOfDayLighting* LightingData;
       unsigned char __unk2[0x4 * 9];
       float FogInLightScatter;
       unsigned char __unk3[0x4 * 2];
       float FogSunFalloff;
+   };
+   struct TimeOfDay {
+      float    SkyboxSpeedMultiplier;
+      int32_t  TimeOfDaySpeedMultiplier;
+      float    TimeOfDayValue;
+      float    SunOrbitAngleInRads;
+      float    SunOrbitPositionInRads;
+      unsigned char __unk[0x4 * 44]; // Floats related to sun, shadows, skybox and maybe reflections 
+      TimeOfDayLighting_Memory* TimeOfDayLightingMemoryInstance;
+      TimeOfDayLighting*        TimeOfDayLightingInstance;
    };
 
    namespace Gameplay {
