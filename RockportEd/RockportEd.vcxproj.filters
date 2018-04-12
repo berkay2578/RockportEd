@@ -25,9 +25,6 @@
     <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp">
       <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
-    <ClInclude Include="Extensions\InGame Menu\Items\LightingEditor.hpp">
-      <Filter>Extensions\InGame Menu\Items</Filter>
-    </ClInclude>
     <ClInclude Include="Extensions\WndProc\WndProcExtensions.hpp">
       <Filter>Extensions\WndProc</Filter>
     </ClInclude>
@@ -126,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="Helpers\Settings\Object\GameModificationsPreferencesType.hpp">
       <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions\InGame Menu\Items\TimeOfDayEditor.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

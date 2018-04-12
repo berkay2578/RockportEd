@@ -137,7 +137,7 @@ namespace Extensions {
                ImGui::PopStyleColor();
             }
             ImGui::PopItemWidth();
-            return false;
+            return true;
          }
       };
    }

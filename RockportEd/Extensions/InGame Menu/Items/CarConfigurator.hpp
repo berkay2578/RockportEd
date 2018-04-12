@@ -51,9 +51,9 @@ namespace Extensions {
                   ImGui::Checkbox("Auto Update", &autoUpdate);
                }
                ImGui::Unindent(5.0f);
-               return false;
-            } else {
                return true;
+            } else {
+               return false;
             }
          }
       };

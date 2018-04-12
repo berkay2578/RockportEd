@@ -89,21 +89,19 @@ namespace Extensions {
                   const float buttonWidth = ImGui::GetCursorPos().x + ImGui::CalcTextSize("v1.0").x;
                   ImGui::Text("v1.0");
 
+                  for (auto item : items) {
+                     if (item->hasLoadedData) {
+                        item->onFrame();
+                        if (!activeItem && item->displayMenuItem(ImVec2(buttonWidth, 0.0f)))
+                           activeItem = item;
+                     }
+                  }
                   if (activeItem) {
                      if (ImGui::Button("< Back"))
                         activeItem = nullptr;
                      else {
-                        activeItem->onFrame();
-                        if (activeItem->displayMenu())
+                        if (!activeItem->displayMenu())
                            activeItem = nullptr;
-                     }
-                  }
-                  for (auto item : items) {
-                     if (item->hasLoadedData) {
-                        if (activeItem != item)
-                           item->onFrame();
-                        if (!activeItem && item->displayMenuItem(ImVec2(buttonWidth, 0.0f)))
-                           activeItem = item;
                      }
                   }
                }

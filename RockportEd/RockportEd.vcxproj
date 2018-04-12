@@ -263,7 +263,7 @@
     <ClInclude Include="Extensions\InGame Menu\Items\CarConfigurator.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\Debug.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp" />
-    <ClInclude Include="Extensions\InGame Menu\Items\LightingEditor.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\TimeOfDayEditor.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\_BaseInGameMenuItem.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\_LoadInGameMenuItems.hpp" />
     <ClInclude Include="Extensions\WndProc\FixAnnoyances.hpp" />

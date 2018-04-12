@@ -90,13 +90,29 @@ namespace Extensions {
          const virtual void onFrame() override {}
 
          const virtual bool displayMenuItem(const ImVec2& buttonSize) override {
-            return ImGui::Button("Time of Day Editor", buttonSize);
+            return ImGui::Button("Time of day and lighting editor", buttonSize);
          }
          const virtual bool displayMenu() override {
+            ImGui::Text("Skybox animation speed multiplier");
+            ImGui::SliderFloat("##SkySpeedMult", &todInstance->SkyboxSpeedMultiplier, -100.0f, 100.0f);
+
+            ImGui::Text("Time of day progression speed multiplier");
+            ImGui::SliderInt("##ToDSpeedMult", &todInstance->TimeOfDaySpeedMultiplier, -100, 100);
+
+            ImGui::Text("Time of day");
+            ImGui::SliderFloat("##ToDValue", &todInstance->TimeOfDayValue, 0.05f, 0.95f);
+
+            ImGui::Text("Sun default orbit X-Axis (Horizontal)");
+            ImGui::SliderAngle("##SunOrbitXAxis", &todInstance->SunDefaultOrbitAxisX);
+
+            ImGui::Text("Sun default orbit Y-Axis (Vertical)");
+            ImGui::SliderAngle("##SunOrbitYAxis", &todInstance->SunDefaultOrbitAxisY);
+            ImGui::Separator();
+
             if (!todLightingEditInstance)
                todLightingEditInstance = lightingDefinitions[currentLightingIndex];
             if (todLightingEditInstance) {
-               ImGui::Text("Lighting data for hash "); ImGui::SameLine();
+               ImGui::Text("Lighting hash "); ImGui::SameLine();
                if (ImGui::Combo("##CurLighting", &currentLightingIndex, lightingHashes)) {
                   todLightingEditInstance = lightingDefinitions[currentLightingIndex];
                }
@@ -131,9 +147,7 @@ namespace Extensions {
                   }
                   Settings::saveSettings();
                }
-               ImGui::Separator();
-               float lineDiff = ImGui::CalcTextSize("FixedFunctionSkyColour:").x + ImGui::GetStyle().WindowPadding.x;
-               ImGui::PushItemWidth(lineDiff);
+               float lineDiff = ImGui::CalcTextSize("FixedFunctionSkyColour..").x + ImGui::GetStyle().WindowPadding.x;
 
                ImGui::Text("SpecularColour"); ImGui::SameLine(lineDiff);
                ImGui::ColorEdit4("##SpecularColour", todLightingEditInstance->pLightingData->SpecularColour);
@@ -173,21 +187,11 @@ namespace Extensions {
 
                ImGui::Text("FogSunFalloff"); ImGui::SameLine(lineDiff);
                ImGui::SliderFloat("##FogSunFalloff", &todLightingEditInstance->FogSunFalloff, -3.0f, 3.0f);
-
-               ImGui::PopItemWidth();
             } else {
                ImGui::Text("There was an issue...");
             }
-            ImGui::Separator();
-            ImGui::Text("Time of Day");
-            ImGui::SliderFloat("sky speed-mult", &todInstance->SkyboxSpeedMultiplier, -100.0f, 100.0f);
-            ImGui::SliderInt("tod speed-mult", &todInstance->TimeOfDaySpeedMultiplier, -100, 100);
-            ImGui::SliderFloat("tod value", &todInstance->TimeOfDayValue, 0.05f, 0.95f);
-            ImGui::SliderAngle("sun-orbitangle", &todInstance->SunOrbitAngleInRads);
-            ImGui::SliderAngle("sun-orbitpos", &todInstance->SunOrbitPositionInRads);
-            return false;
+            return true;
          }
-
       };
    }
 }

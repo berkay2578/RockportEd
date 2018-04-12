@@ -42,8 +42,8 @@ namespace GameInternals {
       float   SkyboxSpeedMultiplier;
       int32_t TimeOfDaySpeedMultiplier;
       float   TimeOfDayValue;
-      float   SunOrbitAngleInRads;
-      float   SunOrbitPositionInRads;
+      float   SunDefaultOrbitAxisX;
+      float   SunDefaultOrbitAxisY;
       /* struct align: Floats related to something, maybe the result of the lighting data mixing?? */ unsigned char __unk[0x4 * 44];
       TimeOfDayLighting_WithOptionalParameters* pTimeOfDayLightingInstanceWrapper;
       TimeOfDayLighting*                        pTimeOfDayLightingInstance;

@@ -34,7 +34,7 @@ namespace Extensions {
             }
 
             ImGui::PopItemWidth();
-            return false;
+            return true;
          }
       };
    }
