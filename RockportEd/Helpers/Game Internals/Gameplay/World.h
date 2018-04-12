@@ -12,41 +12,41 @@ namespace GameInternals {
       float FogSkyColourScale;
       float EnvSkyBrightness;
       float CarSpecScale;
-      unsigned char  __unk[0x4 * 3];
+      /*         struct align          */ unsigned char __unk[0x4 * 3];
       float FogSkyColour[4];
 
-      TimeOfDayLighting& operator=(TimeOfDayLighting* todInstance) {
-         memcpy_s(SpecularColour, sizeof(float) * 4, todInstance->SpecularColour, sizeof(float) * 4);
-         memcpy_s(DiffuseColour, sizeof(float) * 4, todInstance->DiffuseColour, sizeof(float) * 4);
-         memcpy_s(AmbientColour, sizeof(float) * 4, todInstance->AmbientColour, sizeof(float) * 4);
-         memcpy_s(FogSkyColour, sizeof(float) * 4, todInstance->FogSkyColour, sizeof(float) * 4);
-         memcpy_s(FogHazeColour, sizeof(float) * 4, todInstance->FogHazeColour, sizeof(float) * 4);
-         memcpy_s(FixedFunctionSkyColour, sizeof(float) * 4, todInstance->FixedFunctionSkyColour, sizeof(float) * 4);
-         FogDistanceScale   = todInstance->FogDistanceScale;
-         FogSkyColourScale  = todInstance->FogSkyColourScale;
-         FogHazeColourScale = todInstance->FogHazeColourScale;
-         EnvSkyBrightness   = todInstance->EnvSkyBrightness;
-         CarSpecScale       = todInstance->CarSpecScale;
+      TimeOfDayLighting& operator=(const TimeOfDayLighting& newTimeOfDayLightingData) {
+         memcpy_s(SpecularColour, sizeof(float) * 4, newTimeOfDayLightingData.SpecularColour, sizeof(float) * 4);
+         memcpy_s(DiffuseColour, sizeof(float) * 4, newTimeOfDayLightingData.DiffuseColour, sizeof(float) * 4);
+         memcpy_s(AmbientColour, sizeof(float) * 4, newTimeOfDayLightingData.AmbientColour, sizeof(float) * 4);
+         memcpy_s(FogSkyColour, sizeof(float) * 4, newTimeOfDayLightingData.FogSkyColour, sizeof(float) * 4);
+         memcpy_s(FogHazeColour, sizeof(float) * 4, newTimeOfDayLightingData.FogHazeColour, sizeof(float) * 4);
+         memcpy_s(FixedFunctionSkyColour, sizeof(float) * 4, newTimeOfDayLightingData.FixedFunctionSkyColour, sizeof(float) * 4);
+         FogDistanceScale   = newTimeOfDayLightingData.FogDistanceScale;
+         FogSkyColourScale  = newTimeOfDayLightingData.FogSkyColourScale;
+         FogHazeColourScale = newTimeOfDayLightingData.FogHazeColourScale;
+         EnvSkyBrightness   = newTimeOfDayLightingData.EnvSkyBrightness;
+         CarSpecScale       = newTimeOfDayLightingData.CarSpecScale;
          return *this;
       }
    };
-   struct TimeOfDayLighting_Memory {
-      unsigned char __unk[0x4 * 6];
-      TimeOfDayLighting* LightingData;
-      unsigned char __unk2[0x4 * 9];
-      float FogInLightScatter;
-      unsigned char __unk3[0x4 * 2];
-      float FogSunFalloff;
+   struct TimeOfDayLighting_WithOptionalParameters {
+      /*         struct align          */ unsigned char __unk[0x4 * 6];
+      TimeOfDayLighting* pLightingData;
+      /*         struct align          */ unsigned char __unk2[0x4 * 9];
+      float              FogInLightScatter;
+      /*         struct align          */ unsigned char __unk3[0x4 * 2];
+      float              FogSunFalloff;
    };
    struct TimeOfDay {
-      float    SkyboxSpeedMultiplier;
-      int32_t  TimeOfDaySpeedMultiplier;
-      float    TimeOfDayValue;
-      float    SunOrbitAngleInRads;
-      float    SunOrbitPositionInRads;
-      unsigned char __unk[0x4 * 44]; // Floats related to sun, shadows, skybox and maybe reflections 
-      TimeOfDayLighting_Memory* TimeOfDayLightingMemoryInstance;
-      TimeOfDayLighting*        TimeOfDayLightingInstance;
+      float   SkyboxSpeedMultiplier;
+      int32_t TimeOfDaySpeedMultiplier;
+      float   TimeOfDayValue;
+      float   SunOrbitAngleInRads;
+      float   SunOrbitPositionInRads;
+      /* struct align: Floats related to something, maybe the result of the lighting data mixing?? */ unsigned char __unk[0x4 * 44];
+      TimeOfDayLighting_WithOptionalParameters* pTimeOfDayLightingInstanceWrapper;
+      TimeOfDayLighting*                        pTimeOfDayLightingInstance;
    };
 
    namespace Gameplay {

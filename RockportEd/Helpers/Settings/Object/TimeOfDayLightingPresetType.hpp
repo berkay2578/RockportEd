@@ -21,18 +21,18 @@ struct TimeOfDayLightingPreset {
    float EnvSkyBrightness;
    float CarSpecScale;
 
-   TimeOfDayLightingPreset& operator=(GameInternals::TimeOfDayLighting* todInstance) {
-      memcpy_s(SpecularColour, sizeof(float) * 4, todInstance->SpecularColour, sizeof(float) * 4);
-      memcpy_s(DiffuseColour, sizeof(float) * 4, todInstance->DiffuseColour, sizeof(float) * 4);
-      memcpy_s(AmbientColour, sizeof(float) * 4, todInstance->AmbientColour, sizeof(float) * 4);
-      memcpy_s(FogSkyColour, sizeof(float) * 4, todInstance->FogSkyColour, sizeof(float) * 4);
-      memcpy_s(FogHazeColour, sizeof(float) * 4, todInstance->FogHazeColour, sizeof(float) * 4);
-      memcpy_s(FixedFunctionSkyColour, sizeof(float) * 4, todInstance->FixedFunctionSkyColour, sizeof(float) * 4);
-      FogDistanceScale   = todInstance->FogDistanceScale;
-      FogSkyColourScale  = todInstance->FogSkyColourScale;
-      FogHazeColourScale = todInstance->FogHazeColourScale;
-      EnvSkyBrightness   = todInstance->EnvSkyBrightness;
-      CarSpecScale       = todInstance->CarSpecScale;
+   TimeOfDayLightingPreset& operator=(GameInternals::TimeOfDayLighting* pTimeOfDayLightingInstance) {
+      memcpy_s(SpecularColour, sizeof(float) * 4, pTimeOfDayLightingInstance->SpecularColour, sizeof(float) * 4);
+      memcpy_s(DiffuseColour, sizeof(float) * 4, pTimeOfDayLightingInstance->DiffuseColour, sizeof(float) * 4);
+      memcpy_s(AmbientColour, sizeof(float) * 4, pTimeOfDayLightingInstance->AmbientColour, sizeof(float) * 4);
+      memcpy_s(FogSkyColour, sizeof(float) * 4, pTimeOfDayLightingInstance->FogSkyColour, sizeof(float) * 4);
+      memcpy_s(FogHazeColour, sizeof(float) * 4, pTimeOfDayLightingInstance->FogHazeColour, sizeof(float) * 4);
+      memcpy_s(FixedFunctionSkyColour, sizeof(float) * 4, pTimeOfDayLightingInstance->FixedFunctionSkyColour, sizeof(float) * 4);
+      FogDistanceScale   = pTimeOfDayLightingInstance->FogDistanceScale;
+      FogSkyColourScale  = pTimeOfDayLightingInstance->FogSkyColourScale;
+      FogHazeColourScale = pTimeOfDayLightingInstance->FogHazeColourScale;
+      EnvSkyBrightness   = pTimeOfDayLightingInstance->EnvSkyBrightness;
+      CarSpecScale       = pTimeOfDayLightingInstance->CarSpecScale;
       return *this;
    }
 
