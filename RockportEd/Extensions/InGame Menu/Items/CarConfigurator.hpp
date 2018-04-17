@@ -25,6 +25,82 @@ namespace Extensions {
          }
          const virtual bool displayMenu() override {
             if (GameInternals::Gameplay::Object::getObjectData(carObjectData)) {
+               ImGui::TextWrapped("Presets");
+               ImGui::Indent(5.0f);
+               {
+                  static bool showPresetPopup = false;
+                  showPresetPopup |= ImGui::Button("Save preset");
+                  if (showPresetPopup) {
+                     ImGui::OpenPopup("##SavePresetPopup_CarConfigurator");
+                     static Settings::CarConfigurationPreset carConfigPreset = { 0 };
+                     if (ImGui::BeginPopup("##SavePresetPopup_CarConfigurator", ImGuiWindowFlags_AlwaysAutoResize)) {
+                        static char presetName[64] = { 0 };
+                        ImGui::Text("Preset name: "); ImGui::SameLine();
+                        ImGui::InputText("##PresetName", presetName, sizeof(presetName), ImGuiInputTextFlags_CharsNoBlank);
+                        ImGui::SameLine();
+                        if (ImGui::Button("Save")) {
+                           carConfigPreset.Gravity       = carObjectData->Gravity;
+                           carConfigPreset.Grip          = carObjectData->Grip;
+                           carConfigPreset.PhysicsTuning = &carPhysicsTuning;
+
+                           Settings::settingsType.carConfigPresets[std::string(presetName)] = carConfigPreset;
+                           Settings::saveSettings();
+
+                           ZeroMemory(&carConfigPreset, sizeof(Settings::CarConfigurationPreset));
+                           ZeroMemory(presetName, sizeof(presetName));
+
+                           showPresetPopup = false;
+                        }
+
+                        ImGui::EndPopup();
+                     }
+                  }
+                  if (!Settings::settingsType.carConfigPresets.empty()) {
+                     static Settings::CarConfigurationPreset* pActivePreset = nullptr;
+                     static const char* activePreset_NamePreview            = nullptr;
+                     if (!pActivePreset || !activePreset_NamePreview) {
+                        pActivePreset            = &Settings::settingsType.carConfigPresets.begin()->second;
+                        activePreset_NamePreview = Settings::settingsType.carConfigPresets.begin()->first.c_str();
+                     }
+
+                     if (ImGui::BeginCombo("##Presets", activePreset_NamePreview, ImGuiComboFlags_HeightSmall)) {
+                        for (auto& preset : Settings::settingsType.carConfigPresets) {
+                           bool isItemSelected = (preset.first == activePreset_NamePreview);
+                           if (ImGui::Selectable(preset.first.c_str(), isItemSelected)) {
+                              pActivePreset            = &preset.second;
+                              activePreset_NamePreview = preset.first.c_str();
+                           }
+                           if (isItemSelected)
+                              ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                     } ImGui::SameLine();
+                     if (ImGui::Button("Load")) {
+                        carObjectData->Gravity = pActivePreset->Gravity;
+                        carObjectData->Grip    = pActivePreset->Grip;
+                        memcpy_s(&carPhysicsTuning, sizeof(GameInternals::CarPhysicsTuning),
+                           &pActivePreset->PhysicsTuning, sizeof(Settings::CarPhysicsTuningPreset));
+
+                        GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(&carPhysicsTuning);
+                        carObjectData->z_Velocity += 1.5f;
+                     } ImGui::SameLine();
+                     if (ImGui::Button("Delete")) {
+                        Settings::settingsType.carConfigPresets.erase(std::string(activePreset_NamePreview));
+                        Settings::saveSettings();
+
+                        if (!Settings::settingsType.carConfigPresets.empty()) {
+                           pActivePreset            = &Settings::settingsType.carConfigPresets.begin()->second;
+                           activePreset_NamePreview = Settings::settingsType.carConfigPresets.begin()->first.c_str();
+                        } else {
+                           pActivePreset            = nullptr;
+                           activePreset_NamePreview = nullptr;
+                        }
+                     }
+                  }
+               }
+               ImGui::Unindent(5.0f);
+               ImGui::Separator();
+
                ImGui::TextWrapped("Object Data");
                ImGui::Indent(5.0f);
                {

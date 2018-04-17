@@ -17,17 +17,24 @@ namespace GameInternals {
                *(bool*)(*pBase + 0x91) = newValue;
          }
 
-         static bool isShowGameGauges() {
+         static bool* getIsShowGameGaugesAsPointer() {
             auto pBase = Data::readPointerBase1();
             if (!pBase)
-               return false;
+               return nullptr;
 
-            return *(bool*)(*pBase + 0x80);
+            return (bool*)(*pBase + 0x80);
+         }
+         static bool isShowGameGauges() {
+            auto pBase = getIsShowGameGaugesAsPointer();
+            if (pBase)
+               return *pBase;
+
+            return false;
          }
          static void setShowGameGauges(const bool& newValue) {
-            auto pBase = Data::readPointerBase1();
+            auto pBase = getIsShowGameGaugesAsPointer();
             if (pBase) {
-               *(bool*)(*pBase + 0x80) = newValue;
+               *pBase = newValue;
             }
          }
       }

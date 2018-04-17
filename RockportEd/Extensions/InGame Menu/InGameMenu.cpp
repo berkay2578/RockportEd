@@ -5,13 +5,16 @@
 #include "Helpers\Settings\Settings.h"
 #include "Helpers\WndProc\WndProcHook.h"
 // dear imgui
+#include "Helpers\imgui\imgui_internal.h"
 #include "Helpers\imgui\extra_fonts\RobotoMedium.hpp"
 #include "Helpers\imgui\extra_fonts\CooperHewitt_Roman.hpp"
 #include "Helpers\imgui\extra_fonts\CooperHewitt_Bold.hpp"
+#include "Helpers\imgui\extra_fonts\Aramis_Book_Italic.hpp"
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #include "Helpers\imgui\dx9\imgui_impl_dx9.h"
 
 namespace Extensions {
+   ImGuiIO* imguiIO = nullptr;
    namespace InGameMenu {
       _BaseInGameMenuItem*              activeItem = nullptr;
       std::vector<_BaseInGameMenuItem*> items      = {};
@@ -19,6 +22,8 @@ namespace Extensions {
       bool isImguiInitialized  = false;
       bool isMainWindowVisible = true;
       bool isFirstTimeUser     = false;
+
+      RECT clientRect = { 0 };
 
       void showUserGuide() {
          if (isFirstTimeUser) {
@@ -39,7 +44,7 @@ namespace Extensions {
                   "- CTRL+Z, CTRL+Y to undo/redo\n"
                   "- ESCAPE to cancel\n"
                   "- You can apply arithmetic operators +,*,/ on numerical values.\n");
-               ImGui::BulletText("CTRL+MouseWheel to scale the UI.");
+               //ImGui::BulletText("CTRL+MouseWheel to scale the UI.");
                ImGui::BulletText("Click on the button at the top-right of this window to close it.");
             }
             ImGui::End();
@@ -53,14 +58,19 @@ namespace Extensions {
 
       void WINAPI beginScene(LPDIRECT3DDEVICE9 pDevice) {
          if (!isImguiInitialized) {
+            Extensions::imguiIO = &ImGui::CreateContext()->IO;
             ImGui_ImplDX9_Init(Helpers::WndProcHook::windowHandle, pDevice);
-            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 14.0f);
-            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Roman_compressed_data, CooperHewitt_Roman_compressed_size, 36.0f);
-            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Bold_compressed_data, CooperHewitt_Bold_compressed_size, 36.0f);
-            imguiIO->FontDefault = NULL;
+
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(RobotoMedium::RobotoMedium_compressed_data, RobotoMedium::RobotoMedium_compressed_size, 21.0f);
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Roman_compressed_data, CooperHewitt_Roman_compressed_size, 64.0f);
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Bold_compressed_data, CooperHewitt_Bold_compressed_size, 64.0f);
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 22.0f);
+            imguiIO->Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 100.0f);
+            imguiIO->Fonts->Build();
+            imguiIO->FontDefault = imguiIO->Fonts->Fonts[0];
             imguiIO->IniFilename = NULL;
 
-            imguiIO->FontAllowUserScaling = true;
+            //imguiIO->FontAllowUserScaling = true;
             ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions
                | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();
@@ -68,11 +78,23 @@ namespace Extensions {
          }
 
          ImGui_ImplDX9_NewFrame();
+
+         static float scaling = 1.0f;
+         GetClientRect(Helpers::WndProcHook::windowHandle, &clientRect);
+         scaling = max(0.6f, (float)clientRect.right / 1920.0f); // optimized for 1080p
+         for (int i = 0; i < 3; i++) { // don't change aramis
+            imguiIO->Fonts->Fonts[i]->Scale = scaling;
+         }
+
+         for (auto item : items) {
+            if (item->hasLoadedData) {
+               item->onFrame();
+            }
+         }
       }
       void WINAPI endScene(LPDIRECT3DDEVICE9 pDevice) {
          if (isImguiInitialized) {
             if (isMainWindowVisible) {
-               imguiIO->MouseDrawCursor = imguiIO->WantCaptureMouse;
                showUserGuide();
 
                ImGui::SetNextWindowPos(ImVec2(5.0f, 5.0f), ImGuiCond_Once);
@@ -89,14 +111,12 @@ namespace Extensions {
                   const float buttonWidth = ImGui::GetCursorPos().x + ImGui::CalcTextSize("v1.0").x;
                   ImGui::Text("v1.0");
 
-                  for (auto item : items) {
-                     if (item->hasLoadedData) {
-                        item->onFrame();
-                        if (!activeItem && item->displayMenuItem(ImVec2(buttonWidth, 0.0f)))
+                  if (!activeItem) {
+                     for (auto item : items) {
+                        if (item->hasLoadedData && item->displayMenuItem(ImVec2(buttonWidth, 0.0f)))
                            activeItem = item;
                      }
-                  }
-                  if (activeItem) {
+                  } else {
                      if (ImGui::Button("< Back"))
                         activeItem = nullptr;
                      else {
@@ -106,10 +126,13 @@ namespace Extensions {
                   }
                }
                ImGui::End();
+
+               imguiIO->MouseDrawCursor = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
             } else {
                imguiIO->MouseDrawCursor = false;
             }
             ImGui::Render();
+            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
          }
       }
 
@@ -119,8 +142,12 @@ namespace Extensions {
       }
       void WINAPI afterReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
          if (!pDevice || pDevice->TestCooperativeLevel() != D3D_OK) {
-            ImGui_ImplDX9_Shutdown();
+            if (isImguiInitialized) {
+               ImGui_ImplDX9_Shutdown();
+               ImGui::DestroyContext();
+            }
             isImguiInitialized = false;
+            return;
          } else {
             pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
          }
@@ -132,6 +159,7 @@ namespace Extensions {
          if (isImguiInitialized) {
             if (uMsg == WM_QUIT) {
                ImGui_ImplDX9_Shutdown();
+               ImGui::DestroyContext();
                return FALSE;
             }
 
@@ -159,6 +187,7 @@ namespace Extensions {
             d3dDevice = MirrorHook::D3D9::GetD3D9Device();
             Sleep(100);
          }
+
          d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
          MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::BeginScene, &beginScene);
          MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::EndScene, &endScene);
@@ -166,6 +195,7 @@ namespace Extensions {
          MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::AfterReset, &afterReset);
 
          Helpers::WndProcHook::addExtension(&wndProcExtension);
+         while (!isImguiInitialized) Sleep(100);
       }
    }
 }

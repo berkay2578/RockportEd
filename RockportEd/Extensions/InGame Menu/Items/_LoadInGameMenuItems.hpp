@@ -5,6 +5,7 @@
 #include "CarConfigurator.hpp"
 #include "CameraEditor.hpp"
 #include "GameplayOptions.hpp"
+#include "CustomHUD.hpp"
 #include "TimeOfDayEditor.hpp"
 
 namespace Extensions {
@@ -14,12 +15,14 @@ namespace Extensions {
          static CarConfigurator carConfigurator = {};
          static CameraEditor    cameraEditor    = {};
          static GameplayOptions gameplayOptions = {};
+         static CustomHUD       customHUD       = {};
          static TimeOfDayEditor todEditor       = {};
 
          items.push_back(&debug);
          items.push_back(&carConfigurator);
          items.push_back(&cameraEditor);
          items.push_back(&gameplayOptions);
+         items.push_back(&customHUD);
          items.push_back(&todEditor);
          for (auto item : items) {
             if (!item->hasLoadedData)

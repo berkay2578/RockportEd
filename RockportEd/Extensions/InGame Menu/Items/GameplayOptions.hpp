@@ -20,8 +20,8 @@ namespace Extensions {
          const virtual bool displayMenu() override {
             ImGui::PushItemWidth(-1.0f);
 
-            // Traffic refresh interval
-            {
+            // Traffic refresh interval (broken, pointer changes with VLTEd)
+            /*{
                ImGui::TextWrapped("Traffic refresh interval (in seconds)");
                trafficRefreshInterval = GameInternals::Gameplay::Variables::getTrafficRefreshIntervalAsPointer();
                if (trafficRefreshInterval) {
@@ -31,7 +31,7 @@ namespace Extensions {
                   ImGui::TextWrapped("Traffic AI not yet initialized by the game.");
                   ImGui::PopStyleColor();
                }
-            }
+            }*/
 
             ImGui::PopItemWidth();
             return true;

@@ -26,10 +26,12 @@ DWORD WINAPI Init(LPVOID) {
    // Extensions
    Extensions::WndProc::InitAll();
    Extensions::InGameMenu::Init();
+   while (!Extensions::imguiIO)
+      Sleep(10);
    Extensions::DI8::Init();
 
    // InGameMenu Items
-   Extensions::InGameMenu::loadItemsToInGameMenu();   
+   Extensions::InGameMenu::loadItemsToInGameMenu();
 
    static std::string copyright = "Copyright (c) 2018 Berkay Yiðit - berkay(2578). Greetz to GamerZ, still learning from him somehow. SpeedyHeart is honestly the most annoying, egomaniac person I've ever had contact with, may god help them.";
    return TRUE;

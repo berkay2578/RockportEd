@@ -11,5 +11,5 @@
 #include MIRRORHOOK_DEFINITIONS_PATH
 
 namespace Extensions {
-   static ImGuiIO* imguiIO = &ImGui::GetIO();
+   extern ImGuiIO* imguiIO;
 }

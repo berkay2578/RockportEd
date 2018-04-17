@@ -7,8 +7,8 @@ namespace Extensions {
    namespace DI8 {
       void WINAPI getDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
          if (cbData == 256) {
-            if (GameInternals::Data::Variables::isGameWindowInactive() || imguiIO->WantTextInput
-               /*|| imguiIO->WantCaptureKeyboard*/ || GetForegroundWindow() != Helpers::WndProcHook::windowHandle) {
+            if (GameInternals::Data::Variables::isGameWindowInactive() || imguiIO->WantCaptureKeyboard
+               || GetForegroundWindow() != Helpers::WndProcHook::windowHandle) {
                ZeroMemory(lpvData, 256);
                return;
             }

@@ -127,6 +127,15 @@
     <ClInclude Include="Extensions\InGame Menu\Items\TimeOfDayEditor.hpp">
       <Filter>Extensions\InGame Menu\Items</Filter>
     </ClInclude>
+    <ClInclude Include="Extensions\InGame Menu\Items\CustomHUD.hpp">
+      <Filter>Extensions\InGame Menu\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Object\ColoursType.hpp">
+      <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers\Settings\Object\CarConfigurationPresetType.hpp">
+      <Filter>Helpers\Settings\Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -65,9 +65,6 @@ namespace ImGui {
       style->Colors[ImGuiCol_ResizeGrip]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
       style->Colors[ImGuiCol_ResizeGripHovered]    = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
       style->Colors[ImGuiCol_ResizeGripActive]     = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-      style->Colors[ImGuiCol_CloseButton]          = ImVec4(0.41f, 0.41f, 0.41f, 0.50f);
-      style->Colors[ImGuiCol_CloseButtonHovered]   = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-      style->Colors[ImGuiCol_CloseButtonActive]    = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
       style->Colors[ImGuiCol_PlotLines]            = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
       style->Colors[ImGuiCol_PlotLinesHovered]     = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
       style->Colors[ImGuiCol_PlotHistogram]        = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -98,5 +95,30 @@ namespace ImGui {
    void PopItemDisabled() {
       ImGui::PopItemFlag();
       ImGui::PopStyleVar();
+   }
+
+   inline ImVec2 operator-(const ImVec2& l, const ImVec2& r) {
+      return{ l.x - r.x, l.y - r.y };
+   }
+   int rotation_start_index;
+   void ImRotateStart() {
+      rotation_start_index = ImGui::GetWindowDrawList()->VtxBuffer.Size;
+   }
+   ImVec2 ImRotationCenter() {
+      ImVec2 l(FLT_MAX, FLT_MAX), u(-FLT_MAX, -FLT_MAX); // bounds
+
+      const auto& buf = ImGui::GetWindowDrawList()->VtxBuffer;
+      for (int i = rotation_start_index; i < buf.Size; i++)
+         l = ImMin(l, buf[i].pos), u = ImMax(u, buf[i].pos);
+
+      return ImVec2((l.x + u.x) / 2, (l.y + u.y) / 2); // or use _ClipRectStack?
+   }
+   void ImRotateEnd(float rad, ImVec2 center) {
+      float c=sin(rad), s=cos(rad); // reversed to suit with ImDrawList->PathArcTo angle calculation
+      center = ImRotate(center, s, c) - center;
+
+      auto& buf = ImGui::GetWindowDrawList()->VtxBuffer;
+      for (int i = rotation_start_index; i < buf.Size; i++)
+         buf[i].pos = ImRotate(buf[i].pos, s, c) - center;
    }
 }

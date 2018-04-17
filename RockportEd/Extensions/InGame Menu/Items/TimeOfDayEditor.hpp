@@ -9,12 +9,12 @@ using GameInternals::TimeOfDayLighting_WithOptionalParameters;
 namespace Extensions {
    namespace InGameMenu {
       class TimeOfDayEditor : public _BaseInGameMenuItem {
-         int32_t                  currentLightingIndex = 7;
-         std::vector<std::string> lightingHashes       = std::vector<std::string>();
+         int32_t currentLightingIndex = 0;
+         std::vector<std::string> lightingHashes = std::vector<std::string>();
          std::map<int32_t, TimeOfDayLighting_WithOptionalParameters*> lightingDefinitions = {};
 
-         TimeOfDay*                                todInstance                 = nullptr;
-         TimeOfDayLighting_WithOptionalParameters* todLightingEditInstance     = nullptr;
+         TimeOfDay*                                todInstance             = nullptr;
+         TimeOfDayLighting_WithOptionalParameters* todLightingEditInstance = nullptr;
 
       public:
          const virtual void loadData() override {
@@ -23,7 +23,7 @@ namespace Extensions {
                todLightingsArray = Memory::readPointer(0x5B392C, 3, 0xEC, 0x14, 0x1C);
                Sleep(10);
             }
-            todInstance = *(TimeOfDay**)(0x5B392C + 0x400000);
+            todInstance = *reinterpret_cast<TimeOfDay**>(0x5B392C + 0x400000);
 
             int step = 0;
             int lightingIndex = 0;
@@ -60,27 +60,15 @@ namespace Extensions {
                         gameInstance->FogSunFalloff                     = settingsInstance->FogSunFalloff;
                      }
                   }
+
+                  if (todInstance->pTimeOfDayLightingInstanceWrapper == lightingDefinitions[lightingIndex])
+                     currentLightingIndex = lightingIndex;
                   lightingIndex++;
                }
 
                step += 0xC;
                Sleep(1);
             }
-
-            /*for (auto const& lightingDefinition : lightingDefinitionAddresses) {
-               if (*curLighting_pt1 == lightingDefinition.second) {
-                  currentLightingIndex = lightingDefinition.first;
-
-                  if (Settings::settingsType.todPresets.size() != 0) {
-                     std::string strHash = lightingHashes[currentLightingIndex];
-                     auto iter = Settings::settingsType.todPresets.find(strHash);
-                     if (iter != Settings::settingsType.todPresets.end()) {
-                        TimeOfDayLightingPreset* todSettings = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
-                     }
-                  }
-                  break;
-               }
-            }*/
 
             bool* TimeOfDaySwapEnable = (bool*)(0x4F86E8 + 0x400000);
             Memory::writeRaw((DWORD)TimeOfDaySwapEnable, true, 1, 0x0);
@@ -93,24 +81,27 @@ namespace Extensions {
             return ImGui::Button("Time of day and lighting editor", buttonSize);
          }
          const virtual bool displayMenu() override {
-            ImGui::Text("Skybox animation speed multiplier");
+            static float lineDiff = 0.0f;
+            lineDiff = ImGui::CalcTextSize("Time of day progression speed multiplier...").x + ImGui::GetStyle().WindowPadding.x;
+            ImGui::PushItemWidth(lineDiff * 0.625f);
+
+            ImGui::Text("Skybox animation speed multiplier"); ImGui::SameLine(lineDiff);
             ImGui::SliderFloat("##SkySpeedMult", &todInstance->SkyboxSpeedMultiplier, -100.0f, 100.0f);
 
-            ImGui::Text("Time of day progression speed multiplier");
+            ImGui::Text("Time of day progression speed multiplier"); ImGui::SameLine(lineDiff);
             ImGui::SliderInt("##ToDSpeedMult", &todInstance->TimeOfDaySpeedMultiplier, -100, 100);
 
-            ImGui::Text("Time of day");
+            ImGui::Text("Time of day"); ImGui::SameLine(lineDiff);
             ImGui::SliderFloat("##ToDValue", &todInstance->TimeOfDayValue, 0.05f, 0.95f);
 
-            ImGui::Text("Sun default orbit X-Axis (Horizontal)");
+            ImGui::Text("Sun default orbit X-Axis (Horizontal)"); ImGui::SameLine(lineDiff);
             ImGui::SliderAngle("##SunOrbitXAxis", &todInstance->SunDefaultOrbitAxisX);
 
-            ImGui::Text("Sun default orbit Y-Axis (Vertical)");
+            ImGui::Text("Sun default orbit Y-Axis (Vertical)"); ImGui::SameLine(lineDiff);
             ImGui::SliderAngle("##SunOrbitYAxis", &todInstance->SunDefaultOrbitAxisY);
+            ImGui::PopItemWidth();
             ImGui::Separator();
 
-            if (!todLightingEditInstance)
-               todLightingEditInstance = lightingDefinitions[currentLightingIndex];
             if (todLightingEditInstance) {
                ImGui::Text("Lighting hash "); ImGui::SameLine();
                if (ImGui::Combo("##CurLighting", &currentLightingIndex, lightingHashes)) {
@@ -124,7 +115,7 @@ namespace Extensions {
                }
 
                if (ImGui::Button("Save preset")) {
-                  TimeOfDayLightingPreset* presetInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
+                  Settings::TimeOfDayLightingPreset* presetInstance = &Settings::settingsType.todPresets[lightingHashes[currentLightingIndex]];
                   presetInstance->FogInLightScatter = todLightingEditInstance->FogInLightScatter;
                   presetInstance->FogSunFalloff     = todLightingEditInstance->FogSunFalloff;
                   *presetInstance                   = todLightingEditInstance->pLightingData;
@@ -134,7 +125,7 @@ namespace Extensions {
                if (ImGui::Button("Save preset for all")) {
                   for (auto& lightingDef : lightingDefinitions) {
                      // save
-                     TimeOfDayLightingPreset* presetInstance = &Settings::settingsType.todPresets[lightingHashes[lightingDef.first]];
+                     Settings::TimeOfDayLightingPreset* presetInstance = &Settings::settingsType.todPresets[lightingHashes[lightingDef.first]];
                      presetInstance->FogInLightScatter = todLightingEditInstance->FogInLightScatter;
                      presetInstance->FogSunFalloff     = todLightingEditInstance->FogSunFalloff;
                      *presetInstance                   = todLightingEditInstance->pLightingData;
@@ -147,7 +138,9 @@ namespace Extensions {
                   }
                   Settings::saveSettings();
                }
-               float lineDiff = ImGui::CalcTextSize("FixedFunctionSkyColour..").x + ImGui::GetStyle().WindowPadding.x;
+
+               lineDiff = ImGui::CalcTextSize("FixedFunctionSkyColour...").x + ImGui::GetStyle().WindowPadding.x;
+               ImGui::PushItemWidth(-1.0f);
 
                ImGui::Text("SpecularColour"); ImGui::SameLine(lineDiff);
                ImGui::ColorEdit4("##SpecularColour", todLightingEditInstance->pLightingData->SpecularColour);
@@ -187,7 +180,10 @@ namespace Extensions {
 
                ImGui::Text("FogSunFalloff"); ImGui::SameLine(lineDiff);
                ImGui::SliderFloat("##FogSunFalloff", &todLightingEditInstance->FogSunFalloff, -3.0f, 3.0f);
+
+               ImGui::PopItemWidth();
             } else {
+               todLightingEditInstance = lightingDefinitions[currentLightingIndex];
                ImGui::Text("There was an issue...");
             }
             return true;

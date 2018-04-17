@@ -154,7 +154,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)inc;$(ProjectDir)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -171,7 +171,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -261,6 +261,7 @@
     <ClInclude Include="Extensions\InGame Menu\InGameMenu.h" />
     <ClInclude Include="Extensions\InGame Menu\Items\CameraEditor.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\CarConfigurator.hpp" />
+    <ClInclude Include="Extensions\InGame Menu\Items\CustomHUD.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\Debug.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\GameplayOptions.hpp" />
     <ClInclude Include="Extensions\InGame Menu\Items\TimeOfDayEditor.hpp" />
@@ -292,6 +293,8 @@
     <ClInclude Include="Helpers\imgui\stb_truetype.h" />
     <ClInclude Include="Helpers\Memory\Memory.h" />
     <ClInclude Include="Helpers\Settings\Object\CameraInfoPresetType.hpp" />
+    <ClInclude Include="Helpers\Settings\Object\CarConfigurationPresetType.hpp" />
+    <ClInclude Include="Helpers\Settings\Object\ColoursType.hpp" />
     <ClInclude Include="Helpers\Settings\Object\GameModificationsPreferencesType.hpp" />
     <ClInclude Include="Helpers\Settings\Object\TimeOfDayLightingPresetType.hpp" />
     <ClInclude Include="Helpers\Settings\Settings.h" />

@@ -8,9 +8,10 @@
 #include <cereal\archives\xml.hpp>
 
 namespace Settings {
+   const std::string mainFolder   = std::experimental::filesystem::current_path().u8string() + std::string("\\RockportEd");
+   const std::string settingsFile = mainFolder + std::string("\\RockportEd.xml");
+
    SettingsType settingsType = {};
-   // TODO: Get path properly
-   const std::string settingsFile = std::experimental::filesystem::current_path().u8string() + std::string("\\RockportEd_Settings.xml");
 
    bool loadSettings() {
       try {
@@ -30,6 +31,8 @@ namespace Settings {
 
    bool saveSettings() {
       try {
+         std::experimental::filesystem::create_directories(mainFolder);
+
          std::ofstream ofs(settingsFile);
          cereal::XMLOutputArchive oarchive(ofs);
          oarchive(cereal::make_nvp("Settings", settingsType));
