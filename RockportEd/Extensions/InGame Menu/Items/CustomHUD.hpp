@@ -3,15 +3,93 @@
 #include "Extensions\Extensions.h"
 using GameInternals::CarPowerData;
 using namespace GameInternals::Gameplay::Player;
-// Extra Fonts
 
 namespace Extensions {
    namespace InGameMenu {
       class CustomHUD : public _BaseInGameMenuItem {
-         bool isEnabled = false;
-         Settings::HUDColourPreset activeHUDColourPreset;
+         bool isEnabled        = false;
+
+         Settings::HUDColourPreset  activeHUDColourPreset = {};
+
+         Settings::HUDColourPreset*         pActivePreset     = nullptr;
+         const char*                        pActivePresetName = nullptr;
+         RockportEdControls::PresetControls presetControls;
+
+      public:
+         bool createPreset(const char* presetName) {
+            auto stlString = std::string(presetName);
+            Settings::settingsType.colours.hudColourPresets[stlString] = activeHUDColourPreset;
+            Settings::saveSettings();
+
+            // TODO: Improve preset name loading
+            pActivePreset = &Settings::settingsType.colours.hudColourPresets[stlString];
+            for (auto& preset : Settings::settingsType.colours.hudColourPresets) {
+               if (&preset.second == pActivePreset)
+                  pActivePresetName = preset.first.c_str();
+            }
+            return pActivePreset && pActivePresetName;
+         }
+
+         bool loadPreset(LPVOID* pListActivePreset, const char** /*pListActivePresetName*/) {
+            activeHUDColourPreset = *reinterpret_cast<Settings::HUDColourPreset*>(*pListActivePreset);
+            return true;
+         }
+
+         bool updateActivePreset() {
+            Settings::settingsType.colours.hudColourPresets[std::string(pActivePresetName)] = activeHUDColourPreset;
+            return true;
+         }
+
+         bool deletePreset(LPVOID* pListActivePreset, const char** pListActivePresetName) {
+            Settings::settingsType.colours.hudColourPresets.erase(std::string(*pListActivePresetName));
+            Settings::saveSettings();
+
+            if (!Settings::settingsType.colours.hudColourPresets.empty()) {
+               pActivePreset     = &Settings::settingsType.colours.hudColourPresets.begin()->second;
+               pActivePresetName = Settings::settingsType.colours.hudColourPresets.begin()->first.c_str();
+               return true;
+            } else {
+               pActivePreset     = nullptr;
+               pActivePresetName = nullptr;
+               return false;
+            }
+         }
+
+         bool listPresets(LPVOID* pListActivePreset, const char** pListActivePresetName) {
+            if (!Settings::settingsType.colours.hudColourPresets.empty()) {
+               if (!*pListActivePreset || !*pListActivePresetName) {
+                  *pListActivePreset     = &Settings::settingsType.colours.hudColourPresets.begin()->second;
+                  *pListActivePresetName = Settings::settingsType.colours.hudColourPresets.begin()->first.c_str();
+               }
+               if (*pListActivePreset && *pListActivePresetName) {
+                  if (ImGui::BeginCombo("##Presets", *pListActivePresetName, ImGuiComboFlags_HeightSmall)) {
+                     for (auto& preset : Settings::settingsType.colours.hudColourPresets) {
+                        const char* presetName = preset.first.c_str();
+                        bool isItemSelected = (presetName == *pListActivePresetName);
+                        if (ImGui::Selectable(presetName, isItemSelected)) {
+                           *pListActivePreset     = &preset.second;
+                           *pListActivePresetName = presetName;
+                        }
+                        if (isItemSelected)
+                           ImGui::SetItemDefaultFocus();
+                     }
+                     ImGui::EndCombo();
+                  }
+                  return true;
+               }
+            }
+            return false;
+         }
 
          const virtual void loadData() override {
+            presetControls.Set([this](const char* _1) { return this->createPreset(_1); },
+                               [this](LPVOID* _1, const char** _2) { return this->loadPreset(_1, _2); },
+                               [this]() { return this->updateActivePreset(); },
+                               [this](LPVOID* _1, const char** _2) { return this->deletePreset(_1, _2); },
+                               [this](LPVOID* _1, const char** _2) { return this->listPresets(_1, _2); },
+                               reinterpret_cast<LPVOID*>(&pActivePreset),
+                               &pActivePresetName
+            );
             hasLoadedData = true;
          }
 
@@ -29,6 +107,7 @@ namespace Extensions {
                   imguiIO->Fonts->Fonts[4]->Scale = scaling * 0.8f;
 
                   ImGui::SetNextWindowBgAlpha(0.0f);
+                  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
                   if (ImGui::Begin("##HUD", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize)) {
 
                   #define DegreeToRadianMultiplier 0.0174532925f
@@ -57,17 +136,17 @@ namespace Extensions {
                         const float rpmValueCurrent_ToAngle_FullRange   =
                            rpmBeginningAngle_FullRange +                 // Set the minimum starting angle
                            ((rpmValueCurrent
-                              / rpmValueMaximum)                           // Get the percentage of the current RPM against the maximum RPM of the HUD
-                              * rpmAngleDiff_BeginningToFinal_FullRange    // Calculate the final angle of the percentage
-                              );
+                             / rpmValueMaximum)                           // Get the percentage of the current RPM against the maximum RPM of the HUD
+                            * rpmAngleDiff_BeginningToFinal_FullRange    // Calculate the final angle of the percentage
+                            );
                         const float rpmValueCurrent_ToAngle_NormalRange = min(rpmBeginningAngle_Redline, rpmValueCurrent_ToAngle_FullRange);
                         const float rpmValueCurrent_ToAngle_Redline     =
                            rpmBeginningAngle_Redline +                   // Set the minimum starting angle
                            ((max(0,                                      // Wrap in max(0,x) to ensure no negatives
-                              rpmValueCurrent - rpmBeginningValue_Redline) // Offset the current RPM with beginning value of the redline
-                              / rpmValueDiff_BeginningToFinal_Redline)     // Get the percentage of the calculated RPM against the total redline RPM of the HUD
-                              * rpmAngleDiff_BeginningToFinal_Redline      // Calculate the final angle of the percentage
-                              );
+                                 rpmValueCurrent - rpmBeginningValue_Redline) // Offset the current RPM with beginning value of the redline
+                             / rpmValueDiff_BeginningToFinal_Redline)     // Get the percentage of the calculated RPM against the total redline RPM of the HUD
+                            * rpmAngleDiff_BeginningToFinal_Redline      // Calculate the final angle of the percentage
+                            );
 
                         const float rpmBeginningAngle_FullRange_InRads         = rpmBeginningAngle_FullRange * DegreeToRadianMultiplier;
                         const float rpmFinalAngle_FullRange_InRads             = rpmFinalAngle_FullRange * DegreeToRadianMultiplier;
@@ -230,9 +309,9 @@ namespace Extensions {
                         sprintf_s(speedValueBackgroundText, "%03.0f", speedValue);
                         sprintf_s(speedValueToText, "%.0f", speedValue);
                         sprintf_s(speedUnitTypeToText, "%s",
-                           speedUnitType == GameInternals::SpeedUnit::KMH ? "KMH" :
-                           speedUnitType == GameInternals::SpeedUnit::MPH ? "MPH" :
-                           "MPS"
+                                  speedUnitType == GameInternals::SpeedUnit::KMH ? "KMH" :
+                                  speedUnitType == GameInternals::SpeedUnit::MPH ? "MPH" :
+                                  "MPS"
                         );
 
                         static ImVec2 speedTextDrawingSize;
@@ -327,6 +406,7 @@ namespace Extensions {
                      }
                   }
                   ImGui::End();
+                  ImGui::PopStyleVar();
                }
             }
          }
@@ -341,75 +421,10 @@ namespace Extensions {
             ImGui::PopStyleColor();
             return ret;
          }
-
          const virtual bool displayMenu() override {
             ImGui::Checkbox("Enabled", &isEnabled);
             if (isEnabled) {
-               ImGui::TextWrapped("Presets");
-               ImGui::Indent(5.0f);
-               {
-                  static bool showPresetPopup = false;
-                  showPresetPopup |= ImGui::Button("Save preset");
-                  if (showPresetPopup) {
-                     ImGui::OpenPopup("##SavePresetPopup_CustomHUD");
-                     static Settings::CarConfigurationPreset carConfigPreset = { 0 };
-                     if (ImGui::BeginPopup("##SavePresetPopup_CustomHUD", ImGuiWindowFlags_AlwaysAutoResize)) {
-                        static char presetName[64] = { 0 };
-                        ImGui::Text("Preset name: "); ImGui::SameLine();
-                        ImGui::InputText("##PresetName", presetName, sizeof(presetName), ImGuiInputTextFlags_CharsNoBlank);
-                        ImGui::SameLine();
-                        if (ImGui::Button("Save")) {
-                           Settings::settingsType.colours.hudColourPresets[std::string(presetName)] = activeHUDColourPreset;
-                           Settings::saveSettings();
-
-                           ZeroMemory(&carConfigPreset, sizeof(Settings::CarConfigurationPreset));
-                           ZeroMemory(presetName, sizeof(presetName));
-
-                           showPresetPopup = false;
-                        }
-
-                        ImGui::EndPopup();
-                     }
-                  } ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
-                  if (!Settings::settingsType.colours.hudColourPresets.empty()) {
-                     static Settings::HUDColourPreset* pActivePreset = nullptr;
-                     static const char* activePreset_NamePreview     = nullptr;
-                     if (!pActivePreset || !activePreset_NamePreview) {
-                        pActivePreset            = &Settings::settingsType.colours.hudColourPresets.begin()->second;
-                        activePreset_NamePreview = Settings::settingsType.colours.hudColourPresets.begin()->first.c_str();
-                     }
-
-                     if (ImGui::BeginCombo("##Presets", activePreset_NamePreview, ImGuiComboFlags_HeightSmall)) {
-                        for (auto& preset : Settings::settingsType.colours.hudColourPresets) {
-                           bool isItemSelected = (preset.first == activePreset_NamePreview);
-                           if (ImGui::Selectable(preset.first.c_str(), isItemSelected)) {
-                              pActivePreset            = &preset.second;
-                              activePreset_NamePreview = preset.first.c_str();
-                           }
-                           if (isItemSelected)
-                              ImGui::SetItemDefaultFocus();
-                        }
-                        ImGui::EndCombo();
-                     } ImGui::SameLine();
-                     if (ImGui::Button("Load")) {
-                        activeHUDColourPreset = *pActivePreset;
-                     } ImGui::SameLine();
-                     if (ImGui::Button("Delete")) {
-                        Settings::settingsType.colours.hudColourPresets.erase(std::string(activePreset_NamePreview));
-                        Settings::saveSettings();
-
-                        if (!Settings::settingsType.colours.hudColourPresets.empty()) {
-                           pActivePreset            = &Settings::settingsType.colours.hudColourPresets.begin()->second;
-                           activePreset_NamePreview = Settings::settingsType.colours.hudColourPresets.begin()->first.c_str();
-                        } else {
-                           pActivePreset            = nullptr;
-                           activePreset_NamePreview = nullptr;
-                        }
-                     }
-                  }
-               }
-               ImGui::Unindent(5.0f);
-               ImGui::Separator();
+               presetControls.Draw();
 
                ImGui::Checkbox("Draw gradients", &activeHUDColourPreset.DrawGradients);
                ImGui::SameLine(); ImGui::Checkbox("Clear background colours", &activeHUDColourPreset.ClearBackgroundColours);

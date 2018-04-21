@@ -23,7 +23,7 @@ namespace GameInternals {
       float angular_Velocity;
       float x_LiftForce;
 
-      float Grip;
+      float Mass;
    };
 
    namespace Gameplay {

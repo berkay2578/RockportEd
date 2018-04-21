@@ -13,4 +13,6 @@ namespace ImGui {
    void   ImRotateStart();
    ImVec2 ImRotationCenter();
    void   ImRotateEnd(float rad, ImVec2 center = ImRotationCenter());
+
+   int ExAlphaNumericFilter(ImGuiTextEditCallbackData* data);
 }

@@ -16,7 +16,7 @@ namespace Settings {
       float NOS          = 0.0f;
       float Turbo        = 0.0f;
 
-      CarPhysicsTuningPreset& operator=(GameInternals::CarPhysicsTuning* pCarPhysicsTuningInstance) {
+      void setValuesFromGameInstance(GameInternals::CarPhysicsTuning* pCarPhysicsTuningInstance) {
          Steering     = pCarPhysicsTuningInstance->Steering;
          Handling     = pCarPhysicsTuningInstance->Handling;
          Brakes       = pCarPhysicsTuningInstance->Brakes;
@@ -24,7 +24,6 @@ namespace Settings {
          Aerodynamics = pCarPhysicsTuningInstance->Aerodynamics;
          NOS          = pCarPhysicsTuningInstance->NOS;
          Turbo        = pCarPhysicsTuningInstance->Turbo;
-         return *this;
       }
 
       template <class Archive>
@@ -43,14 +42,14 @@ namespace Settings {
 
    struct CarConfigurationPreset {
       float Gravity;
-      float Grip;
+      float Mass;
       CarPhysicsTuningPreset PhysicsTuning;
 
       template <class Archive>
       void serialize(Archive& archive) {
          archive(
             CEREAL_NVP(Gravity),
-            CEREAL_NVP(Grip),
+            CEREAL_NVP(Mass),
             CEREAL_NVP(PhysicsTuning)
          );
       }

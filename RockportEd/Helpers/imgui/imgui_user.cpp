@@ -1,6 +1,6 @@
+#include "stdafx.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include <vector>
 
 namespace ImGui {
    void LoadStyle() {
@@ -14,14 +14,14 @@ namespace ImGui {
       style->WindowTitleAlign  = ImVec2(0.0f, 0.5f);
       style->WindowMinSize     = ImVec2(150.0f, 100.0f);
 
-      style->ChildBorderSize  = 0.0f;
+      style->ChildBorderSize  = 0.3f;
       style->FrameBorderSize  = 0.0f;
-      style->PopupBorderSize  = 0.4f;
-      style->WindowBorderSize = 0.0f;
+      style->PopupBorderSize  = 0.2f;
+      style->WindowBorderSize = 0.1f;
 
       style->WindowPadding       = ImVec2(10.0f, 10.0f);
-      style->WindowRounding      = 2.0f;
-      style->ChildRounding       = 1.0f;
+      style->WindowRounding      = 0.0f;
+      style->ChildRounding       = 0.0f;
       style->FramePadding        = ImVec2(4.0f, 3.0f);
       style->FrameRounding       = 0.0f;
       style->ItemSpacing         = ImVec2(8.0f, 4.0f);
@@ -35,7 +35,7 @@ namespace ImGui {
       style->Colors[ImGuiCol_Text]                 = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
       style->Colors[ImGuiCol_TextDisabled]         = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
       style->Colors[ImGuiCol_WindowBg]             = ImVec4(0.06f, 0.06f, 0.06f, 0.70f);
-      style->Colors[ImGuiCol_ChildBg]              = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
+      style->Colors[ImGuiCol_ChildBg]              = ImVec4(0.06f, 0.06f, 0.06f, 0.80f);
       style->Colors[ImGuiCol_PopupBg]              = ImVec4(0.14f, 0.14f, 0.14f, 0.99f);
       style->Colors[ImGuiCol_Border]               = ImVec4(1.00f, 1.00f, 1.00f, 0.39f);
       style->Colors[ImGuiCol_BorderShadow]         = ImVec4(0.00f, 0.00f, 0.00f, 0.10f);
@@ -120,5 +120,16 @@ namespace ImGui {
       auto& buf = ImGui::GetWindowDrawList()->VtxBuffer;
       for (int i = rotation_start_index; i < buf.Size; i++)
          buf[i].pos = ImRotate(buf[i].pos, s, c) - center;
+   }
+
+   int ExAlphaNumericFilter(ImGuiTextEditCallbackData* data) {
+      if (!( // not following
+         (data->EventChar >= '0' && data->EventChar <= '9')
+            || (data->EventChar >= 'a' && data->EventChar <= 'z')
+            || (data->EventChar >= 'A' && data->EventChar <= 'Z')
+            || (data->EventChar == '_' || data->EventChar == '-')
+            ))
+         return 1; // ignore input
+      return 0;
    }
 }
