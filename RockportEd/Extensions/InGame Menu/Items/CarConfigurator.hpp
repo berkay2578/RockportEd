@@ -16,8 +16,8 @@ namespace Extensions {
          RockportEdControls::PresetControls presetControls;
 
          void updateActiveCarConfigPreset() {
-            activeCarConfigPreset.Gravity = carObjectData->Gravity;
-            activeCarConfigPreset.Mass    = carObjectData->Mass;
+            activeCarConfigPreset.Mass = carObjectData->Mass;
+            activeCarConfigPreset.GForce    = carObjectData->GForce;
          }
 
       public:
@@ -39,8 +39,8 @@ namespace Extensions {
 
          bool loadPreset(LPVOID* pListActivePreset, const char** /*pListActivePresetName*/) {
             auto pPreset = reinterpret_cast<Settings::CarConfigurationPreset*>(*pListActivePreset);
-            carObjectData->Gravity = pPreset->Gravity;
-            carObjectData->Mass    = pPreset->Mass;
+            carObjectData->Mass   = pPreset->Mass;
+            carObjectData->GForce = pPreset->GForce;
             activeCarConfigPreset.PhysicsTuning = pPreset->PhysicsTuning;
 
             GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<GameInternals::CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
@@ -119,8 +119,8 @@ namespace Extensions {
                ImGui::TextWrapped("Object Data");
                ImGui::Indent(5.0f);
                {
-                  ImGui::SliderFloat("Gravity", &carObjectData->Gravity, 0.1f, 3500.0f);
-                  ImGui::SliderFloat("Mass", &carObjectData->Mass, 0.0001f, 0.003f, "%.6f");
+                  ImGui::SliderFloat("Mass", &carObjectData->Mass, 0.1f, 3500.0f);
+                  ImGui::SliderFloat("GForce", &carObjectData->GForce, 0.0001f, 0.003f, "%.6f");
                }
                ImGui::Unindent(5.0f);
 

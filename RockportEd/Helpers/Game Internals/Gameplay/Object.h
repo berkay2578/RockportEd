@@ -17,13 +17,15 @@ namespace GameInternals {
       float z_Velocity;
       float x_Velocity;
 
-      float Gravity;
+      float Mass;
 
       float y_LiftForce;
       float angular_Velocity;
       float x_LiftForce;
 
-      float Mass;
+      float GForce;
+
+      unsigned char notunknown_butplaceholder_foralign[0x4 * 0x1C];
    };
 
    namespace Gameplay {
