@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
-using GameInternals::CarPhysicsTuning;
+using GameInternals::Data::GameTypes::CarPhysicsTuning;
 using GameInternals::ObjectData;
 
 namespace Extensions {
@@ -43,7 +43,7 @@ namespace Extensions {
             carObjectData->GForce = pPreset->GForce;
             activeCarConfigPreset.PhysicsTuning = pPreset->PhysicsTuning;
 
-            GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<GameInternals::CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
+            GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
             carObjectData->z_Velocity += 1.5f;
             return true;
          }
@@ -135,7 +135,7 @@ namespace Extensions {
                   ImGui::SliderFloat("NOS", &activeCarConfigPreset.PhysicsTuning.NOS, -10.0f, 10.0f);
                   ImGui::SliderFloat("Turbo", &activeCarConfigPreset.PhysicsTuning.Turbo, -10.0f, 10.0f);
                   if (ImGui::Button("Apply") || autoUpdate) {
-                     GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<GameInternals::CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
+                     GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
                      if (!autoUpdate)
                         carObjectData->z_Velocity += 1.5f;
                   } ImGui::SameLine();

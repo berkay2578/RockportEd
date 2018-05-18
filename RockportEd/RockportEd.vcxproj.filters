@@ -136,6 +136,9 @@
     <ClInclude Include="Helpers\Settings\Object\CarConfigurationPresetType.hpp">
       <Filter>Helpers\Settings\Object</Filter>
     </ClInclude>
+    <ClInclude Include="Helpers\Game Internals\Data\GameTypes.h">
+      <Filter>Helpers\Game Internals\Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

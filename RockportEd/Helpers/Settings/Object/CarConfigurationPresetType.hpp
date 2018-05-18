@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "Helpers\Game Internals\Gameplay\Player.h"
+#include "Helpers\Game Internals\Data\GameTypes.h"
 // (De)Serialization
 #include <cereal\details\traits.hpp>
 #include <cereal\types\map.hpp>
@@ -16,7 +16,7 @@ namespace Settings {
       float NOS          = 0.0f;
       float Turbo        = 0.0f;
 
-      void setValuesFromGameInstance(GameInternals::CarPhysicsTuning* pCarPhysicsTuningInstance) {
+      void setValuesFromGameInstance(GameInternals::Data::GameTypes::CarPhysicsTuning* pCarPhysicsTuningInstance) {
          Steering     = pCarPhysicsTuningInstance->Steering;
          Handling     = pCarPhysicsTuningInstance->Handling;
          Brakes       = pCarPhysicsTuningInstance->Brakes;

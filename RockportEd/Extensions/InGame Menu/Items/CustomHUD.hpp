@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
-using GameInternals::CarPowerData;
+using GameInternals::Data::GameTypes::CarPowerData;
 using namespace GameInternals::Gameplay::Player;
 
 namespace Extensions {

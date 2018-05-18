@@ -25,7 +25,8 @@ namespace GameInternals {
 
       float GForce;
 
-      unsigned char notunknown_butplaceholder_foralign[0x4 * 0x1C];
+      // TODO: Add definitions
+      unsigned char NOT_UNKNOWN_BUT_PLACEHOLDER_FOR_STRUCT_ALIGN[0x4 * 0x1C];
    };
 
    namespace Gameplay {

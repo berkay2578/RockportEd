@@ -3,28 +3,6 @@
 #include "..\Data\Data.h"
 
 namespace GameInternals {
-   struct CarPhysicsTuning {
-      float Steering     = 0.0f;
-      float Handling     = 0.0f;
-      float Brakes       = 0.0f;
-      float RideHeight   = 0.0f;
-      float Aerodynamics = 0.0f;
-      float NOS          = 0.0f;
-      float Turbo        = 0.0f;
-   };
-   struct CarPowerData {
-      /*         struct align            */ BYTE __unk[11 * 0x4];
-      float AlignedCurrentRPM;           // 0x2C
-      /*         struct align            */ BYTE __unk2[1 * 0x4];
-      float MinimumRPM;                  // 0x34
-      float MaximumPossibleRPM;          // 0x38
-      float MaximumRPM;                  // 0x3C
-      float CurrentPedalInputPercentage; // 0x40
-      /*         struct align            */ BYTE __unk3[19 * 0x4];
-      int   CurrentGear;                 // 0x8C
-      int   LastGear;                    // 0x90
-   };
-
    enum class SpeedUnit : BYTE {
       MPH,
       KMH,
@@ -48,17 +26,17 @@ namespace GameInternals {
             static DWORD* getCarPowerBase() {
                return Memory::readPointer(0x5142D0, 1, 0x20);
             }
-            static bool   getCarPowerData(CarPowerData*& out_CarPowerData) {
+            static bool getCarPowerData(Data::GameTypes::CarPowerData*& out_CarPowerData) {
                auto pBase = getCarPowerBase();
                if (!pBase || *pBase == 0xEEEEEEEE) {
                   out_CarPowerData = nullptr;
                   return false;
                }
 
-               out_CarPowerData = (CarPowerData*)*pBase;
+               out_CarPowerData = (Data::GameTypes::CarPowerData*)*pBase;
                return true;
             }
-            static float  getRPM(CarPowerData* cpd) {
+            static float getRPM(Data::GameTypes::CarPowerData* cpd) {
                if (!cpd)
                   return -1.0f;
 
@@ -68,7 +46,7 @@ namespace GameInternals {
                );
             }
 
-            static float  getSpeed(const SpeedUnit& targetUnit) {
+            static float getSpeed(const SpeedUnit& targetUnit) {
                auto v = *carSpeed;
                switch (targetUnit) {
                   case SpeedUnit::MPH:
@@ -87,12 +65,12 @@ namespace GameInternals {
 
                return (float*)(*pBase + 0xA4);
             }
-            static float  getNOSValue() {
+            static float getNOSValue() {
                auto p = getNOSValueAsPointer();
                return p ? *p : -1.0f;
             }
 
-            static void setCarPhysicsTuning(const CarPhysicsTuning* newCarPhysicsTuning) {
+            static void setCarPhysicsTuning(const Data::GameTypes::CarPhysicsTuning* newCarPhysicsTuning) {
                __asm {
                   push eax
                   push ebx

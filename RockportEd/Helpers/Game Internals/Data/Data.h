@@ -1,5 +1,6 @@
 #pragma once
 #include <WinDef.h>
+#include "GameTypes.h"
 #include "Variables.h"
 #include "Helpers\Memory\Memory.h"
 
