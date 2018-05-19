@@ -236,16 +236,15 @@ namespace GameInternals {
             DWORD                  typeName;
             DWORD                  someFixedHash;
             DWORD*                 pTypeName;
-            DWORD __unk1;
+            LPVOID __unk1; // even after hours of debugging, I don't know what this is
             DriverClass            driverClass;
             DWORD                  carHash;
             UMath::Vector3*        pInitialRotation;
             UMath::Vector3*        pInitialPosition;
             FECustomizationRecord* pFECustomizationRecord;
-            LPVOID __unk_pointer; // related to some call, game attempts to call [+0x4] if not nullptr
+            LPVOID __unk_AIRelated; // Set to AI managers, like &0x8918F0 for AICopManager or &0x8B09F4 for QuickGame
             DWORD  __unk2;
-            DWORD  __unk3; // set to 2
-            DWORD  __unk4; // end of struct
+            DWORD  __unk_ImportanceRelated; // effects model loading delay, bit& with 1
 
             VehicleParams() = default;
             void TypeName() {
@@ -258,26 +257,24 @@ namespace GameInternals {
 
             static PVehicle* Create(DriverClass driverClass, DWORD carModelHash, FECustomizationRecord* pFECustomizationRecord,
                                     UMath::Vector3& initialRotation, UMath::Vector3& initialPosition) {
-               if (!carModelHash) {
-                  char** pSkipFEPlayer2CarName = reinterpret_cast<char**>(0x4F86AC + 0x400000);
-                  carModelHash = AttribWrapper::Atrib::StringToKey(*pSkipFEPlayer2CarName);
-               }
+               if (!carModelHash)
+                  return nullptr;
 
                VehicleParams vehicleParams = { 0 };
                vehicleParams.TypeName();
-               vehicleParams.someFixedHash          = 0x0A6B47FAC;
-               vehicleParams.pTypeName              = &vehicleParams.typeName;
-               vehicleParams.driverClass            = driverClass;
-               vehicleParams.carHash                = carModelHash;
-               vehicleParams.pInitialRotation       = &initialRotation;
-               vehicleParams.pInitialPosition       = &initialPosition;
-               vehicleParams.pFECustomizationRecord = pFECustomizationRecord;
-               vehicleParams.__unk3                 = 2;
+               vehicleParams.someFixedHash           = 0x0A6B47FAC;
+               vehicleParams.pTypeName               = &vehicleParams.typeName;
+               vehicleParams.driverClass             = driverClass;
+               vehicleParams.carHash                 = carModelHash;
+               vehicleParams.pInitialRotation        = &initialRotation;
+               vehicleParams.pInitialPosition        = &initialPosition;
+               vehicleParams.pFECustomizationRecord  = pFECustomizationRecord;
+               vehicleParams.__unk_ImportanceRelated = 2;
 
-               DWORD typeHash = GenericFunctionsWrapper::stringhash32("PVehicle");
-               DWORD* mHead   = reinterpret_cast<DWORD*>(0x92C66C); // UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype::mHead
+               DWORD  typeHash = GenericFunctionsWrapper::stringhash32("PVehicle");
+               DWORD* mHead    = reinterpret_cast<DWORD*>(0x92C66C); // UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype::mHead
                if (!mHead)
-                  return NULL;
+                  return nullptr;
 
                mHead = reinterpret_cast<DWORD*>(*mHead);
                /* MEMORY MAP
@@ -293,9 +290,10 @@ namespace GameInternals {
                   }
                }
 
-               return reinterpret_cast<PVehicle*>(
-                  ((unsigned char*(__cdecl*)(VehicleParams, DWORD))*(mHead + 1))(vehicleParams, vehicleParams.someFixedHash)
-                  - 0x44);
+               auto constructorCallResult = ((unsigned char*(__cdecl*)(VehicleParams, DWORD))*(mHead + 1))(vehicleParams, vehicleParams.someFixedHash);
+               if (constructorCallResult)
+                  return reinterpret_cast<PVehicle*>(constructorCallResult - 0x44);
+               return nullptr;
             }
          };
       }
