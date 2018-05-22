@@ -40,7 +40,7 @@ namespace GameInternals {
          }
 
          static CameraInfo* getActiveCameraInfoAsPointer() {
-            return (CameraInfo*)Memory::readPointer(0x519774, 3, 0x7C, 0x108, 0x0);
+            return (CameraInfo*)Memory::readPointer(0x519774, false, 3, 0x7C, 0x108, 0x0);
          }
          static bool getActiveCameraInfo(CameraInfo*& out_CameraInfo) {
             auto p = getActiveCameraInfoAsPointer();

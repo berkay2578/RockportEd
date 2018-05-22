@@ -4,67 +4,6 @@
 
 namespace GameInternals {
    namespace Data::GameTypes {
-      struct Vector3 {
-         float x, y, z;
-
-         Vector3(): x(0.0f), y(0.0f), z(0.0f) {}
-         Vector3(const float _x, const float _y, const float _z) {
-            x = _x;
-            y = -_y;
-            z = _z;
-         }
-         operator float*() {
-            return reinterpret_cast<float*>(this);
-         }
-      };
-      struct Vector4 {
-         float x, y, z, w;
-
-         Vector4(): x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
-         Vector4(const float _x, const float _y, const float _z, const float _w) {
-            x = _x;
-            y = -_y;
-            z = _z;
-            w = _w;
-         }
-         operator float*() {
-            return reinterpret_cast<float*>(this);
-         }
-      };
-      namespace UMath {
-         struct Vector3 {
-            float y, z, x;
-
-            Vector3(): x(0.0f), y(0.0f), z(0.0f) {}
-            Vector3(const float _x, const float _y, const float _z) {
-               x = _x;
-               y = _y;
-               z = _z;
-            }
-            operator float*() {
-               return reinterpret_cast<float*>(this);
-            }
-         };
-         struct Vector4 {
-            float y, z, x, w;
-
-            Vector4(): x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
-            Vector4(const float _x, const float _y, const float _z, const float _w) {
-               x = _x;
-               y = _y;
-               z = _z;
-               w = _w;
-            }
-            operator float*() {
-               return reinterpret_cast<float*>(this);
-            }
-         };
-
-         static void ExtractZAxis(Vector4* pVector4, Vector3* pVector3) {
-            ((LPVOID(__cdecl*)(Vector4*, Vector3*))0x5CA870)(pVector4, pVector3);
-         }
-      }
-
       struct CarPhysicsTuning {
          float Steering     = 0.0f;
          float Handling     = 0.0f;
@@ -86,6 +25,120 @@ namespace GameInternals {
          int   CurrentGear;                 // 0x8C
          int   LastGear;                    // 0x90
       };
+      struct ObjectData {
+         float y_Lift;
+         float y_Rotation;
+         float x_Lift;
+         float x_Rotation;
+
+         float y_Position;
+         float z_Position;
+         float x_Position;
+
+         unsigned char unk[4];
+
+         float y_Velocity;
+         float z_Velocity;
+         float x_Velocity;
+
+         float Mass;
+
+         float y_LiftForce;
+         float angular_Velocity;
+         float x_LiftForce;
+
+         float GForce;
+
+         // TODO: Add definitions
+         unsigned char NOT_UNKNOWN_BUT_PLACEHOLDER_FOR_STRUCT_ALIGN[0x4 * 0x1C];
+      };
+
+      struct Vector3 {
+         float x, y, z;
+
+         Vector3(): x(0.0f), y(0.0f), z(0.0f) {}
+         Vector3(const float _x, const float _y, const float _z) {
+            x = _x;
+            y = _y;
+            z = _z;
+         }
+         //Vector3(const UMath::Vector3& uVector3) {
+         //   x = uVector3.x;
+         //   y = -uVector3.y;
+         //   z = uVector3.z;
+         //}
+
+         operator float*() {
+            return reinterpret_cast<float*>(this);
+         }
+      };
+      struct Vector4 {
+         float x, y, z, w;
+
+         Vector4(): x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+         Vector4(const float _x, const float _y, const float _z, const float _w) {
+            x = _x;
+            y = _y;
+            z = _z;
+            w = _w;
+         }
+         //Vector4(const UMath::Vector4& uVector4) {
+         //   x = uVector4.x;
+         //   y = -uVector4.y;
+         //   z = uVector4.z;
+         //   w = uVector4.w;
+         //}
+
+         operator float*() {
+            return reinterpret_cast<float*>(this);
+         }
+      };
+      namespace UMath {
+         struct Vector3 {
+            float y, z, x;
+
+            Vector3(): x(0.0f), y(0.0f), z(0.0f) {}
+            Vector3(const float _x, const float _y, const float _z) {
+               x = _x;
+               y = _y;
+               z = _z;
+            }
+            Vector3(const GameTypes::Vector3& vector3) {
+               x = vector3.x;
+               y = -vector3.y;
+               z = vector3.z;
+            }
+
+            operator float*() {
+               return reinterpret_cast<float*>(this);
+            }
+         };
+         struct Vector4 {
+            float y, z, x, w;
+
+            Vector4(): x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+            Vector4(const float _x, const float _y, const float _z, const float _w) {
+               x = _x;
+               y = _y;
+               z = _z;
+               w = _w;
+            }
+            Vector4(const GameTypes::Vector4& vector4) {
+               x = vector4.x;
+               y = -vector4.y;
+               z = vector4.z;
+               w = vector4.w;
+            }
+
+            operator float*() {
+               return reinterpret_cast<float*>(this);
+            }
+         };
+
+         static void ExtractZAxis(Vector4* pVector4, Vector3* pVector3) {
+            ((LPVOID(__cdecl*)(Vector4*, Vector3*))0x5CA870)(pVector4, pVector3);
+         }
+      }
 
       namespace GenericFunctionsWrapper {
          static DWORD stringhash32(const char* string) {
@@ -188,7 +241,7 @@ namespace GameInternals {
          static inline GManager** mObj = reinterpret_cast<GManager**>(0x51E00C + 0x400000);
 
          static GIconWrapper::GIcon* AllocIcon(GIconWrapper::GIconType iconType, Vector3* coordinates, const float _unk1, const bool _unk2) {
-            return ((GIconWrapper::GIcon*(__thiscall*)(GManager*, GIconWrapper::GIconType, Vector3*, float, bool)) 0x5E9EC0)(*mObj, iconType, coordinates, _unk1, _unk2);
+            return ((GIconWrapper::GIcon*(__thiscall*)(GManager*, GIconWrapper::GIconType, Vector3*, float, bool))0x5E9EC0)(*mObj, iconType, coordinates, _unk1, _unk2);
          }
          static void SpawnAllLoadedSectionIcons() {
             ((LPVOID(__thiscall*)(GManager*))0x5EDE20)(*mObj);
@@ -242,9 +295,9 @@ namespace GameInternals {
             UMath::Vector3*        pInitialRotation;
             UMath::Vector3*        pInitialPosition;
             FECustomizationRecord* pFECustomizationRecord;
-            LPVOID __unk_AIRelated; // Set to AI managers, like &0x8918F0 for AICopManager or &0x8B09F4 for QuickGame
-            DWORD  __unk2;
-            DWORD  __unk_ImportanceRelated; // effects model loading delay, bit& with 1
+            DWORD __unk_AIRelated; // Set to AI managers, like &0x8918F0 for AICopManager or &0x8B09F4 for QuickGame
+            LPVOID __unk2; // related to Physics::*, maybe Physics::Tuning?
+            DWORD  __unk_ImportanceRelated; // effects model loading delay, physics::tuning. it's a bit| enum
 
             VehicleParams() = default;
             void TypeName() {
@@ -255,6 +308,10 @@ namespace GameInternals {
          struct PVehicle {
             PVehicle() = default;
 
+            ObjectData* getObjectData() {
+               return *(ObjectData**)Memory::readPointer((DWORD)this + 0x78, true, 1, 0x30);
+            }
+
             static PVehicle* Create(DriverClass driverClass, DWORD carModelHash, FECustomizationRecord* pFECustomizationRecord,
                                     UMath::Vector3& initialRotation, UMath::Vector3& initialPosition) {
                if (!carModelHash)
@@ -264,14 +321,19 @@ namespace GameInternals {
                vehicleParams.TypeName();
                vehicleParams.someFixedHash           = 0x0A6B47FAC;
                vehicleParams.pTypeName               = &vehicleParams.typeName;
+               //vehicleParams.__unk1                  = &(((DWORD64*)(*(DWORD*)0x989080))[11]);// ? &(((DWORD64*)(*(DWORD*)0x989080))[a]) : nullptr;
                vehicleParams.driverClass             = driverClass;
                vehicleParams.carHash                 = carModelHash;
                vehicleParams.pInitialRotation        = &initialRotation;
                vehicleParams.pInitialPosition        = &initialPosition;
                vehicleParams.pFECustomizationRecord  = pFECustomizationRecord;
-               vehicleParams.__unk_ImportanceRelated = 2;
+               vehicleParams.__unk_ImportanceRelated = 0xA;
 
-               DWORD  typeHash = GenericFunctionsWrapper::stringhash32("PVehicle");
+               DWORD typeHash = GenericFunctionsWrapper::stringhash32("PVehicle");
+               // UTL::COM::Factory<Sim::Param,ISimable,UCrc32>::CreateInstance(UCrc32,Sim::Param)
+               auto constructorCallResult = ((unsigned char*(__cdecl*)(DWORD, DWORD, DWORD, VehicleParams*))0x41CB10)(typeHash, vehicleParams.typeName, vehicleParams.someFixedHash, &vehicleParams);
+
+               /* manual method, good for debugging
                DWORD* mHead    = reinterpret_cast<DWORD*>(0x92C66C); // UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype::mHead
                if (!mHead)
                   return nullptr;
@@ -279,7 +341,7 @@ namespace GameInternals {
                mHead = reinterpret_cast<DWORD*>(*mHead);
                /* MEMORY MAP
                 * TYPE HASH (4 BYTES) | CONSTRUCTOR FUNCTION POINTER (4 BYTES) | NEXT LIST ENTRY POINTER (4 BYTES)
-                */
+                *//*
                while (typeHash) { // find the constructor that corresponds to the hash value, in this case for 'PVehicle'
                   if (*mHead == typeHash) {
                      break;
@@ -290,9 +352,11 @@ namespace GameInternals {
                   }
                }
 
-               auto constructorCallResult = ((unsigned char*(__cdecl*)(VehicleParams, DWORD))*(mHead + 1))(vehicleParams, vehicleParams.someFixedHash);
+               auto constructorCallResult = ((unsigned char*(__cdecl*)(DWORD, DWORD, VehicleParams*))*(mHead + 1))(vehicleParams.typeName, vehicleParams.someFixedHash, &vehicleParams);
+               */
+
                if (constructorCallResult)
-                  return reinterpret_cast<PVehicle*>(constructorCallResult - 0x44);
+                  return reinterpret_cast<PVehicle*>(constructorCallResult - 0x2C);
                return nullptr;
             }
          };

@@ -1,5 +1,4 @@
 #pragma once
-#include <WinDef.h>
 
 namespace Helpers {
    namespace WndProcHook {

@@ -30,11 +30,10 @@ namespace Memory {
       return baseAddress + relativeAddress;
    }
 
-   DWORD* readPointer(const DWORD& baseOffset, const int offsetCount, ...) {
-      if (!baseAddress)
-         return nullptr;
-
-      DWORD* pointer = (DWORD*)makeAbsolute(baseOffset);
+   DWORD* readPointer(const DWORD& baseOffset, const bool& isBaseOffsetAbsolute, const int offsetCount, ...) {
+      DWORD* pointer = (DWORD*)baseOffset;
+      if (!isBaseOffsetAbsolute)
+         pointer = (DWORD*)makeAbsolute(baseOffset);
       if (!*pointer)
          return nullptr;
 

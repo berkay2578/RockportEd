@@ -2,8 +2,6 @@
 #include "stdafx.h"
 // Helpers
 #include "Helpers\WndProc\WndProcHook.h"
-#include "Helpers\Game Internals\Data\Variables.h"
-#include MIRRORHOOK_DEFINITIONS_PATH
 
 namespace Extensions {
    namespace WndProc {

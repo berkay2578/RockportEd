@@ -2,7 +2,6 @@
 #include "InGameMenu.h"
 #include "Extensions\Extensions.h"
 // Helpers
-#include "Helpers\Settings\Settings.h"
 #include "Helpers\WndProc\WndProcHook.h"
 // dear imgui
 #include "Helpers\imgui\imgui_internal.h"
@@ -72,7 +71,7 @@ namespace Extensions {
 
             //imguiIO->FontAllowUserScaling = true;
             ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions
-               | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
+                                       | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();
             isImguiInitialized = true;
          }

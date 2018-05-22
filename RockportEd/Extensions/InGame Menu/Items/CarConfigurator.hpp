@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
 using GameInternals::Data::GameTypes::CarPhysicsTuning;
-using GameInternals::ObjectData;
+using GameInternals::Data::GameTypes::ObjectData;
 
 namespace Extensions {
    namespace InGameMenu {

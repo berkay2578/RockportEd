@@ -20,7 +20,7 @@ namespace Extensions {
          const virtual void loadData() override {
             const DWORD* todLightingsArray = nullptr;
             while (!todLightingsArray) {
-               todLightingsArray = Memory::readPointer(0x5B392C, 3, 0xEC, 0x14, 0x1C);
+               todLightingsArray = Memory::readPointer(0x5B392C, false, 3, 0xEC, 0x14, 0x1C);
                Sleep(10);
             }
             todInstance = *reinterpret_cast<TimeOfDay**>(0x5B392C + 0x400000);

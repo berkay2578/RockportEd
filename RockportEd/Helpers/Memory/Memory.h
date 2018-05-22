@@ -8,7 +8,7 @@ namespace Memory {
    void   restoreMemoryAccess();
    DWORD  calculateRelativeAddress(const DWORD& from, const DWORD& to, const bool& isFromAbsolute = true);
    DWORD  makeAbsolute(const DWORD& relativeAddress);
-   DWORD* readPointer(const DWORD& baseOffset, const int offsetCount = 0, ...);
+   DWORD* readPointer(const DWORD& baseOffset, const bool& isBaseOffsetAbsolute = true, const int offsetCount = 0, ...);
    void   writeCall(const DWORD& from, const DWORD& to, const bool& isFromAbsolute = true);
    void   writeJMP(const DWORD& from, const DWORD& to, const bool& isFromAbsolute = true);
    void   writeInterrupt3(const DWORD& to, const int& amount, const bool& isFromAbsolute = true);
