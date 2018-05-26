@@ -1,14 +1,13 @@
 #pragma once
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
-using GameInternals::Data::GameTypes::CarPhysicsTuning;
-using GameInternals::Data::GameTypes::ObjectData;
+using namespace GameInternals::Data::GameTypes;
 
 namespace Extensions {
    namespace InGameMenu {
       class CarConfigurator : public _BaseInGameMenuItem {
          bool             autoUpdate       = false;
-         ObjectData*      carObjectData    = nullptr;
+         RigidBodyData*   rigidBodyData    = nullptr;
          Settings::CarConfigurationPreset  activeCarConfigPreset = { 0 };
 
          Settings::CarConfigurationPreset*  pActivePreset     = nullptr;
@@ -16,8 +15,8 @@ namespace Extensions {
          RockportEdControls::PresetControls presetControls;
 
          void updateActiveCarConfigPreset() {
-            activeCarConfigPreset.Mass = carObjectData->Mass;
-            activeCarConfigPreset.GForce    = carObjectData->GForce;
+            activeCarConfigPreset.Mass   = rigidBodyData->Mass;
+            activeCarConfigPreset.OOMass = rigidBodyData->OOMass;
          }
 
       public:
@@ -39,12 +38,12 @@ namespace Extensions {
 
          bool loadPreset(LPVOID* pListActivePreset, const char** /*pListActivePresetName*/) {
             auto pPreset = reinterpret_cast<Settings::CarConfigurationPreset*>(*pListActivePreset);
-            carObjectData->Mass   = pPreset->Mass;
-            carObjectData->GForce = pPreset->GForce;
+            rigidBodyData->Mass   = pPreset->Mass;
+            rigidBodyData->OOMass = pPreset->OOMass;
             activeCarConfigPreset.PhysicsTuning = pPreset->PhysicsTuning;
 
             GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
-            carObjectData->z_Velocity += 1.5f;
+            rigidBodyData->LinearVelocity.z += 1.5f;
             return true;
          }
 
@@ -113,14 +112,14 @@ namespace Extensions {
             return ImGui::Button("Car Configurator", buttonSize);
          }
          const virtual bool displayMenu() override {
-            if (GameInternals::Gameplay::Object::getObjectData(carObjectData)) {
+            if (GameInternals::Gameplay::Object::getRigidBodyData(rigidBodyData)) {
                presetControls.Draw();
 
                ImGui::TextWrapped("Object Data");
                ImGui::Indent(5.0f);
                {
-                  ImGui::SliderFloat("Mass", &carObjectData->Mass, 0.1f, 3500.0f);
-                  ImGui::SliderFloat("GForce", &carObjectData->GForce, 0.0001f, 0.003f, "%.6f");
+                  ImGui::SliderFloat("Mass", &rigidBodyData->Mass, 0.1f, 3500.0f);
+                  ImGui::SliderFloat("OOMass", &rigidBodyData->OOMass, 0.0001f, 0.003f, "%.6f");
                }
                ImGui::Unindent(5.0f);
 
@@ -137,7 +136,7 @@ namespace Extensions {
                   if (ImGui::Button("Apply") || autoUpdate) {
                      GameInternals::Gameplay::Player::Car::setCarPhysicsTuning(reinterpret_cast<CarPhysicsTuning*>(&activeCarConfigPreset.PhysicsTuning));
                      if (!autoUpdate)
-                        carObjectData->z_Velocity += 1.5f;
+                        rigidBodyData->LinearVelocity.z += 1.5f;
                   } ImGui::SameLine();
                   ImGui::Checkbox("Auto Update", &autoUpdate);
                }

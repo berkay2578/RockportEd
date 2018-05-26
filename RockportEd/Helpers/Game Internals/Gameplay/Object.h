@@ -1,20 +1,18 @@
 #pragma once
 #include "..\Data\GameTypes.h"
-using GameInternals::Data::GameTypes::ObjectData;
+using namespace GameInternals::Data::GameTypes;
 
 namespace GameInternals {
    namespace Gameplay {
       namespace Object {
-         static ObjectData** objectDatas = (ObjectData**)(0x5383B0 + 0x400000);
-
-         static bool getObjectData(ObjectData*& out_ObjectData, const int& offset = 0) {
-            auto v = objectDatas[offset];
+         static bool getRigidBodyData(RigidBodyData*& out_RigidBodyData, const int& offset = 0) {
+            auto v = RigidBody::mMaps[offset];
             if (!v) {
-               out_ObjectData = nullptr;
+               out_RigidBodyData = nullptr;
                return false;
             }
 
-            out_ObjectData = v;
+            out_RigidBodyData = v;
             return true;
          }
       }

@@ -42,14 +42,14 @@ namespace Settings {
 
    struct CarConfigurationPreset {
       float Mass;
-      float GForce;
+      float OOMass;
       CarPhysicsTuningPreset PhysicsTuning;
 
       template <class Archive>
       void serialize(Archive& archive) {
          archive(
             CEREAL_NVP(Mass),
-            CEREAL_NVP(GForce),
+            CEREAL_NVP(OOMass),
             CEREAL_NVP(PhysicsTuning)
          );
       }
