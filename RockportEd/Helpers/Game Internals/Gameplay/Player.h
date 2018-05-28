@@ -1,6 +1,7 @@
 #pragma once
 #include <WinDef.h>
 #include "..\Data\Data.h"
+using namespace GameInternals::Data::GameTypes;
 
 namespace GameInternals {
    enum class SpeedUnit : BYTE {
@@ -23,17 +24,17 @@ namespace GameInternals {
             // TODO: Move this
             static float* carSpeed = (float*)(0x5142C8 + 0x400000);
 
-            static DWORD* getCarPowerBase() {
-               return Memory::readPointer(0x5142D0, 1, 0x20);
+            static CarPowerData** getCarPowerBase() {
+               return reinterpret_cast<CarPowerData**>(Memory::readPointer(0x5142D0, false, 1, 0x20));
             }
-            static bool getCarPowerData(Data::GameTypes::CarPowerData*& out_CarPowerData) {
+            static bool getCarPowerData(CarPowerData*& out_pCarPowerData) {
                auto pBase = getCarPowerBase();
-               if (!pBase || *pBase == 0xEEEEEEEE) {
-                  out_CarPowerData = nullptr;
+               if (!pBase || (DWORD)*pBase == 0xEEEEEEEE) {
+                  out_pCarPowerData = nullptr;
                   return false;
                }
 
-               out_CarPowerData = (Data::GameTypes::CarPowerData*)*pBase;
+               out_pCarPowerData = *pBase;
                return true;
             }
             static float getRPM(Data::GameTypes::CarPowerData* cpd) {
@@ -70,7 +71,7 @@ namespace GameInternals {
                return p ? *p : -1.0f;
             }
 
-            static void setCarPhysicsTuning(const Data::GameTypes::CarPhysicsTuning* newCarPhysicsTuning) {
+            static void setCarPhysicsTuning(const CarPhysicsTuning* newCarPhysicsTuning) {
                __asm {
                   push eax
                   push ebx

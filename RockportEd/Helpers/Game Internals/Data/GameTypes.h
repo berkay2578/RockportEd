@@ -125,6 +125,20 @@ namespace GameInternals {
 
          struct Matrix4 {
             float m1_1;
+            float m1_2;
+            float m1_3;
+            float m1_4;
+            float m2_1;
+            float m2_2;
+            float m2_3;
+            float m2_4;
+            float m3_1;
+            float m3_2;
+            float m3_3;
+            float m3_4;
+            float m4_1;
+            float m4_2;
+            float m4_3;
             float m4_4;
          };
       }
