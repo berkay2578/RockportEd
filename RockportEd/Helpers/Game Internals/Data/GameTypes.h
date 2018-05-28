@@ -323,7 +323,7 @@ namespace GameInternals {
          }
 
          void Damp(const float& amount) {
-            return ((void(__thiscall*)(RigidBody*, float))0x699FB0)(getFunctionPointer(0x8), amount);
+            ((void(__thiscall*)(RigidBody*, float))0x699FB0)(getFunctionPointer(0x8), amount);
          }
 
          UMath::Vector3* GetCenterOfGravity() {
