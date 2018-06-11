@@ -507,7 +507,7 @@ namespace GameInternals {
             return constructorCallResult;
          }
 
-         RigidBody* getRigidyBody() {
+         RigidBody* getRigidBody() {
             return (RigidBody*)Memory::readPointer((DWORD)this + 0x4C, true);
          }
       };
