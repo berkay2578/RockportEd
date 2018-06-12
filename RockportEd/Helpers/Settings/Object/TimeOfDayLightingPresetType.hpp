@@ -8,34 +8,50 @@
 #include <cereal\archives\xml.hpp>
 
 namespace Settings {
-   struct TimeOfDayLightingPreset {
-      float FogDistanceScale;
-      float FogSkyColour[4];
-      float FogSkyColourScale;
-      float FogHazeColour[4];
-      float FogHazeColourScale;
-      float FogInLightScatter;
-      float FogSunFalloff;
-      float AmbientColour[4];
-      float DiffuseColour[4];
+   struct TimeOfDayLightingDataPreset {
       float SpecularColour[4];
+      float DiffuseColour[4];
+      float AmbientColour[4];
+      float FogHazeColour[4];
       float FixedFunctionSkyColour[4];
+      float FogDistanceScale;
+      float FogHazeColourScale;
+      float FogSkyColourScale;
       float EnvSkyBrightness;
       float CarSpecScale;
+      float FogSkyColour[4];
 
-      TimeOfDayLightingPreset& operator=(GameInternals::TimeOfDayLighting* pTimeOfDayLightingInstance) {
-         memcpy_s(SpecularColour, sizeof(float) * 4, pTimeOfDayLightingInstance->SpecularColour, sizeof(float) * 4);
-         memcpy_s(DiffuseColour, sizeof(float) * 4, pTimeOfDayLightingInstance->DiffuseColour, sizeof(float) * 4);
-         memcpy_s(AmbientColour, sizeof(float) * 4, pTimeOfDayLightingInstance->AmbientColour, sizeof(float) * 4);
-         memcpy_s(FogSkyColour, sizeof(float) * 4, pTimeOfDayLightingInstance->FogSkyColour, sizeof(float) * 4);
-         memcpy_s(FogHazeColour, sizeof(float) * 4, pTimeOfDayLightingInstance->FogHazeColour, sizeof(float) * 4);
-         memcpy_s(FixedFunctionSkyColour, sizeof(float) * 4, pTimeOfDayLightingInstance->FixedFunctionSkyColour, sizeof(float) * 4);
-         FogDistanceScale   = pTimeOfDayLightingInstance->FogDistanceScale;
-         FogSkyColourScale  = pTimeOfDayLightingInstance->FogSkyColourScale;
-         FogHazeColourScale = pTimeOfDayLightingInstance->FogHazeColourScale;
-         EnvSkyBrightness   = pTimeOfDayLightingInstance->EnvSkyBrightness;
-         CarSpecScale       = pTimeOfDayLightingInstance->CarSpecScale;
-         return *this;
+      void operator=(const GameInternals::TimeOfDayLightingData& newTimeOfDayLightingData) {
+         memcpy_s(SpecularColour, sizeof(float) * 4, newTimeOfDayLightingData.SpecularColour, sizeof(float) * 4);
+         memcpy_s(DiffuseColour, sizeof(float) * 4, newTimeOfDayLightingData.DiffuseColour, sizeof(float) * 4);
+         memcpy_s(AmbientColour, sizeof(float) * 4, newTimeOfDayLightingData.AmbientColour, sizeof(float) * 4);
+         memcpy_s(FogHazeColour, sizeof(float) * 4, newTimeOfDayLightingData.FogHazeColour, sizeof(float) * 4);
+         memcpy_s(FixedFunctionSkyColour, sizeof(float) * 4, newTimeOfDayLightingData.FixedFunctionSkyColour, sizeof(float) * 4);
+         memcpy_s(FogSkyColour, sizeof(float) * 4, newTimeOfDayLightingData.FogSkyColour, sizeof(float) * 4);
+         FogDistanceScale   = newTimeOfDayLightingData.FogDistanceScale;
+         FogSkyColourScale  = newTimeOfDayLightingData.FogSkyColourScale;
+         FogHazeColourScale = newTimeOfDayLightingData.FogHazeColourScale;
+         EnvSkyBrightness   = newTimeOfDayLightingData.EnvSkyBrightness;
+         CarSpecScale       = newTimeOfDayLightingData.CarSpecScale;
+      }
+      void setTo(const GameInternals::TimeOfDayLightingData* pNewTimeOfDayLightingData) {
+         *this = *pNewTimeOfDayLightingData;
+      }
+      GameInternals::TimeOfDayLightingData getGameInternalsCompliantData() {
+         GameInternals::TimeOfDayLightingData ret;
+         memcpy_s(ret.SpecularColour, sizeof(float) * 4, SpecularColour, sizeof(float) * 4);
+         memcpy_s(ret.DiffuseColour, sizeof(float) * 4, DiffuseColour, sizeof(float) * 4);
+         memcpy_s(ret.AmbientColour, sizeof(float) * 4, AmbientColour, sizeof(float) * 4);
+         memcpy_s(ret.FogHazeColour, sizeof(float) * 4, FogHazeColour, sizeof(float) * 4);
+         memcpy_s(ret.FixedFunctionSkyColour, sizeof(float) * 4, FixedFunctionSkyColour, sizeof(float) * 4);
+         memcpy_s(ret.FogSkyColour, sizeof(float) * 4, FogSkyColour, sizeof(float) * 4);
+         ret.FogDistanceScale   = FogDistanceScale;
+         ret.FogSkyColourScale  = FogSkyColourScale;
+         ret.FogHazeColourScale = FogHazeColourScale;
+         ret.EnvSkyBrightness   = EnvSkyBrightness;
+         ret.CarSpecScale       = CarSpecScale;
+
+         return ret;
       }
 
       template <class Archive>
@@ -49,10 +65,30 @@ namespace Settings {
             CEREAL_NVP(FogDistanceScale),
             CEREAL_NVP(FogHazeColourScale),
             CEREAL_NVP(FogSkyColourScale),
-            CEREAL_NVP(FogSkyColourScale),
             CEREAL_NVP(EnvSkyBrightness),
             CEREAL_NVP(CarSpecScale),
-            CEREAL_NVP(FogSkyColour),
+            CEREAL_NVP(FogSkyColour)
+         );
+      }
+   };
+   struct TimeOfDayLightingPreset {
+      TimeOfDayLightingDataPreset LightingDataPreset;
+      float FogInLightScatter;
+      float FogSunFalloff;
+
+      void operator=(GameInternals::TimeOfDayLighting& newTimeOfDayLighting) {
+         LightingDataPreset = *newTimeOfDayLighting.pLightingData;
+         FogInLightScatter  = newTimeOfDayLighting.FogInLightScatter;
+         FogSunFalloff      = newTimeOfDayLighting.FogSunFalloff;
+      }
+      void setTo(GameInternals::TimeOfDayLighting* pNewTimeOfDayLighting) {
+         *this = *pNewTimeOfDayLighting;
+      }
+
+      template <class Archive>
+      void serialize(Archive& archive) {
+         archive(
+            CEREAL_NVP(LightingDataPreset),
             CEREAL_NVP(FogInLightScatter),
             CEREAL_NVP(FogSunFalloff)
          );

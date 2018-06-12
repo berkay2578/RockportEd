@@ -49,10 +49,6 @@ namespace GameInternals {
             y = _y;
             z = _z;
          }
-         Vector3(const UMath::Vector3& uVector3) {
-            memcpy_s(this, sizeof(float) * 3, &uVector3, sizeof(float) * 3);
-            y = -y;
-         }
 
          operator float*() {
             return reinterpret_cast<float*>(this);
@@ -67,10 +63,6 @@ namespace GameInternals {
             y = _y;
             z = _z;
             w = _w;
-         }
-         Vector4(const UMath::Vector4& uVector4) {
-            memcpy_s(this, sizeof(float) * 4, &uVector4, sizeof(float) * 4);
-            y = -y;
          }
 
          operator float*() {
@@ -260,7 +252,7 @@ namespace GameInternals {
          /* +0x20 */ UMath::Vector3 LinearVelocity;
          /* +0x2C */ float          Mass;
          /* +0x30 */ UMath::Vector3 AngularVelocity;
-         /* +0x3C */ float          OOMass;
+         /* +0x3C */ float          OOMass; // CollisionMass?
          /* +0x40 */ UMath::Vector3 InertiaTensor; // PrincipalInertia
          /* +0x4C */ unsigned char  __unk1[0x4];
          /* +0x50 */ UMath::Vector3 Force;
@@ -296,6 +288,7 @@ namespace GameInternals {
          unsigned char __unk4[0x14];
          /* +0xA8 */ UMath::Vector3  CenterOfGravity;
 
+         static inline RigidBody** instances = (RigidBody**)(0x52D0E8 + 0x400000);
          static inline RigidBodyData** mMaps = (RigidBodyData**)(0x5383B0 + 0x400000);
 
       private:
@@ -304,7 +297,7 @@ namespace GameInternals {
          }
 
       public:
-         void Accelerate(UMath::Vector3* pAxisFactor, const float& amount) {
+         void Accelerate(UMath::Vector3* pAxisFactor, float amount) {
             ((void(__thiscall*)(RigidBody*, UMath::Vector3*, float))0x699E10)(this, pAxisFactor, amount);
          }
 
@@ -315,14 +308,14 @@ namespace GameInternals {
             return ((bool(__thiscall*)(RigidBody*))0x699F30)(getFunctionPointer(-0x48));
          }
 
-         void ConvertLocalToWorld(UMath::Vector3* out_pWorldVector3, const bool& normalize) {
+         void ConvertLocalToWorld(UMath::Vector3* out_pWorldVector3, bool normalize) {
             ((void(__thiscall*)(RigidBody*, UMath::Vector3*, bool))0x697570)(this, out_pWorldVector3, normalize);
          }
-         void ConvertWorldToLocal(UMath::Vector3* out_pLocalVector3, const bool& normalize) {
+         void ConvertWorldToLocal(UMath::Vector3* out_pLocalVector3, bool normalize) {
             ((void(__thiscall*)(RigidBody*, UMath::Vector3*, bool))0x6975C0)(this, out_pLocalVector3, normalize);
          }
 
-         void Damp(const float& amount) {
+         void Damp(float amount) {
             ((void(__thiscall*)(RigidBody*, float))0x699FB0)(getFunctionPointer(0x8), amount);
          }
 
@@ -380,19 +373,19 @@ namespace GameInternals {
             ((void(__thiscall*)(RigidBody*))0x6A6D80)(getFunctionPointer(-0x48));
          }
 
-         void SetAnimating(const bool& isAnimating) {
+         void SetAnimating(bool isAnimating) {
             ((void(__thiscall*)(RigidBody*, bool))0x6981F0)(getFunctionPointer(0x8), isAnimating);
          }
-         void SetAttachedToWorld(const bool& isAttachedToWorld, const float& unk) {
+         void SetAttachedToWorld(bool isAttachedToWorld, float unk) {
             ((void(__thiscall*)(RigidBody*, bool, float))0x697020)(getFunctionPointer(0x8), isAttachedToWorld, unk);
          }
-         void SetAnchored(const bool& isAnchored) {
+         void SetAnchored(bool isAnchored) {
             ((void(__thiscall*)(RigidBody*, bool))0x670FF0)(getFunctionPointer(0x8), isAnchored);
          }
-         void SetGravity(const float& gravity) {
+         void SetGravity(float gravity) {
             *(float*)((unsigned char*)*pSomethingRelatedToPhysics + 0xF0) = gravity;
          }
-         void SetMass(const float& mass) {
+         void SetMass(float mass) {
             ((void(__thiscall*)(RigidBody*, float))0x6970C0)(this, mass);
          }
          void SetModelling(const bool& isModelling) {
@@ -508,7 +501,7 @@ namespace GameInternals {
          }
 
          RigidBody* getRigidBody() {
-            return (RigidBody*)Memory::readPointer((DWORD)this + 0x4C, true);
+            return (RigidBody*)Memory::readPointer((DWORD)this + 0x78, true);
          }
       };
    }
