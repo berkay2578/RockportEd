@@ -37,13 +37,13 @@ namespace GameInternals {
                out_pCarPowerData = *pBase;
                return true;
             }
-            static float getRPM(Data::GameTypes::CarPowerData* cpd) {
-               if (!cpd)
+            static float getRPMFrom(Data::GameTypes::CarPowerData* pCpd) {
+               if (!pCpd)
                   return -1.0f;
 
                return max(
-                  (cpd->AlignedCurrentRPM / 10000.0f) * cpd->MaximumRPM,
-                  cpd->MinimumRPM
+                  (pCpd->AlignedCurrentRPM / 10000.0f) * pCpd->MaximumRPM,
+                  pCpd->MinimumRPM
                );
             }
 
@@ -103,3 +103,5 @@ namespace GameInternals {
       }
    }
 }
+namespace PlayerCarInternals = GameInternals::Gameplay::Player::Car;
+namespace PlayerInternals = GameInternals::Gameplay::Player;

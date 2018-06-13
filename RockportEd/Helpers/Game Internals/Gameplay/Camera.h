@@ -54,4 +54,4 @@ namespace GameInternals {
          }
       }
    }
-}
+} namespace CameraInternals = GameInternals::Gameplay::Camera;

@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "Extensions\Extensions.h"
 using GameInternals::Data::GameTypes::CarPowerData;
-using namespace GameInternals::Gameplay::Player;
 
 namespace Extensions {
    namespace InGameMenu {
@@ -96,7 +95,7 @@ namespace Extensions {
          const virtual void onFrame() override {
             if (isEnabled) {
                static CarPowerData* pCarPowerData = nullptr;
-               if (Car::getCarPowerData(pCarPowerData)) {
+               if (PlayerCarInternals::getCarPowerData(pCarPowerData)) {
                   static float scaling = 1.0f;
                   static float size    = 90.0f;
 
@@ -126,7 +125,7 @@ namespace Extensions {
                         static const float rpmFinalAngle_FullRange     = 365.0f;
                         static const float rpmAngleDiff_BeginningToFinal_FullRange = rpmFinalAngle_FullRange - rpmBeginningAngle_FullRange;
 
-                        const float rpmValueCurrent = Car::getRPM(pCarPowerData);
+                        const float rpmValueCurrent = PlayerCarInternals::getRPMFrom(pCarPowerData);
 
                         const float rpmBeginningValue_Redline             = pCarPowerData->MaximumRPM;
                         const float rpmBeginningAngle_Redline             = rpmBeginningAngle_FullRange + ((rpmBeginningValue_Redline / rpmValueMaximum) * rpmAngleDiff_BeginningToFinal_FullRange);
@@ -301,7 +300,7 @@ namespace Extensions {
                      // Speed drawing
                      {
                         const GameInternals::SpeedUnit speedUnitType = GameInternals::Config::Gameplay::getSpeedUnitType();
-                        const float                    speedValue    = Car::getSpeed(speedUnitType);
+                        const float                    speedValue    = PlayerCarInternals::getSpeed(speedUnitType);
 
                         static char speedValueBackgroundText[4];
                         static char speedValueToText[4];
@@ -368,7 +367,7 @@ namespace Extensions {
                         static const float NOSBarEndAngle        = 366.1f;
                         static const int   nosMaximumSegments    = static_cast<int>(NOSBarEndAngle - NOSBarRangeStartAngle); // this needs to be an odd number
 
-                        const float nosValue           = Car::getNOSValue();
+                        const float nosValue           = PlayerCarInternals::getNOSValue();
                         const int   nosCurrentSegments = static_cast<int>(std::round(nosValue * nosMaximumSegments));
 
                         // Empty bars

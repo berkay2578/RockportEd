@@ -138,7 +138,7 @@ namespace GameInternals {
             if ((lightingDefinitions.size() > 0 || loadLightingDefinitions())
                 && backups.size() == lightingDefinitions.size())
             {
-               for (int i = 0; i < lightingDefinitions.size(); i++)
+               for (size_t i = 0; i < lightingDefinitions.size(); i++)
                   *lightingDefinitions[i]->pTimeOfDayLighting = backups[i]->timeOfDayLighting;
             }
          }
