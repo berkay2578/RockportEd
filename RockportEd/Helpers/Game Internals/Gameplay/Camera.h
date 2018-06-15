@@ -23,6 +23,20 @@ namespace GameInternals {
       bool Tilting[2];
       _CAMERA_INFO_ARRAY_DESCRIPTOR(SELECTABLE);
       bool Selectable[2];
+
+      void operator=(const CameraInfo& newCameraInfo) {
+         memcpy_s(Stiffness, sizeof(float) * 2, newCameraInfo.Stiffness, sizeof(float) * 2);
+         memcpy_s(Angle, sizeof(float) * 2, newCameraInfo.Angle, sizeof(float) * 2);
+         memcpy_s(Lag, sizeof(float) * 2, newCameraInfo.Lag, sizeof(float) * 2);
+         memcpy_s(FOV, sizeof(float) * 2, newCameraInfo.FOV, sizeof(float) * 2);
+         memcpy_s(Height, sizeof(float) * 2, newCameraInfo.Height, sizeof(float) * 2);
+         memcpy_s(LateOffset, sizeof(float) * 2, newCameraInfo.LateOffset, sizeof(float) * 2);
+         memcpy_s(Tilting, sizeof(bool) * 2, newCameraInfo.Tilting, sizeof(bool) * 2);
+         memcpy_s(Selectable, sizeof(bool) * 2, newCameraInfo.Selectable, sizeof(bool) * 2);
+      }
+      void setTo(CameraInfo* pNewCameraInfo) {
+         *this = *pNewCameraInfo;
+      }
    };
 
    namespace Gameplay {

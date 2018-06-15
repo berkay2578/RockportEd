@@ -37,7 +37,7 @@ namespace GameInternals {
          for (int i = 0; i < (0x80 / sizeof(float)); i++)
             arrDummy[0][i] += arrDummy[1][i];
       }
-      TimeOfDayLightingData& operator+(const TimeOfDayLightingData& additionData) {
+      TimeOfDayLightingData operator+(const TimeOfDayLightingData& additionData) {
          TimeOfDayLightingData result = *this;
          result += additionData;
          return result;
@@ -48,7 +48,7 @@ namespace GameInternals {
          for (int i = 0; i < (0x80 / sizeof(float)); i++)
             arrDummy[i] *= multiplierValue;
       }
-      TimeOfDayLightingData& operator*(const float& multiplierValue) {
+      TimeOfDayLightingData operator*(const float& multiplierValue) {
          TimeOfDayLightingData result = *this;
          result *= multiplierValue;
          return result;

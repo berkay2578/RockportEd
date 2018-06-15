@@ -37,6 +37,7 @@ namespace Settings {
       void setTo(const GameInternals::TimeOfDayLightingData* pNewTimeOfDayLightingData) {
          *this = *pNewTimeOfDayLightingData;
       }
+
       GameInternals::TimeOfDayLightingData getGameInternalsCompliantData() {
          GameInternals::TimeOfDayLightingData ret;
          memcpy_s(ret.SpecularColour, sizeof(float) * 4, SpecularColour, sizeof(float) * 4);

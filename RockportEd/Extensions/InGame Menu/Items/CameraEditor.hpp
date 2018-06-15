@@ -7,38 +7,57 @@ using GameInternals::CameraInfo;
 namespace Extensions {
    namespace InGameMenu {
       class CameraEditor : public _BaseInGameMenuItem {
-         std::map<std::string, bool> hasAlreadyLoadedSettings = {};
-         std::map<char*, CameraInfo> backups                  = {};
+         struct CameraEditorData {
+            CameraInfo defaultCameraInfo          = { 0 };
+            bool       showAdvancedOptions        = false;
+            bool       hasLoadedSettings          = false;
+            bool       hasLoadedDefaultCameraInfo = false;
 
-         bool joyViewEnabled      = false;
-         bool speedFOVEnabled     = false;
-         bool showAdvancedOptions = false;
+            bool  joyViewEnabled       = false;
+            float joyViewData[2]       = { 0.0f, 0.0f };
+            bool  hasLoadedJoyViewData = false;
 
-         JOYINFOEX               jiEx        = { 0 };
-         std::map<char*, float*> joyViewData = {};
+            bool  speedFOVEnabled = false;
+            float speedFOVScale   = 20.0f;
+
+            int16_t nitrousFOVWidening = 1638; // Game default value, 0x666
+            float   nitrousFOVScale    = 5.0f; // nitrousFOVWidening / 327.6
+
+            float* getNitrousFOVWideningAsPScale() {
+               nitrousFOVScale = nitrousFOVWidening / 327.6f;
+               return &nitrousFOVScale;
+            }
+            void setNitrousFOVScaleToWidening(const bool& writeToMemory = true) {
+               nitrousFOVWidening = (int16_t)(nitrousFOVScale * 327.6f);
+               if (writeToMemory)
+                  InternalVariables::setVariable(InternalVariables::nosFOVWidening, nitrousFOVWidening);
+            }
+         };
+         std::map<CameraInfo*, CameraEditorData> cache = {};
+         CameraEditorData*     pActiveCameraEditorData = nullptr;
 
          int         oldCameraIndex     = 0;
          int*        pActiveCameraIndex = nullptr;
          CameraInfo* pActiveCameraInfo  = nullptr;
 
          void resetData() {
-            if (pActiveCameraInfo
-                && backups.find(pActiveCameraInfo->CollectionName) != backups.end()) {
-               auto& bkCameraInfo          = backups[pActiveCameraInfo->CollectionName];
-               pActiveCameraInfo->Angle[0] = bkCameraInfo.Angle[0];
-               pActiveCameraInfo->Lag[0]   = bkCameraInfo.Lag[0];
-               pActiveCameraInfo->FOV[0]   = bkCameraInfo.FOV[0];
+            CameraEditorData* pCameraEditorData = pActiveCameraEditorData;
+            if (!pCameraEditorData && pActiveCameraInfo) {
+               auto iter = cache.find(pActiveCameraInfo);
+               if (iter != cache.end()) {
+                  pCameraEditorData = &iter->second;
+               }
             }
-
-            backups.clear();
-            if (!joyViewData.empty()) {
-               for (auto& allocData : joyViewData)
-                  delete[] allocData.second;
-               joyViewData.clear();
+            if (pCameraEditorData) {
+               pActiveCameraInfo->Angle[0] = pCameraEditorData->defaultCameraInfo.Angle[0];
+               pActiveCameraInfo->Lag[0]   = pCameraEditorData->defaultCameraInfo.Lag[0];
+               pActiveCameraInfo->FOV[0]   = pCameraEditorData->defaultCameraInfo.FOV[0];
             }
+            cache.clear();
          }
       public:
          const virtual void loadData() override {
+            Memory::openMemoryAccess((DWORD)InternalVariables::nosFOVWidening, sizeof(float));
             hasLoadedData = true;
          }
 
@@ -48,74 +67,90 @@ namespace Extensions {
                if (oldCameraIndex != *pActiveCameraIndex
                    || ((oldCameraIndex == *pActiveCameraIndex) && (!pActiveCameraInfo))) {
                   if (CameraInternals::getActiveCameraInfo(pActiveCameraInfo)) {
-                     std::string activeCameraName = pActiveCameraInfo->CollectionName;
-                     auto iter = Settings::settingsType.camPresets.find(activeCameraName);
-                     if (iter != Settings::settingsType.camPresets.end()) {
-                        if (!hasAlreadyLoadedSettings[activeCameraName]) {
-                           auto* activeCameraInfoPreset = &iter->second;
-                           activeCameraInfoPreset->loadToCameraInfo(pActiveCameraInfo);
+                     pActiveCameraEditorData = &cache[pActiveCameraInfo];
 
-                           hasAlreadyLoadedSettings[activeCameraName] = true;
+                     if (!pActiveCameraEditorData->hasLoadedSettings) {
+                        std::string activeCameraName = pActiveCameraInfo->CollectionName;
+                        auto iter = Settings::settingsType.cameraPresets.find(activeCameraName);
+                        if (iter != Settings::settingsType.cameraPresets.end()) {
+                           auto* pActiveCameraPreset = &iter->second;
+
+                           *pActiveCameraInfo                          = pActiveCameraPreset->InfoPreset.getGameInternalsCompliantData();
+                           pActiveCameraEditorData->joyViewEnabled     = pActiveCameraPreset->JoyViewEnabled;
+                           pActiveCameraEditorData->speedFOVEnabled    = pActiveCameraPreset->SpeedFOVEnabled;
+                           pActiveCameraEditorData->speedFOVScale      = pActiveCameraPreset->SpeedFOVScale;
+                           pActiveCameraEditorData->nitrousFOVWidening = pActiveCameraPreset->NitrousFOVWidening;
+
+                           pActiveCameraEditorData->hasLoadedSettings = true;
                         }
                      }
+                     InternalVariables::setVariable(InternalVariables::nosFOVWidening, pActiveCameraEditorData->nitrousFOVWidening);
+                  }
+               } oldCameraIndex = *pActiveCameraIndex;
+
+               if (pActiveCameraInfo)
+                  pActiveCameraEditorData = &cache[pActiveCameraInfo];
+               if (pActiveCameraInfo && pActiveCameraEditorData) {
+                  if (pActiveCameraEditorData->joyViewEnabled) {
+                     static JOYINFOEX jiEx = { 0 };
+                     jiEx.dwSize = sizeof(JOYINFOEX);
+
+                     if (joyGetPosEx(JOYSTICKID1, &jiEx) == JOYERR_NOERROR)
+                     {
+                        if (!pActiveCameraEditorData->hasLoadedDefaultCameraInfo) {
+                           pActiveCameraEditorData->defaultCameraInfo          = *pActiveCameraInfo;
+                           pActiveCameraEditorData->hasLoadedDefaultCameraInfo = true;
+                        }
+                        if (!pActiveCameraEditorData->hasLoadedJoyViewData) {
+                           pActiveCameraEditorData->joyViewData[0]       = 5.0f - pActiveCameraInfo->Angle[0];
+                           pActiveCameraEditorData->joyViewData[1]       = -pActiveCameraInfo->Lag[0];
+                           pActiveCameraEditorData->hasLoadedJoyViewData = true;
+                        }
+
+                        static int32_t edtX, edtY;
+                        edtX = jiEx.dwUpos - INT16_MAX;
+                        edtY = jiEx.dwRpos - INT16_MAX;
+
+                        static float valX, valY;
+                        valX = valY = 0.0f;
+                        if (edtX >> 4)
+                           valX = (float)edtX / INT16_MAX;
+                        if (edtY >> 4)
+                           valY = (float)edtY / INT16_MAX;
+
+                        auto& modifiers = pActiveCameraEditorData->joyViewData;
+                        static float mod0, mod1;
+                        mod0 = mod1 = 0.0f;
+                        if (valX >= 0.05f || valX <= -0.05f) {
+                           mod0 = modifiers[0] * valX;
+                           mod1 = modifiers[1] * abs(valX);
+                        }
+                        if (valY >= 0.05f) {
+                           mod1 -= modifiers[1] * (valY * -1.8f);
+                        }
+                        auto& bkCameraInfo = pActiveCameraEditorData->defaultCameraInfo;
+                        pActiveCameraInfo->Angle[0] = bkCameraInfo.Angle[0] + mod0;
+                        pActiveCameraInfo->Lag[0]   = bkCameraInfo.Lag[0] + mod1;
+                     }
+                  }
+
+                  if (pActiveCameraEditorData->speedFOVEnabled) {
+                     if (!pActiveCameraEditorData->hasLoadedDefaultCameraInfo) {
+                        pActiveCameraEditorData->defaultCameraInfo          = *pActiveCameraInfo;
+                        pActiveCameraEditorData->hasLoadedDefaultCameraInfo = true;
+                     }
+
+                     static float playerCarSpeed;
+                     playerCarSpeed = PlayerCarInternals::getSpeed(GameInternals::SpeedUnit::KMH);
+
+                     static float mod0;
+                     mod0 = 0.0f;
+                     if (playerCarSpeed > 10.0f)
+                        mod0 = min(pActiveCameraEditorData->speedFOVScale, (playerCarSpeed / 360.0f) * pActiveCameraEditorData->speedFOVScale);
+
+                     pActiveCameraInfo->FOV[0] = pActiveCameraEditorData->defaultCameraInfo.FOV[0] + mod0;
                   }
                }
-               oldCameraIndex = *pActiveCameraIndex;
-            }
-
-            if (joyViewEnabled
-                && pActiveCameraInfo
-                && joyGetPosEx(JOYSTICKID1, &jiEx) == JOYERR_NOERROR)
-            {
-               if (backups.find(pActiveCameraInfo->CollectionName) == backups.end())
-                  backups[pActiveCameraInfo->CollectionName] = *pActiveCameraInfo;
-               if (joyViewData.find(pActiveCameraInfo->CollectionName) == joyViewData.end()) {
-                  joyViewData[pActiveCameraInfo->CollectionName] = new float[2] { 5.0f - pActiveCameraInfo->Angle[0],
-                                                                                  -2.5f - pActiveCameraInfo->Lag[0] };
-               }
-
-               static int32_t edtX, edtY;
-               edtX = jiEx.dwUpos - INT16_MAX;
-               edtY = jiEx.dwRpos - INT16_MAX;
-
-               static float valX, valY;
-               valX = valY = 0.0f;
-               if (edtX >> 8)
-                  valX = (float)edtX / INT16_MAX;
-               if (edtY >> 8)
-                  valY = (float)edtY / INT16_MAX;
-
-               static float mod0, mod1;
-               mod0 = mod1 = 0.0f;
-               if (valX >= 0.1f || valX <= -0.1f) {
-                  auto& modifiers = joyViewData[pActiveCameraInfo->CollectionName];
-                  mod0 = modifiers[0] * valX;
-                  mod1 = modifiers[1] * abs(valX);
-               }
-               auto& bkCameraInfo = backups[pActiveCameraInfo->CollectionName];
-               if (valY >= 0.1f) {
-                  mod1 *= -valY;
-                  mod1 -= bkCameraInfo.Lag[0] * 2.0f;
-               }
-               pActiveCameraInfo->Angle[0] = bkCameraInfo.Angle[0] + mod0;
-               pActiveCameraInfo->Lag[0]   = bkCameraInfo.Lag[0] + mod1;
-            }
-
-            if (speedFOVEnabled
-                && pActiveCameraInfo) {
-               if (backups.find(pActiveCameraInfo->CollectionName) == backups.end())
-                  backups[pActiveCameraInfo->CollectionName] = *pActiveCameraInfo;
-
-               static float playerCarSpeed;
-               playerCarSpeed = PlayerCarInternals::getSpeed(GameInternals::SpeedUnit::KMH);
-
-               static float mod0;
-               mod0 = 0.0f;
-               if (playerCarSpeed > 20.0f)
-                  mod0 = (playerCarSpeed / 360.0f) * 30.0f;
-
-               auto& bkCameraInfo = backups[pActiveCameraInfo->CollectionName];
-               pActiveCameraInfo->FOV[0] = bkCameraInfo.FOV[0] + mod0;
             }
          }
 
@@ -130,28 +165,38 @@ namespace Extensions {
                   oldCameraIndex = -1;
                if (pActiveCameraInfo) {
                   ImGui::TextWrapped("Camera Name: %s", pActiveCameraInfo->CollectionName);
-                  if (ImGui::Checkbox("Controller View", &joyViewEnabled)) {
-                     if (joyViewEnabled) {
-                        jiEx.dwSize = sizeof(JOYINFOEX);
+                  if (ImGui::Checkbox("Controller View", &pActiveCameraEditorData->joyViewEnabled)) {
+                     if (pActiveCameraEditorData->joyViewEnabled) {
                         joySetCapture(Helpers::WndProcHook::windowHandle, JOYSTICKID1, 1, FALSE);
                      } else {
                         joyReleaseCapture(JOYSTICKID1);
                         resetData();
                      }
                   } ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
-                  if (ImGui::Checkbox("Speed FOV", &speedFOVEnabled)) {
-                     if (!speedFOVEnabled)
+                  if (ImGui::Checkbox("Speed FOV", &pActiveCameraEditorData->speedFOVEnabled)) {
+                     if (!pActiveCameraEditorData->speedFOVEnabled)
                         resetData();
                   }
+                  if (pActiveCameraEditorData->speedFOVEnabled)
+                     ImGui::SliderFloat("##SpeedFOVScale", &pActiveCameraEditorData->speedFOVScale, -50.0f, 50.0f, "Speed FOV Scale: %.1f");
 
-                  ImGui::Checkbox("Advanced options", &showAdvancedOptions);
+                  if (ImGui::SliderFloat("##NitrousFOVScale", pActiveCameraEditorData->getNitrousFOVWideningAsPScale(), -30.0f, 30.0f, "NOS FOV Scale: %.1f"))
+                     pActiveCameraEditorData->setNitrousFOVScaleToWidening();
+
+                  ImGui::Checkbox("Advanced options", &pActiveCameraEditorData->showAdvancedOptions);
                   ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
                   if (ImGui::Button("Save Preset")) {
-                     Settings::settingsType.camPresets[std::string(pActiveCameraInfo->CollectionName)] = pActiveCameraInfo;
+                     auto* pCameraPreset = &Settings::settingsType.cameraPresets[std::string(pActiveCameraInfo->CollectionName)];
+                     pCameraPreset->InfoPreset.setTo(pActiveCameraInfo);
+                     pCameraPreset->JoyViewEnabled     = pActiveCameraEditorData->joyViewEnabled;
+                     pCameraPreset->SpeedFOVEnabled    = pActiveCameraEditorData->speedFOVEnabled;
+                     pCameraPreset->SpeedFOVScale      = pActiveCameraEditorData->speedFOVScale;
+                     pCameraPreset->NitrousFOVWidening = InternalVariables::getNosFOVWidening();
+
                      Settings::saveSettings();
                   }
 
-                  if (showAdvancedOptions) {
+                  if (pActiveCameraEditorData->showAdvancedOptions) {
                      if (ImGui::Button("Copy values to their advanced counterparts")) {
                         pActiveCameraInfo->Stiffness[1]  = pActiveCameraInfo->Stiffness[0];
                         pActiveCameraInfo->Angle[1]      = pActiveCameraInfo->Angle[0];
@@ -166,22 +211,22 @@ namespace Extensions {
 
                   ImGui::TextWrapped("Stiffness");
                   ImGui::SliderFloat("##CameraStiffness", &pActiveCameraInfo->Stiffness[0], 0.0f, 1.0f);
-                  if (showAdvancedOptions) {
+                  if (pActiveCameraEditorData->showAdvancedOptions) {
                      ImGui::Text("STIFFNESS[1]"); ImGui::SameLine();
                      ImGui::SliderFloat("##CameraStiffness_1", &pActiveCameraInfo->Stiffness[1], 0.0f, 1.0f);
                   }
 
-                  if (!joyViewEnabled) {
+                  if (!pActiveCameraEditorData->joyViewEnabled) {
                      ImGui::TextWrapped("Horizontal angle");
                      ImGui::SliderFloat("##CameraHorizontalAngle", &pActiveCameraInfo->Angle[0], -45.0f, 45.0f, "%.3f deg");
-                     if (showAdvancedOptions) {
+                     if (pActiveCameraEditorData->showAdvancedOptions) {
                         ImGui::Text("ANGLE[1]"); ImGui::SameLine();
                         ImGui::SliderFloat("##CameraHorizontalAngle_1", &pActiveCameraInfo->Angle[1], -45.0f, 45.0f, "%.3f deg");
                      }
 
                      ImGui::TextWrapped("Distance");
                      ImGui::SliderFloat("##CameraDistance", &pActiveCameraInfo->Lag[0], -100.0f, 100.0f);
-                     if (showAdvancedOptions) {
+                     if (pActiveCameraEditorData->showAdvancedOptions) {
                         ImGui::Text("LAG[1]"); ImGui::SameLine();
                         ImGui::SliderFloat("##CameraDistance_1", &pActiveCameraInfo->Lag[1], -100.0f, 100.0f);
                      }
@@ -191,10 +236,10 @@ namespace Extensions {
                      ImGui::PopStyleColor();
                   }
 
-                  if (!speedFOVEnabled) {
+                  if (!pActiveCameraEditorData->speedFOVEnabled) {
                      ImGui::TextWrapped("FOV");
                      ImGui::SliderFloat("##CameraFOV", &pActiveCameraInfo->FOV[0], 25.0f, 135.0f);
-                     if (showAdvancedOptions) {
+                     if (pActiveCameraEditorData->showAdvancedOptions) {
                         ImGui::Text("FOV[1]"); ImGui::SameLine();
                         ImGui::SliderFloat("##CameraFOV_1", &pActiveCameraInfo->FOV[1], 25.0f, 135.0f);
                      }
@@ -206,25 +251,25 @@ namespace Extensions {
 
                   ImGui::TextWrapped("Height");
                   ImGui::SliderFloat("##CameraHeight", &pActiveCameraInfo->Height[0], 0.0f, 100.0f);
-                  if (showAdvancedOptions) {
+                  if (pActiveCameraEditorData->showAdvancedOptions) {
                      ImGui::Text("HEIGHT[1]"); ImGui::SameLine();
                      ImGui::SliderFloat("##CameraHeight_1", &pActiveCameraInfo->Height[1], 0.0f, 100.0f);
                   }
 
                   ImGui::TextWrapped("Vertical angle");
                   ImGui::SliderFloat("##CameraLateOffset", &pActiveCameraInfo->LateOffset[0], -89.0f, 89.0f, "%.3f deg");
-                  if (showAdvancedOptions) {
+                  if (pActiveCameraEditorData->showAdvancedOptions) {
                      ImGui::Text("LATEOFFSET[1]"); ImGui::SameLine();
                      ImGui::SliderFloat("##CameraLateOffset_1", &pActiveCameraInfo->LateOffset[1], -89.0f, 89.0f);
                   }
 
                   ImGui::Checkbox("Tilting", &pActiveCameraInfo->Tilting[0]);
-                  if (showAdvancedOptions) {
+                  if (pActiveCameraEditorData->showAdvancedOptions) {
                      ImGui::Checkbox("TILTING[1]", &pActiveCameraInfo->Tilting[1]);
                   }
 
                   ImGui::Checkbox("Selectable", &pActiveCameraInfo->Selectable[0]);
-                  if (showAdvancedOptions) {
+                  if (pActiveCameraEditorData->showAdvancedOptions) {
                      ImGui::Checkbox("SELECTABLE[1]", &pActiveCameraInfo->Selectable[1]);
                   }
                } else {

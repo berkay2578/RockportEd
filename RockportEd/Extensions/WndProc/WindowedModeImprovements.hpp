@@ -192,8 +192,8 @@ namespace Extensions {
                   updateValues((float)LOWORD(lParam), (float)HIWORD(lParam));
 
                   isResizing = true;
-                  GameInternals::Data::Variables::setDrawHUD(false);
-                  GameInternals::Data::Variables::setResetGameWindow(true);
+                  InternalVariables::setVariable(InternalVariables::drawHUD, false);
+                  InternalVariables::setVariable(InternalVariables::resetGameWindow, true);
                }
                return TRUE;
             }
@@ -202,7 +202,7 @@ namespace Extensions {
 
          static void WINAPI reset(LPVOID, LPVOID) {
             if (isResizing) {
-               GameInternals::Data::Variables::setDrawHUD(true);
+               InternalVariables::setVariable(InternalVariables::drawHUD, true);
                isResizing = false;
             }
          }

@@ -19,7 +19,7 @@ namespace Settings {
 
       Colours                                        colours          = {};
       GameModificationsPreferences                   preferences      = {};
-      std::map<std::string, CameraInfoPreset>        camPresets       = {};
+      std::map<std::string, CameraPreset>            cameraPresets    = {};
       std::map<std::string, CarConfigurationPreset>  carConfigPresets = {};
       std::map<std::string, TimeOfDayLightingPreset> todPresets       = {};
    private:
@@ -30,7 +30,7 @@ namespace Settings {
             CEREAL_NVP(isFirstTimeUser),
             cereal::make_nvp("Colours", colours),
             cereal::make_nvp("GameModificationPreferences", preferences),
-            cereal::make_nvp("CameraPresets", camPresets),
+            cereal::make_nvp("CameraPresets", cameraPresets),
             cereal::make_nvp("CarConfigurationPresets", carConfigPresets),
             cereal::make_nvp("TimeOfDayLightingPresets", todPresets)
          );

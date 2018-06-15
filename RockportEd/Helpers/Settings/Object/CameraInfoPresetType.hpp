@@ -18,26 +18,32 @@ namespace Settings {
       bool  Tilting[2];
       bool  Selectable[2];
 
-      void loadToCameraInfo(GameInternals::CameraInfo* cameraInfoInstance) {
-         memcpy_s(cameraInfoInstance->Stiffness, sizeof(float) * 2, Stiffness, sizeof(float) * 2);
-         memcpy_s(cameraInfoInstance->Angle, sizeof(float) * 2, Angle, sizeof(float) * 2);
-         memcpy_s(cameraInfoInstance->Lag, sizeof(float) * 2, Lag, sizeof(float) * 2);
-         memcpy_s(cameraInfoInstance->FOV, sizeof(float) * 2, FOV, sizeof(float) * 2);
-         memcpy_s(cameraInfoInstance->Height, sizeof(float) * 2, Height, sizeof(float) * 2);
-         memcpy_s(cameraInfoInstance->LateOffset, sizeof(float) * 2, LateOffset, sizeof(float) * 2);
-         memcpy_s(cameraInfoInstance->Tilting, sizeof(bool) * 2, Tilting, sizeof(bool) * 2);
-         memcpy_s(cameraInfoInstance->Selectable, sizeof(bool) * 2, Selectable, sizeof(bool) * 2);
+      void operator=(const GameInternals::CameraInfo& newCameraInfo) {
+         memcpy_s(Stiffness, sizeof(float) * 2, newCameraInfo.Stiffness, sizeof(float) * 2);
+         memcpy_s(Angle, sizeof(float) * 2, newCameraInfo.Angle, sizeof(float) * 2);
+         memcpy_s(Lag, sizeof(float) * 2, newCameraInfo.Lag, sizeof(float) * 2);
+         memcpy_s(FOV, sizeof(float) * 2, newCameraInfo.FOV, sizeof(float) * 2);
+         memcpy_s(Height, sizeof(float) * 2, newCameraInfo.Height, sizeof(float) * 2);
+         memcpy_s(LateOffset, sizeof(float) * 2, newCameraInfo.LateOffset, sizeof(float) * 2);
+         memcpy_s(Tilting, sizeof(bool) * 2, newCameraInfo.Tilting, sizeof(bool) * 2);
+         memcpy_s(Selectable, sizeof(bool) * 2, newCameraInfo.Selectable, sizeof(bool) * 2);
       }
-      CameraInfoPreset& operator=(GameInternals::CameraInfo* cameraInfoInstance) {
-         memcpy_s(Stiffness, sizeof(float) * 2, cameraInfoInstance->Stiffness, sizeof(float) * 2);
-         memcpy_s(Angle, sizeof(float) * 2, cameraInfoInstance->Angle, sizeof(float) * 2);
-         memcpy_s(Lag, sizeof(float) * 2, cameraInfoInstance->Lag, sizeof(float) * 2);
-         memcpy_s(FOV, sizeof(float) * 2, cameraInfoInstance->FOV, sizeof(float) * 2);
-         memcpy_s(Height, sizeof(float) * 2, cameraInfoInstance->Height, sizeof(float) * 2);
-         memcpy_s(LateOffset, sizeof(float) * 2, cameraInfoInstance->LateOffset, sizeof(float) * 2);
-         memcpy_s(Tilting, sizeof(bool) * 2, cameraInfoInstance->Tilting, sizeof(bool) * 2);
-         memcpy_s(Selectable, sizeof(bool) * 2, cameraInfoInstance->Selectable, sizeof(bool) * 2);
-         return *this;
+      void setTo(const GameInternals::CameraInfo* pNewCameraInfo) {
+         *this = *pNewCameraInfo;
+      }
+
+      GameInternals::CameraInfo getGameInternalsCompliantData() {
+         GameInternals::CameraInfo ret;
+         memcpy_s(ret.Stiffness, sizeof(float) * 2, Stiffness, sizeof(float) * 2);
+         memcpy_s(ret.Angle, sizeof(float) * 2, Angle, sizeof(float) * 2);
+         memcpy_s(ret.Lag, sizeof(float) * 2, Lag, sizeof(float) * 2);
+         memcpy_s(ret.FOV, sizeof(float) * 2, FOV, sizeof(float) * 2);
+         memcpy_s(ret.Height, sizeof(float) * 2, Height, sizeof(float) * 2);
+         memcpy_s(ret.LateOffset, sizeof(float) * 2, LateOffset, sizeof(float) * 2);
+         memcpy_s(ret.Tilting, sizeof(bool) * 2, Tilting, sizeof(bool) * 2);
+         memcpy_s(ret.Selectable, sizeof(bool) * 2, Selectable, sizeof(bool) * 2);
+
+         return ret;
       }
 
       template <class Archive>
@@ -54,20 +60,38 @@ namespace Settings {
          );
       }
    };
+   struct CameraPreset {
+      bool             JoyViewEnabled;
+      bool             SpeedFOVEnabled;
+      float            SpeedFOVScale;
+      int16_t          NitrousFOVWidening;
+      CameraInfoPreset InfoPreset;
+
+      template <class Archive>
+      void serialize(Archive& archive) {
+         archive(
+            CEREAL_NVP(JoyViewEnabled),
+            CEREAL_NVP(SpeedFOVEnabled),
+            CEREAL_NVP(SpeedFOVScale),
+            CEREAL_NVP(NitrousFOVWidening),
+            CEREAL_NVP(InfoPreset)
+         );
+      }
+   };
 }
 
 // True std::map (de)serialization
 namespace cereal {
    template <class Archive, class C, class A,
       traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
-      void save(Archive& ar, const std::map<std::string, Settings::CameraInfoPreset, C, A>& map) {
+      void save(Archive& ar, const std::map<std::string, Settings::CameraPreset, C, A>& map) {
       for (const auto& item : map)
          ar(cereal::make_nvp(item.first, item.second));
    }
 
    template <class Archive, class C, class A,
       traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
-      void load(Archive& ar, std::map<std::string, Settings::CameraInfoPreset, C, A>& map) {
+      void load(Archive& ar, std::map<std::string, Settings::CameraPreset, C, A>& map) {
       map.clear();
 
       auto hint = map.begin();
@@ -76,7 +100,7 @@ namespace cereal {
          if (!namePtr)
             break;
 
-         Settings::CameraInfoPreset value; ar(value);
+         Settings::CameraPreset value; ar(value);
          hint = map.emplace_hint(hint, std::move(std::string(namePtr)), std::move(value));
       }
    }
