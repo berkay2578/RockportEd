@@ -40,20 +40,26 @@ namespace Extensions {
          int*        pActiveCameraIndex = nullptr;
          CameraInfo* pActiveCameraInfo  = nullptr;
 
-         void resetData() {
+         void resetData(const bool& resetJoyView, const bool& resetSpeedFOV) {
+            if (!pActiveCameraInfo)
+               return;
+
             CameraEditorData* pCameraEditorData = pActiveCameraEditorData;
-            if (!pCameraEditorData && pActiveCameraInfo) {
+            if (!pCameraEditorData) {
                auto iter = cache.find(pActiveCameraInfo);
                if (iter != cache.end()) {
                   pCameraEditorData = &iter->second;
                }
             }
             if (pCameraEditorData) {
-               pActiveCameraInfo->Angle[0] = pCameraEditorData->defaultCameraInfo.Angle[0];
-               pActiveCameraInfo->Lag[0]   = pCameraEditorData->defaultCameraInfo.Lag[0];
-               pActiveCameraInfo->FOV[0]   = pCameraEditorData->defaultCameraInfo.FOV[0];
+               if (resetJoyView) {
+                  pActiveCameraInfo->Angle[0] = pCameraEditorData->defaultCameraInfo.Angle[0];
+                  pActiveCameraInfo->Lag[0]   = pCameraEditorData->defaultCameraInfo.Lag[0];
+                  pActiveCameraEditorData->hasLoadedJoyViewData = false;
+               }
+               if (resetSpeedFOV)
+                  pActiveCameraInfo->FOV[0] = pCameraEditorData->defaultCameraInfo.FOV[0];
             }
-            cache.clear();
          }
       public:
          const virtual void loadData() override {
@@ -84,6 +90,7 @@ namespace Extensions {
                            pActiveCameraEditorData->hasLoadedSettings = true;
                         }
                      }
+                     pActiveCameraEditorData->defaultCameraInfo = *pActiveCameraInfo;
                      InternalVariables::setVariable(InternalVariables::nosFOVWidening, pActiveCameraEditorData->nitrousFOVWidening);
                   }
                } oldCameraIndex = *pActiveCameraIndex;
@@ -97,10 +104,6 @@ namespace Extensions {
 
                      if (joyGetPosEx(JOYSTICKID1, &jiEx) == JOYERR_NOERROR)
                      {
-                        if (!pActiveCameraEditorData->hasLoadedDefaultCameraInfo) {
-                           pActiveCameraEditorData->defaultCameraInfo          = *pActiveCameraInfo;
-                           pActiveCameraEditorData->hasLoadedDefaultCameraInfo = true;
-                        }
                         if (!pActiveCameraEditorData->hasLoadedJoyViewData) {
                            pActiveCameraEditorData->joyViewData[0]       = 5.0f - pActiveCameraInfo->Angle[0];
                            pActiveCameraEditorData->joyViewData[1]       = -pActiveCameraInfo->Lag[0];
@@ -135,11 +138,6 @@ namespace Extensions {
                   }
 
                   if (pActiveCameraEditorData->speedFOVEnabled) {
-                     if (!pActiveCameraEditorData->hasLoadedDefaultCameraInfo) {
-                        pActiveCameraEditorData->defaultCameraInfo          = *pActiveCameraInfo;
-                        pActiveCameraEditorData->hasLoadedDefaultCameraInfo = true;
-                     }
-
                      static float playerCarSpeed;
                      playerCarSpeed = PlayerCarInternals::getSpeed(GameInternals::SpeedUnit::KMH);
 
@@ -167,15 +165,30 @@ namespace Extensions {
                   ImGui::TextWrapped("Camera Name: %s", pActiveCameraInfo->CollectionName);
                   if (ImGui::Checkbox("Controller View", &pActiveCameraEditorData->joyViewEnabled)) {
                      if (pActiveCameraEditorData->joyViewEnabled) {
+                        if (!pActiveCameraEditorData->hasLoadedDefaultCameraInfo) {
+                           pActiveCameraEditorData->defaultCameraInfo          = *pActiveCameraInfo;
+                           pActiveCameraEditorData->hasLoadedDefaultCameraInfo = true;
+                        } else {
+                           memcpy_s(pActiveCameraEditorData->defaultCameraInfo.Angle, sizeof(float) * 2, pActiveCameraInfo->Angle, sizeof(float) * 2);
+                           memcpy_s(pActiveCameraEditorData->defaultCameraInfo.Lag, sizeof(float) * 2, pActiveCameraInfo->Lag, sizeof(float) * 2);
+                        }
+
                         joySetCapture(Helpers::WndProcHook::windowHandle, JOYSTICKID1, 1, FALSE);
                      } else {
                         joyReleaseCapture(JOYSTICKID1);
-                        resetData();
+                        resetData(true, false);
                      }
                   } ImGui::SameLine(); ImGui::VerticalSeparator(); ImGui::SameLine();
                   if (ImGui::Checkbox("Speed FOV", &pActiveCameraEditorData->speedFOVEnabled)) {
-                     if (!pActiveCameraEditorData->speedFOVEnabled)
-                        resetData();
+                     if (pActiveCameraEditorData->speedFOVEnabled) {
+                        if (!pActiveCameraEditorData->hasLoadedDefaultCameraInfo) {
+                           pActiveCameraEditorData->defaultCameraInfo          = *pActiveCameraInfo;
+                           pActiveCameraEditorData->hasLoadedDefaultCameraInfo = true;
+                        } else {
+                           memcpy_s(pActiveCameraEditorData->defaultCameraInfo.FOV, sizeof(float) * 2, pActiveCameraInfo->FOV, sizeof(float) * 2);
+                        }
+                     } else
+                        resetData(false, true);
                   }
                   if (pActiveCameraEditorData->speedFOVEnabled)
                      ImGui::SliderFloat("##SpeedFOVScale", &pActiveCameraEditorData->speedFOVScale, -50.0f, 50.0f, "Speed FOV Scale: %.1f");
@@ -276,13 +289,13 @@ namespace Extensions {
                   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
                   ImGui::TextWrapped("No active CameraInfo was found.");
                   ImGui::PopStyleColor();
-                  resetData();
+                  resetData(true, true);
                }
             } else {
                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
                ImGui::TextWrapped("CameraAI not yet initialized by the game.");
                ImGui::PopStyleColor();
-               resetData();
+               resetData(true, true);
             }
             ImGui::PopItemWidth();
             return true;
