@@ -63,7 +63,6 @@ namespace Extensions {
          }
       public:
          const virtual void loadData() override {
-            Memory::openMemoryAccess((DWORD)InternalVariables::nosFOVWidening, sizeof(float));
             hasLoadedData = true;
          }
 

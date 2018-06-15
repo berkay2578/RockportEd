@@ -2,6 +2,7 @@
 #include "Memory.h"
 
 namespace Memory {
+   CRITICAL_SECTION cs;
    DWORD oldMemoryAccess;
    DWORD memoryAccessAddress;
    int memoryAccessSize;
@@ -60,123 +61,118 @@ namespace Memory {
    }
 
    void writeCall(const DWORD& from, const DWORD& to, const bool& isFromAbsolute) {
+      EnterCriticalSection(&cs);
       DWORD relativeAddress = calculateRelativeAddress(from, to, isFromAbsolute);
+
       if (!isFromAbsolute) {
          DWORD absoluteFrom = baseAddress + from;
 
          openMemoryAccess(absoluteFrom, 5);
          *(BYTE*)(absoluteFrom) = 0xE8;
          *(DWORD*)(absoluteFrom + 0x1) = relativeAddress;
-
-         restoreMemoryAccess();
-         return;
+      } else {
+         openMemoryAccess(from, 5);
+         *(BYTE*)(from) = 0xE8;
+         *(DWORD*)(from + 0x1) = relativeAddress;
       }
 
-      openMemoryAccess(from, 5);
-      *(BYTE*)(from) = 0xE8;
-      *(DWORD*)(from + 0x1) = relativeAddress;
-
       restoreMemoryAccess();
+      LeaveCriticalSection(&cs);
    }
 
    void writeJMP(const DWORD& from, const DWORD& to, const bool& isFromAbsolute) {
+      EnterCriticalSection(&cs);
       DWORD relativeAddress = calculateRelativeAddress(from, to, isFromAbsolute);
+
       if (!isFromAbsolute) {
          DWORD absoluteFrom = baseAddress + from;
 
          openMemoryAccess(absoluteFrom, 5);
          *(BYTE*)(absoluteFrom) = 0xE9;
          *(DWORD*)(absoluteFrom + 0x1) = relativeAddress;
-
-         restoreMemoryAccess();
-         return;
+      } else {
+         openMemoryAccess(from, 5);
+         *(BYTE*)(from) = 0xE9;
+         *(DWORD*)(from + 0x1) = relativeAddress;
       }
 
-      openMemoryAccess(from, 5);
-      *(BYTE*)(from) = 0xE9;
-      *(DWORD*)(from + 0x1) = relativeAddress;
-
       restoreMemoryAccess();
+      LeaveCriticalSection(&cs);
    }
 
    void writeInterrupt3(const DWORD& to, const int& amount, const bool& isFromAbsolute) {
+      EnterCriticalSection(&cs);
       if (!isFromAbsolute) {
          DWORD absoluteTo = baseAddress + to;
          openMemoryAccess(absoluteTo, amount);
 
          for (int i = 0; i < amount; i++)
             *(BYTE*)(absoluteTo + i) = 0xCC;
-
-         restoreMemoryAccess();
-         return;
+      } else {
+         openMemoryAccess(to, amount);
+         for (int i = 0; i < amount; i++)
+            *(BYTE*)(to + i) = 0xCC;
       }
 
-      openMemoryAccess(to, amount);
-      for (int i = 0; i < amount; i++)
-         *(BYTE*)(to + i) = 0xCC;
-
       restoreMemoryAccess();
+      LeaveCriticalSection(&cs);
    }
    void writeRet(const DWORD& to, const bool& isToAbsolute) {
+      EnterCriticalSection(&cs);
       if (!isToAbsolute) {
          DWORD absoluteTo = baseAddress + to;
          openMemoryAccess(absoluteTo, 1);
          *(BYTE*)(absoluteTo) = 0xC3;
-
-         restoreMemoryAccess();
-         return;
+      } else {
+         openMemoryAccess(to, 1);
+         *(BYTE*)(to) = 0xC3;
       }
 
-      openMemoryAccess(to, 1);
-      *(BYTE*)(to) = 0xC3;
-
       restoreMemoryAccess();
+      LeaveCriticalSection(&cs);
    }
    void writeNop(const DWORD& to, const int& amount, const bool& isToAbsolute) {
+      EnterCriticalSection(&cs);
       if (!isToAbsolute) {
          DWORD absoluteTo = baseAddress + to;
          openMemoryAccess(absoluteTo, amount);
 
          for (int i = 0; i < amount; i++)
             *(BYTE*)(absoluteTo + i) = 0x90;
-
-         restoreMemoryAccess();
-         return;
+      } else {
+         openMemoryAccess(to, amount);
+         for (int i = 0; i < amount; i++)
+            *(BYTE*)(to + i) = 0x90;
       }
 
-      openMemoryAccess(to, amount);
-      for (int i = 0; i < amount; i++)
-         *(BYTE*)(to + i) = 0x90;
-
       restoreMemoryAccess();
+      LeaveCriticalSection(&cs);
    }
    void writeRaw(const DWORD& to, const bool& isToAbsolute, const int byteCount, ...) {
+      EnterCriticalSection(&cs);
+      va_list bytes;
+      va_start(bytes, byteCount);
+
       if (!isToAbsolute) {
          DWORD absoluteTo = baseAddress + to;
          openMemoryAccess(absoluteTo, byteCount);
 
-         va_list bytes;
-         va_start(bytes, byteCount);
          for (int i = 0; i < byteCount; i++)
             *(BYTE*)(absoluteTo + i) = va_arg(bytes, BYTE);
+      } else {
+         openMemoryAccess(to, byteCount);
 
-         va_end(bytes);
-         restoreMemoryAccess();
-         return;
+         for (int i = 0; i < byteCount; i++)
+            *(BYTE*)(to + i) = va_arg(bytes, BYTE);
       }
-
-      openMemoryAccess(to, byteCount);
-
-      va_list bytes;
-      va_start(bytes, byteCount);
-      for (int i = 0; i < byteCount; i++)
-         *(BYTE*)(to + i) = va_arg(bytes, BYTE);
 
       va_end(bytes);
       restoreMemoryAccess();
+      LeaveCriticalSection(&cs);
    }
 
    void Init() {
+      InitializeCriticalSection(&cs);
       baseAddress = (DWORD)GetModuleHandle(0);
    }
 }
