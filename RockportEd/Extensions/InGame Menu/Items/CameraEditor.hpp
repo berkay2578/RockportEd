@@ -17,6 +17,13 @@ namespace Extensions {
             float joyViewData[2]       = { 0.0f, 0.0f };
             bool  hasLoadedJoyViewData = false;
 
+            void enableForceLookBack(const bool& shouldForce) {
+               if (shouldForce)
+                  Memory::writeRaw(0x6B6890, true, 4, 0x83, 0xF0, 0x01, 0xC3); // xor eax,1; ret;
+               else
+                  Memory::writeRaw(0x6B6890, true, 4, 0xD9, 0x81, 0xDC, 0x02); // fld [ecx+0x2DC0];
+            }
+
             bool  speedFOVEnabled = false;
             float speedFOVScale   = 20.0f;
 
@@ -55,6 +62,7 @@ namespace Extensions {
                if (resetJoyView) {
                   pActiveCameraInfo->Angle[0] = pCameraEditorData->defaultCameraInfo.Angle[0];
                   pActiveCameraInfo->Lag[0]   = pCameraEditorData->defaultCameraInfo.Lag[0];
+                  pActiveCameraEditorData->enableForceLookBack(false);
                   pActiveCameraEditorData->hasLoadedJoyViewData = false;
                }
                if (resetSpeedFOV)
@@ -99,7 +107,8 @@ namespace Extensions {
                if (pActiveCameraInfo && pActiveCameraEditorData) {
                   if (pActiveCameraEditorData->joyViewEnabled) {
                      static JOYINFOEX jiEx = { 0 };
-                     jiEx.dwSize = sizeof(JOYINFOEX);
+                     jiEx.dwFlags = JOY_RETURNU | JOY_RETURNR | JOY_RETURNBUTTONS;
+                     jiEx.dwSize  = sizeof(JOYINFOEX);
 
                      if (joyGetPosEx(JOYSTICKID1, &jiEx) == JOYERR_NOERROR)
                      {
@@ -133,6 +142,11 @@ namespace Extensions {
                         auto& bkCameraInfo = pActiveCameraEditorData->defaultCameraInfo;
                         pActiveCameraInfo->Angle[0] = bkCameraInfo.Angle[0] + mod0;
                         pActiveCameraInfo->Lag[0]   = bkCameraInfo.Lag[0] + mod1;
+
+                        if (jiEx.dwButtons & JOY_BUTTON10) // xbox 360 right stick down
+                           pActiveCameraEditorData->enableForceLookBack(true);
+                        else
+                           pActiveCameraEditorData->enableForceLookBack(false);
                      }
                   }
 
