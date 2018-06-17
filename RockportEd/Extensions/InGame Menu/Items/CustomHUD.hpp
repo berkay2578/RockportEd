@@ -93,7 +93,7 @@ namespace Extensions {
          }
 
          const virtual void onFrame() override {
-            if (isEnabled) {
+            if (isEnabled && !InternalVariables::getVariable(InternalVariables::fadeScreenOn)) {
                static CarPowerData* pCarPowerData = nullptr;
                if (PlayerCarInternals::getCarPowerData(pCarPowerData)) {
                   static float scaling = 1.0f;

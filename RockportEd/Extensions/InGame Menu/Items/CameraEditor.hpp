@@ -217,7 +217,7 @@ namespace Extensions {
                      pCameraPreset->JoyViewEnabled     = pActiveCameraEditorData->joyViewEnabled;
                      pCameraPreset->SpeedFOVEnabled    = pActiveCameraEditorData->speedFOVEnabled;
                      pCameraPreset->SpeedFOVScale      = pActiveCameraEditorData->speedFOVScale;
-                     pCameraPreset->NitrousFOVWidening = InternalVariables::getNosFOVWidening();
+                     pCameraPreset->NitrousFOVWidening = InternalVariables::getVariable(InternalVariables::nosFOVWidening);
 
                      Settings::saveSettings();
                   }

@@ -245,14 +245,16 @@ namespace GameInternals {
          }
       };
 
+      // RBVehicle
+      // RBTractor
       struct RigidBodyData {
          /* +0x00 */ UMath::Vector4 Orientation;
          /* +0x10 */ UMath::Vector3 Position;
-         /* +0x1C */ DWORD          VolatileStatus;
+         /* +0x1C */ BYTE           VolatileStatus[4];
          /* +0x20 */ UMath::Vector3 LinearVelocity;
          /* +0x2C */ float          Mass;
          /* +0x30 */ UMath::Vector3 AngularVelocity;
-         /* +0x3C */ float          OOMass; // CollisionMass?
+         /* +0x3C */ float          OOMass; // CollisionMass
          /* +0x40 */ UMath::Vector3 InertiaTensor; // PrincipalInertia
          /* +0x4C */ unsigned char  __unk1[0x4];
          /* +0x50 */ UMath::Vector3 Force;
@@ -270,14 +272,21 @@ namespace GameInternals {
          bool CanCollideWithGround() {
             return Status == 0;
          }
+         bool CanCollideWithRigidBodies() { // IsTriggering
+            return !(VolatileStatus[1] & 0x01);
+         }
          bool CanCollideWithWorld() {
-            return VolatileStatus & 0x40;
+            return VolatileStatus[1] & 0x40;
          }
 
          bool IsInGroundContact() {
-            return NumContactPoints < 0;
+            return NumContactPoints > 0;
+         }
+         bool IsModelling() {
+            return Status != 2;
          }
       };
+      // derived class from something, it is why the function pointers are different
       struct RigidBody {
          unsigned char __unk[0x30];
          /* +0x30 */ RigidBodyData** ppRigidBodyData;
@@ -301,9 +310,6 @@ namespace GameInternals {
             ((void(__thiscall*)(RigidBody*, UMath::Vector3*, float))0x699E10)(this, pAxisFactor, amount);
          }
 
-         bool CanCollideWithRigidBodies() {
-            return ((BYTE)(*ppRigidBodyData)->VolatileStatus) == 0x1;
-         }
          bool CanCollideWithObjects() {
             return ((bool(__thiscall*)(RigidBody*))0x699F30)(getFunctionPointer(-0x48));
          }
@@ -315,6 +321,7 @@ namespace GameInternals {
             ((void(__thiscall*)(RigidBody*, UMath::Vector3*, bool))0x6975C0)(this, out_pLocalVector3, normalize);
          }
 
+         // Velocity, Force and Torque damping
          void Damp(float amount) {
             ((void(__thiscall*)(RigidBody*, float))0x699FB0)(getFunctionPointer(0x8), amount);
          }
@@ -336,6 +343,12 @@ namespace GameInternals {
          }
          DWORD GetSimableType() {
             return ((DWORD(__thiscall*)(RigidBody*))0x670E10)(this);
+         }
+         float GetSpeed() {
+            return ((float(__thiscall*)(RigidBody*))0x6711B0)(this);
+         }
+         float GetSpeedXZ() {
+            return ((float(__thiscall*)(RigidBody*))0x6711F0)(this);
          }
          DWORD* GetWCollider() {
             return ((DWORD*(__thiscall*)(RigidBody*))0x670E20)(this);

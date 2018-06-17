@@ -7,7 +7,7 @@ namespace Extensions {
    namespace DI8 {
       void WINAPI getDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
          if (cbData == 256) {
-            if (InternalVariables::isGameWindowInactive() || imguiIO->WantCaptureKeyboard
+            if (InternalVariables::getVariable(InternalVariables::gameWindowInactive) || imguiIO->WantCaptureKeyboard
                 || GetForegroundWindow() != Helpers::WndProcHook::windowHandle) {
                ZeroMemory(lpvData, 256);
                return;
@@ -16,7 +16,7 @@ namespace Extensions {
       }
       void WINAPI getDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
          DIMOUSESTATE* mouseState = (DIMOUSESTATE*)lpvData;
-         if (InternalVariables::isGameWindowInactive() || imguiIO->WantCaptureMouse
+         if (InternalVariables::getVariable(InternalVariables::gameWindowInactive) || imguiIO->WantCaptureMouse
              || GetForegroundWindow() != Helpers::WndProcHook::windowHandle) {
             ZeroMemory(mouseState->rgbButtons, sizeof(mouseState->rgbButtons));
          }
