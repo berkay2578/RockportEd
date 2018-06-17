@@ -55,6 +55,8 @@ namespace Memory {
          if (pointer)
             pointer = (DWORD*)(*pointer + va_arg(offsets, int));
          va_end(offsets);
+      } else {
+         pointer = *(PDWORD*)pointer;
       }
 
       return pointer;

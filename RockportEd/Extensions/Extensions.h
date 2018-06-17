@@ -84,7 +84,7 @@ namespace Extensions {
                if (hasLoadedAPreset && *ppActivePreset && *ppActivePresetName) {
                   ImGui::SameLine(); ImGui::VerticalSeparator();  ImGui::SameLine();
                   static char buttonText[128] = { 0 };
-                  if (snprintf(buttonText, sizeof(buttonText), "Update active preset '%s'", *ppActivePresetName)) {
+                  if (snprintf(buttonText, sizeof(buttonText), "Update '%s'", *ppActivePresetName)) {
                      if (ImGui::Button(buttonText)) {
                         if (updateActivePresetCallback())
                            Settings::saveSettings();

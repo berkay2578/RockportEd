@@ -106,18 +106,18 @@ namespace Extensions {
                   pActiveCameraEditorData = &cache[pActiveCameraInfo];
                if (pActiveCameraInfo && pActiveCameraEditorData) {
                   if (pActiveCameraEditorData->joyViewEnabled) {
+                     if (!pActiveCameraEditorData->hasLoadedJoyViewData) {
+                        pActiveCameraEditorData->joyViewData[0]       = 5.0f - pActiveCameraInfo->Angle[0];
+                        pActiveCameraEditorData->joyViewData[1]       = -pActiveCameraInfo->Lag[0];
+                        pActiveCameraEditorData->hasLoadedJoyViewData = true;
+                     }
+
                      static JOYINFOEX jiEx = { 0 };
                      jiEx.dwFlags = JOY_RETURNU | JOY_RETURNR | JOY_RETURNBUTTONS;
                      jiEx.dwSize  = sizeof(JOYINFOEX);
 
                      if (joyGetPosEx(JOYSTICKID1, &jiEx) == JOYERR_NOERROR)
                      {
-                        if (!pActiveCameraEditorData->hasLoadedJoyViewData) {
-                           pActiveCameraEditorData->joyViewData[0]       = 5.0f - pActiveCameraInfo->Angle[0];
-                           pActiveCameraEditorData->joyViewData[1]       = -pActiveCameraInfo->Lag[0];
-                           pActiveCameraEditorData->hasLoadedJoyViewData = true;
-                        }
-
                         static int32_t edtX, edtY;
                         edtX = jiEx.dwUpos - INT16_MAX;
                         edtY = jiEx.dwRpos - INT16_MAX;

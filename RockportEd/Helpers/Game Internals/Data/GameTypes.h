@@ -292,8 +292,8 @@ namespace GameInternals {
          static inline RigidBodyData** mMaps = (RigidBodyData**)(0x5383B0 + 0x400000);
 
       private:
-         RigidBody * getFunctionPointer(const int& differenceOffset) {
-            return (RigidBody*)((unsigned char*)this + differenceOffset);
+         RigidBody * getFunctionPointer(const int32_t& differenceOffset) {
+            return (RigidBody*)(((unsigned char*)this) + differenceOffset);
          }
 
       public:

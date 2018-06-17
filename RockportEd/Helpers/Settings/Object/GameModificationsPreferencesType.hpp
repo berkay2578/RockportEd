@@ -20,13 +20,13 @@ namespace Settings {
    };
 
    struct GameModificationsPreferences {
-      bool                      PauseGameplayOnOnFocusLoss = true;
+      bool                      PauseGameplayOnFocusLoss = true;
       WindowedModeModifications WindowedModePreferences    = {};
 
       template <class Archive>
       void serialize(Archive& archive) {
          archive(
-            CEREAL_NVP(PauseGameplayOnOnFocusLoss),
+            CEREAL_NVP(PauseGameplayOnFocusLoss),
             CEREAL_NVP(WindowedModePreferences)
          );
       }

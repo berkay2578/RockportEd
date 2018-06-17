@@ -10,13 +10,17 @@ namespace Extensions {
          static LRESULT CALLBACK wndProcExtension(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             switch (uMsg) {
                case WM_SYSCOMMAND:
-                  if ((wParam & 0xFFF0) == SC_KEYMENU && Settings::settingsType.preferences.WindowedModePreferences.DisableAltMenu) {
-                     return TRUE;
+                  if ((wParam & 0xFFF0) == SC_KEYMENU) {
+                     return Settings::settingsType.preferences.WindowedModePreferences.DisableAltMenu;
                   }
                   break;
                case WM_ACTIVATEAPP:
-                  if (wParam == FALSE && !Settings::settingsType.preferences.PauseGameplayOnOnFocusLoss) {
-                     return TRUE;
+                  if (wParam == FALSE) {
+                     bool shouldPause = Settings::settingsType.preferences.PauseGameplayOnFocusLoss;
+                     if (shouldPause)
+                        GameFunctions::Game_ShowPauseMenu();
+
+                     return !shouldPause;
                   }
                   break;
                case WM_SETCURSOR:

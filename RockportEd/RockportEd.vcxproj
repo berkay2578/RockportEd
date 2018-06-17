@@ -275,6 +275,7 @@
     <ClInclude Include="Helpers\Game Internals\Config\Gameplay.h" />
     <ClInclude Include="Helpers\Game Internals\Config\Player.h" />
     <ClInclude Include="Helpers\Game Internals\Data\Data.h" />
+    <ClInclude Include="Helpers\Game Internals\Data\GameFunctions.h" />
     <ClInclude Include="Helpers\Game Internals\Data\GameTypes.h" />
     <ClInclude Include="Helpers\Game Internals\Data\Variables.h" />
     <ClInclude Include="Helpers\Game Internals\GameInternals.h" />

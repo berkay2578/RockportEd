@@ -4,7 +4,6 @@
 // Helpers
 #include "Helpers\WndProc\WndProcHook.h"
 // dear imgui
-#include "Helpers\imgui\imgui_internal.h"
 #include "Helpers\imgui\extra_fonts\RobotoMedium.hpp"
 #include "Helpers\imgui\extra_fonts\CooperHewitt_Roman.hpp"
 #include "Helpers\imgui\extra_fonts\CooperHewitt_Bold.hpp"
@@ -43,7 +42,6 @@ namespace Extensions {
                   "- CTRL+Z, CTRL+Y to undo/redo\n"
                   "- ESCAPE to cancel\n"
                   "- You can apply arithmetic operators +,*,/ on numerical values.\n");
-               //ImGui::BulletText("CTRL+MouseWheel to scale the UI.");
                ImGui::BulletText("Click on the button at the top-right of this window to close it.");
             }
             ImGui::End();
@@ -65,11 +63,10 @@ namespace Extensions {
             imguiIO->Fonts->AddFontFromMemoryCompressedTTF(CooperHewitt_Bold_compressed_data, CooperHewitt_Bold_compressed_size, 64.0f);
             imguiIO->Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 22.0f);
             imguiIO->Fonts->AddFontFromMemoryCompressedTTF(Aramis_Book_Italic::Aramis_Book_Italic_compressed_data, Aramis_Book_Italic::Aramis_Book_Italic_compressed_size, 100.0f);
-            imguiIO->Fonts->Build();
+            imguiIO->Fonts->Build(); // why is this here again?
             imguiIO->FontDefault = imguiIO->Fonts->Fonts[0];
             imguiIO->IniFilename = NULL;
 
-            //imguiIO->FontAllowUserScaling = true;
             ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions
                                        | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_PickerHueWheel);
             ImGui::LoadStyle();
@@ -81,7 +78,7 @@ namespace Extensions {
          static float scaling = 1.0f;
          GetClientRect(Helpers::WndProcHook::windowHandle, &clientRect);
          scaling = max(0.6f, (float)clientRect.right / 1920.0f); // optimized for 1080p
-         for (int i = 0; i < 3; i++) { // don't change aramis
+         for (int i = 0; i < 3; i++) { // don't change custom hud fonts
             imguiIO->Fonts->Fonts[i]->Scale = scaling;
          }
 
