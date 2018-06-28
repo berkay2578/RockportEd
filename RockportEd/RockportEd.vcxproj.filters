@@ -232,4 +232,7 @@
       <UniqueIdentifier>{4c7537b2-dfff-4fd8-91ec-fdf2ffd8a759}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="RockportEd.licenseheader" />
+  </ItemGroup>
 </Project>

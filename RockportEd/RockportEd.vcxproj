@@ -360,6 +360,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_RL|Win32'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="RockportEd.licenseheader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
