@@ -446,6 +446,12 @@ namespace GameInternals {
          }
       };
 
+      struct EventSequencer {
+         struct IContext {
+            virtual LPVOID SetDynamicData(const LPVOID EventSequencer__System, LPVOID EventDynamicData);
+            DWORD _unk;
+         };
+      };
       struct Sim {
          struct ITaskable {
             virtual ~ITaskable();
@@ -456,6 +462,34 @@ namespace GameInternals {
             virtual ~Object();
             virtual void OnService(LPVOID, LPVOID);
          };
+      };
+
+      struct IAttachable {
+         virtual ~IAttachable();
+         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown);
+         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown);
+         virtual LPVOID IsAttached(const LPVOID UTL__COM__IUnknown);
+         virtual LPVOID OnAttached(LPVOID IAttachable);
+         virtual LPVOID OnDetached(LPVOID IAttachable);
+         virtual LPVOID GetAttachments();
+         unsigned char __unk[0x68];
+      };
+      struct IAttributeable {
+         virtual LPVOID OnAttributeChange(const LPVOID Attrib__Collection, uint32_t);
+         DWORD _unk;
+      };
+      struct IBody {
+         virtual ~IBody();
+         virtual LPVOID GetTransform(UMath::Matrix4&)       = 0;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  = 0;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&) = 0;
+         virtual LPVOID GetDimension(UMath::Vector3&)       = 0;
+         virtual LPVOID GetAttributes()                     = 0;
+         virtual LPVOID GetWorldID()                        = 0;
+         DWORD _unk;
+      };
+      struct IExplodeable {
+         virtual LPVOID OnExplosion(const UMath::Vector3&, const UMath::Vector3&, float, LPVOID IExplosion);
       };
       struct ISimable {
          virtual ~ISimable();
@@ -496,46 +530,10 @@ namespace GameInternals {
          virtual LPVOID GetCausalityTime();
          unsigned char __unk[8];
       };
-      struct IBody {
-         virtual ~IBody();
-         virtual LPVOID GetTransform(UMath::Matrix4&)       = 0;
-         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  = 0;
-         virtual LPVOID GetAngularVelocity(UMath::Vector3&) = 0;
-         virtual LPVOID GetDimension(UMath::Vector3&)       = 0;
-         virtual LPVOID GetAttributes()                     = 0;
-         virtual LPVOID GetWorldID()                        = 0;
-         DWORD _unk;
-      };
-      struct IAttachable {
-         virtual ~IAttachable();
-         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown);
-         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown);
-         virtual LPVOID IsAttached(const LPVOID UTL__COM__IUnknown);
-         virtual LPVOID OnAttached(LPVOID IAttachable);
-         virtual LPVOID OnDetached(LPVOID IAttachable);
-         virtual LPVOID GetAttachments();
-         unsigned char __unk[0x68];
-      };
-      // name is made up, i don't know where these are from at all
-      struct PhysicsObjectDetails {
-         virtual void Reset();
-         virtual void OnTaskSimulate(float) = 0;
-         virtual void OnBehaviorChange(const DWORD);
-         virtual void OnDebugDraw();
-         DWORD _unk;
-      };
-      struct PhysicsObject : Sim::Object, PhysicsObjectDetails, ISimable, IBody, IAttachable {
-         virtual ~PhysicsObject();
-         virtual void OnService(LPVOID, LPVOID) override;
-
-         // Sim::ITaskable overrides
-         virtual void OnTask(LPVOID HSIMTASK__, float) override;
-      };
-
       struct IVehicle {
          virtual ~IVehicle();
          virtual LPVOID GetSimable();
-         virtual LPVOID GetSimable();
+         virtual LPVOID _dupGetSimable();
          virtual LPVOID GetPosition();
          virtual LPVOID SetBehaviorOverride(DWORD, DWORD);
          virtual LPVOID RemoveBehaviorOverride(DWORD);
@@ -587,19 +585,48 @@ namespace GameInternals {
          virtual LPVOID GetTunings();
          virtual LPVOID SetTunings(const LPVOID Physics__Tunings);
          virtual LPVOID GetPerformance(LPVOID& Physics__Info__Performance);
+         virtual LPVOID sub_688220();
+         DWORD _unk;
       };
 
-      // sizeof(PVehicle) should be 0x1AC
-      struct PVehicle : PhysicsObject {//, IAttachable, IVehicle {
-         virtual ~PVehicle();
-         // PhysicsObject overrides
-         virtual void Reset() override;
-         virtual void OnTaskSimulate(float) override;
-         virtual void OnBehaviorChange(const DWORD) override;
+      // name is made up, i don't know where these are from at all
+      struct PhysicsObjectDetails {
+         virtual void Reset();
+         virtual void OnTaskSimulate(float) = 0;
+         virtual void OnBehaviorChange(const DWORD);
+         virtual void OnDebugDraw();
+         DWORD _unk;
+      };
+      struct PhysicsObject : Sim::Object, PhysicsObjectDetails, ISimable, IBody, IAttachable {
+         virtual ~PhysicsObject();
+         virtual void OnService(LPVOID, LPVOID) override;
 
          // Sim::ITaskable overrides
          virtual void OnTask(LPVOID HSIMTASK__, float) override;
+      };
 
+      // sizeof(PVehicle) should be 0x1AC
+      struct PVehicle : PhysicsObject, IVehicle, EventSequencer::IContext, IExplodeable, IAttributeable {
+         virtual ~PVehicle();
+         // PhysicsObject overrides
+         virtual void Reset()                       override;
+         virtual void OnTaskSimulate(float)         override;
+         virtual void OnBehaviorChange(const DWORD) override;
+         // EventSequencer::IContext overrides
+         virtual LPVOID SetDynamicData(const LPVOID EventSequencer__System, LPVOID EventDynamicData);
+         // Sim::ITaskable overrides
+         virtual void OnTask(LPVOID HSIMTASK__, float) override;
+         // IAttributeable overrides
+         virtual LPVOID OnAttributeChange(const LPVOID Attrib__Collection, uint32_t);
+         // IExplodeable overrides
+         virtual LPVOID OnExplosion(const UMath::Vector3&, const UMath::Vector3&, float, LPVOID IExplosion);
+         // IBody overrides
+         virtual LPVOID GetTransform(UMath::Matrix4&)       override;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  override;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&) override;
+         virtual LPVOID GetDimension(UMath::Vector3&)       override;
+         virtual LPVOID GetAttributes()                     override;
+         virtual LPVOID GetWorldID()                        override;
          // ISimable overrides
          virtual LPVOID Kill()              override;
          virtual LPVOID DebugObject()       override;
@@ -607,14 +634,6 @@ namespace GameInternals {
          virtual LPVOID GetEventSequencer() override;
          virtual LPVOID GetModel()          override;
          virtual LPVOID _dupGetModel()      override;
-
-
-         virtual LPVOID GetTransform(UMath::Matrix4&)       override;
-         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  override;
-         virtual LPVOID GetAngularVelocity(UMath::Vector3&) override;
-         virtual LPVOID GetDimension(UMath::Vector3&)       override;
-         virtual LPVOID GetAttributes()                     override;
-         virtual LPVOID GetWorldID()                        override;
 
          // 0xE4 EventSequencer
 
@@ -637,32 +656,9 @@ namespace GameInternals {
             vehicleParams.__unk_ImportanceRelated = 0xA;
 
             DWORD typeHash = stringhash32("PVehicle");
+
             // UTL::COM::Factory<Sim::Param,ISimable,UCrc32>::CreateInstance(UCrc32,Sim::Param)
-            auto constructorCallResult = ((PVehicle*(__cdecl*)(DWORD, DWORD, DWORD, VehicleParams*))0x41CB10)(typeHash, vehicleParams.typeName, vehicleParams.someFixedHash, &vehicleParams);
-
-            /* manual method, good for debugging
-            DWORD* mHead    = reinterpret_cast<DWORD*>(0x92C66C); // UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype::mHead
-            if (!mHead)
-               return nullptr;
-
-            mHead = reinterpret_cast<DWORD*>(*mHead);
-            /* MEMORY MAP
-             * TYPE HASH (4 BYTES) | CONSTRUCTOR FUNCTION POINTER (4 BYTES) | NEXT LIST ENTRY POINTER (4 BYTES)
-             *//*
-            while (typeHash) { // find the constructor that corresponds to the hash value, in this case for 'PVehicle'
-               if (*mHead == typeHash) {
-                  break;
-               } else {
-                  mHead = reinterpret_cast<DWORD*>(*reinterpret_cast<DWORD*>(mHead + 2));
-                  if (!mHead)
-                     break;
-               }
-            }
-
-            auto constructorCallResult = ((unsigned char*(__cdecl*)(DWORD, DWORD, VehicleParams*))*(mHead + 1))(vehicleParams.typeName, vehicleParams.someFixedHash, &vehicleParams);
-            */
-
-            return constructorCallResult;
+            return ((PVehicle*(__cdecl*)(DWORD, DWORD, DWORD, VehicleParams*))0x41CB10)(typeHash, vehicleParams.typeName, vehicleParams.someFixedHash, &vehicleParams);
          }
 
 
