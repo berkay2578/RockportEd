@@ -245,6 +245,37 @@ namespace GameInternals {
          }
       };
 
+
+      enum class DriverClass : uint32_t {
+         Default = 0, // Used for the player
+         Traffic = 1,
+         Cop     = 2, // With cop patrolling minimap marker
+         Racer   = 3, // With racer minimap marker and racer AI
+         Dummy   = 6
+      };
+      struct FECustomizationRecord {
+         unsigned char __parts[0x198];
+      };
+      struct VehicleParams /* : Sim::Params */ {
+         /* 0x0  */ DWORD                  typeName;
+         /* 0x4  */ DWORD                  someFixedHash;
+         /* 0x8  */ DWORD*                 pTypeName;
+         /* 0xC  */ LPVOID __unk1; // even after hours of debugging, I don't know what this is
+         /* 0x10 */ DriverClass            driverClass;
+         /* 0x14 */ DWORD                  carHash;
+         /* 0x18 */ UMath::Vector3*        pInitialRotation;
+         /* 0x1C */ UMath::Vector3*        pInitialPosition;
+         /* 0x20 */ FECustomizationRecord* pFECustomizationRecord;
+         /* 0x24 */ DWORD __unk_AIRelated; // Set to AI managers, like &0x8918F0 for AICopManager or &0x8B09F4 for QuickGame
+         /* 0x28 */ LPVOID __unk2; // related to Physics::*
+         /* 0x2C */ DWORD  __unk_ImportanceRelated; // effects model loading delay, physics::tuning. it's a bit| enum
+
+         VehicleParams() = default;
+         void TypeName() {
+            ((LPVOID(__cdecl*)(VehicleParams*))0x04040F0)(this);
+         }
+      };
+
       // RBVehicle
       // RBTractor
       struct RigidBodyData {
@@ -270,7 +301,7 @@ namespace GameInternals {
          /* +0xA0 */ unsigned char __unk3[0x4 * 4];
 
          bool CanCollideWithGround() {
-            return Status == 0;
+            return Status = 0;
          }
          bool CanCollideWithRigidBodies() { // IsTriggering
             return !(VolatileStatus[1] & 0x01);
@@ -286,7 +317,7 @@ namespace GameInternals {
             return Status != 2;
          }
       };
-      // derived class from something, it is why the function pointers are different
+      // derived class from something, it is why the function pointers are different, just need to get a vfptr
       struct RigidBody {
          unsigned char __unk[0x30];
          /* +0x30 */ RigidBodyData** ppRigidBodyData;
@@ -415,58 +446,179 @@ namespace GameInternals {
          }
       };
 
-      struct ExtrapolatedCar {
-         unsigned char  __unk[0x4 * 0xC];
-         UMath::Vector4 vector4;
-         unsigned char  __unk2[0xF64];
+      struct Sim {
+         struct ITaskable {
+            virtual ~ITaskable();
+            virtual void OnTask(LPVOID HSIMTASK__, float);
+            unsigned char __unk[0x20];
+         };
+         struct Object : ITaskable {
+            virtual ~Object();
+            virtual void OnService(LPVOID, LPVOID);
+         };
+      };
+      struct ISimable {
+         virtual ~ISimable();
+         virtual LPVOID GetSimableType();
+         virtual LPVOID Kill();
+         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown);
+         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown);
+         virtual LPVOID GetAttachments();
+         virtual LPVOID AttachEntity(LPVOID Sim__IEntity);
+         virtual LPVOID DetachEntity();
+         virtual LPVOID GetPlayer();
+         virtual LPVOID IsPlayer();
+         virtual LPVOID IsOwnedByPlayer();
+         virtual LPVOID GetEntity();
+         virtual LPVOID DebugObject();
+         virtual LPVOID GetOwnerHandle();
+         virtual LPVOID GetOwner();
+         virtual LPVOID IsOwnedBy(ISimable*);
+         virtual LPVOID SetOwnerObject(ISimable*);
+         virtual LPVOID GetAttributes();
+         virtual LPVOID GetWPos();
+         virtual LPVOID _dupGetWPos();
+         virtual RigidBody* GetRigidBody();
+         virtual RigidBody* _dupGetRigidBody();
+         virtual LPVOID IsRigidBodySimple();
+         virtual LPVOID _dupIsRigidBodyComplex();
+         virtual LPVOID GetPosition();
+         virtual LPVOID GetTransform(UMath::Matrix4&);
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&);
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&);
+         virtual LPVOID GetWorldID();
+         virtual LPVOID GetEventSequencer();
+         virtual LPVOID ProcessStimulus(uint32_t);
+         virtual LPVOID GetModel() = 0;
+         virtual LPVOID _dupGetModel() = 0;
+         virtual LPVOID SetCausality(LPVOID HCAUSE__, float);
+         virtual LPVOID GetCausality();
+         virtual LPVOID GetCausalityTime();
+         unsigned char __unk[8];
+      };
+      struct IBody {
+         virtual ~IBody();
+         virtual LPVOID GetTransform(UMath::Matrix4&)       = 0;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  = 0;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&) = 0;
+         virtual LPVOID GetDimension(UMath::Vector3&)       = 0;
+         virtual LPVOID GetAttributes()                     = 0;
+         virtual LPVOID GetWorldID()                        = 0;
+         DWORD _unk;
+      };
+      struct IAttachable {
+         virtual ~IAttachable();
+         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown);
+         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown);
+         virtual LPVOID IsAttached(const LPVOID UTL__COM__IUnknown);
+         virtual LPVOID OnAttached(LPVOID IAttachable);
+         virtual LPVOID OnDetached(LPVOID IAttachable);
+         virtual LPVOID GetAttachments();
+         unsigned char __unk[0x68];
+      };
+      // name is made up, i don't know where these are from at all
+      struct PhysicsObjectDetails {
+         virtual void Reset();
+         virtual void OnTaskSimulate(float) = 0;
+         virtual void OnBehaviorChange(const DWORD);
+         virtual void OnDebugDraw();
+         DWORD _unk;
+      };
+      struct PhysicsObject : Sim::Object, PhysicsObjectDetails, ISimable, IBody, IAttachable {
+         virtual ~PhysicsObject();
+         virtual void OnService(LPVOID, LPVOID) override;
 
-         ExtrapolatedCar(unsigned int unk = 0) {
-            ((LPVOID(__thiscall*)(ExtrapolatedCar*, DWORD))0x74D510)(this, unk);
-         }
-         void ImportSimable(LPVOID pISimable, float unk1, float unk2) {
-            ((LPVOID(__thiscall*)(ExtrapolatedCar*, LPVOID, float, float))0x75E210)(this, pISimable, unk1, unk2);
-         }
-         void ExtractSimable(LPVOID pISimable) {
-            ((LPVOID(__thiscall*)(ExtrapolatedCar*, LPVOID))0x760700)(this, pISimable);
-         }
-
-         LPVOID Spawn(DWORD carModelHash) {
-            return ((LPVOID(__thiscall*)(ExtrapolatedCar*, DWORD))0x74D430)(this, carModelHash);
-         }
+         // Sim::ITaskable overrides
+         virtual void OnTask(LPVOID HSIMTASK__, float) override;
       };
 
-      enum class DriverClass : uint32_t {
-         Default = 0, // Used for the player
-         Traffic = 1,
-         Cop     = 2, // With cop patrolling minimap marker
-         Racer   = 3, // With racer minimap marker and racer AI
-         Dummy   = 6
+      struct IVehicle {
+         virtual ~IVehicle();
+         virtual LPVOID GetSimable();
+         virtual LPVOID GetSimable();
+         virtual LPVOID GetPosition();
+         virtual LPVOID SetBehaviorOverride(DWORD, DWORD);
+         virtual LPVOID RemoveBehaviorOverride(DWORD);
+         virtual LPVOID CommitBehaviorOverrides();
+         virtual LPVOID SetStaging(bool);
+         virtual LPVOID IsStaging();
+         virtual LPVOID Launch();
+         virtual LPVOID GetPerfectLaunch();
+         virtual LPVOID SetDriverStyle(LPVOID DriverStyle);
+         virtual LPVOID GetDriverStyle();
+         virtual LPVOID SetPhysicsMode(LPVOID PhysicsMode);
+         virtual LPVOID GetPhysicsMode();
+         virtual LPVOID GetModelType();
+         virtual LPVOID IsSpooled();
+         virtual LPVOID GetVehicleClass();
+         virtual LPVOID GetVehicleAttributes();
+         virtual LPVOID GetVehicleName();
+         virtual LPVOID GetVehicleKey();
+         virtual LPVOID SetDriverClass(DriverClass);
+         virtual LPVOID GetDriverClass();
+         virtual LPVOID IsLoading();
+         virtual LPVOID GetOffscreenTime();
+         virtual LPVOID GetOnScreenTime();
+         virtual LPVOID SetVehicleOnGround(const UMath::Vector3&, const UMath::Vector3&);
+         virtual LPVOID ForceStopOn(char);
+         virtual LPVOID ForceStopOff(char);
+         virtual LPVOID GetForceStop();
+         virtual LPVOID InShock();
+         virtual LPVOID IsDestroyed();
+         virtual LPVOID Activate();
+         virtual LPVOID Deactivate();
+         virtual LPVOID IsActive();
+         virtual LPVOID GetSpeedometer();
+         virtual LPVOID GetSpeed();
+         virtual LPVOID SetSpeed(float);
+         virtual LPVOID GetAbsoluteSpeed();
+         virtual LPVOID IsGlareOn(LPVOID VehicleFX__ID);
+         virtual LPVOID GlareOn(LPVOID VehicleFX__ID);
+         virtual LPVOID GlareOff(LPVOID VehicleFX__ID);
+         virtual LPVOID IsCollidingWithSoftBarrier();
+         virtual LPVOID GetAIVehiclePtr();
+         virtual LPVOID GetSlipAngle();
+         virtual LPVOID GetLocalVelocity();
+         virtual LPVOID ComputeHeading(UMath::Vector3 *);
+         virtual LPVOID IsAnimating();
+         virtual LPVOID SetAnimating(bool);
+         virtual LPVOID IsOffWorld();
+         virtual LPVOID GetCustomizations();
+         virtual LPVOID GetTunings();
+         virtual LPVOID SetTunings(const LPVOID Physics__Tunings);
+         virtual LPVOID GetPerformance(LPVOID& Physics__Info__Performance);
       };
-      struct FECustomizationRecord {
-         unsigned char __parts[0x198];
-      };
-      struct VehicleParams {
-         /* 0x0  */ DWORD                  typeName;
-         /* 0x4  */ DWORD                  someFixedHash;
-         /* 0x8  */ DWORD*                 pTypeName;
-         /* 0xC  */ LPVOID __unk1; // even after hours of debugging, I don't know what this is
-         /* 0x10 */ DriverClass            driverClass;
-         /* 0x14 */ DWORD                  carHash;
-         /* 0x18 */ UMath::Vector3*        pInitialRotation;
-         /* 0x1C */ UMath::Vector3*        pInitialPosition;
-         /* 0x20 */ FECustomizationRecord* pFECustomizationRecord;
-         /* 0x24 */ DWORD __unk_AIRelated; // Set to AI managers, like &0x8918F0 for AICopManager or &0x8B09F4 for QuickGame
-         /* 0x28 */ LPVOID __unk2; // related to Physics::*
-         /* 0x2C */ DWORD  __unk_ImportanceRelated; // effects model loading delay, physics::tuning. it's a bit| enum
 
-         VehicleParams() = default;
-         void TypeName() {
-            ((LPVOID(__cdecl*)(VehicleParams*))0x04040F0)(this);
-         }
-      };
-      struct PVehicle {
+      // sizeof(PVehicle) should be 0x1AC
+      struct PVehicle : PhysicsObject {//, IAttachable, IVehicle {
+         virtual ~PVehicle();
+         // PhysicsObject overrides
+         virtual void Reset() override;
+         virtual void OnTaskSimulate(float) override;
+         virtual void OnBehaviorChange(const DWORD) override;
+
+         // Sim::ITaskable overrides
+         virtual void OnTask(LPVOID HSIMTASK__, float) override;
+
+         // ISimable overrides
+         virtual LPVOID Kill()              override;
+         virtual LPVOID DebugObject()       override;
+         virtual LPVOID GetPosition()       override;
+         virtual LPVOID GetEventSequencer() override;
+         virtual LPVOID GetModel()          override;
+         virtual LPVOID _dupGetModel()      override;
+
+
+         virtual LPVOID GetTransform(UMath::Matrix4&)       override;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  override;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&) override;
+         virtual LPVOID GetDimension(UMath::Vector3&)       override;
+         virtual LPVOID GetAttributes()                     override;
+         virtual LPVOID GetWorldID()                        override;
+
+         // 0xE4 EventSequencer
+
          PVehicle() = default;
-
          static PVehicle* Create(DriverClass driverClass, DWORD carModelHash, FECustomizationRecord* pFECustomizationRecord,
                                  UMath::Vector3& initialRotation, UMath::Vector3& initialPosition) {
             if (!carModelHash)
@@ -513,9 +665,7 @@ namespace GameInternals {
             return constructorCallResult;
          }
 
-         RigidBody* getRigidBody() {
-            return (RigidBody*)Memory::readPointer((DWORD)this + 0x78, true);
-         }
+
       };
    }
 }
