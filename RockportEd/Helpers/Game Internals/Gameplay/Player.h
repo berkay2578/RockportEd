@@ -1,7 +1,7 @@
 /*
    MIT License
    
-   Copyright (c) 2017-2018 Berkay Yiðit
+   Copyright (c) Berkay Yigit
    
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
 */
+
 #pragma once
 #include <WinDef.h>
 #include "..\Data\Data.h"
