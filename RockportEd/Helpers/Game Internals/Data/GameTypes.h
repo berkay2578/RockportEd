@@ -1,18 +1,18 @@
 /*
    MIT License
-   
+
    Copyright (c) Berkay Yigit
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
    in the Software without restriction, including without limitation the rights
    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
    copies of the Software, and to permit persons to whom the Software is
    furnished to do so, subject to the following conditions:
-   
+
    The above copyright notice and this permission notice shall be included in all
    copies or substantial portions of the Software.
-   
+
    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -517,41 +517,41 @@ namespace GameInternals {
       };
       struct ISimable {
          virtual ~ISimable();
-         virtual LPVOID GetSimableType();
-         virtual LPVOID Kill();
-         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown);
-         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown);
-         virtual LPVOID GetAttachments();
-         virtual LPVOID AttachEntity(LPVOID Sim__IEntity);
-         virtual LPVOID DetachEntity();
-         virtual LPVOID GetPlayer();
-         virtual LPVOID IsPlayer();
-         virtual LPVOID IsOwnedByPlayer();
-         virtual LPVOID GetEntity();
-         virtual LPVOID DebugObject();
-         virtual LPVOID GetOwnerHandle();
-         virtual LPVOID GetOwner();
-         virtual LPVOID IsOwnedBy(ISimable*);
-         virtual LPVOID SetOwnerObject(ISimable*);
-         virtual LPVOID GetAttributes();
-         virtual LPVOID GetWPos();
-         virtual LPVOID _dupGetWPos();
-         virtual RigidBody* GetRigidBody();
-         virtual RigidBody* _dupGetRigidBody();
-         virtual LPVOID IsRigidBodySimple();
-         virtual LPVOID _dupIsRigidBodyComplex();
-         virtual LPVOID GetPosition();
-         virtual LPVOID GetTransform(UMath::Matrix4&);
-         virtual LPVOID GetLinearVelocity(UMath::Vector3&);
-         virtual LPVOID GetAngularVelocity(UMath::Vector3&);
-         virtual LPVOID GetWorldID();
-         virtual LPVOID GetEventSequencer();
-         virtual LPVOID ProcessStimulus(uint32_t);
-         virtual LPVOID GetModel() = 0;
-         virtual LPVOID _dupGetModel() = 0;
-         virtual LPVOID SetCausality(LPVOID HCAUSE__, float);
-         virtual LPVOID GetCausality();
-         virtual LPVOID GetCausalityTime();
+         virtual LPVOID GetSimableType()                     = 0;
+         virtual LPVOID Kill()                               = 0;
+         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown)    = 0;
+         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown)    = 0;
+         virtual LPVOID GetAttachments()                     = 0;
+         virtual LPVOID AttachEntity(LPVOID Sim__IEntity)    = 0;
+         virtual LPVOID DetachEntity()                       = 0;
+         virtual LPVOID GetPlayer()                          = 0;
+         virtual LPVOID IsPlayer()                           = 0;
+         virtual LPVOID IsOwnedByPlayer()                    = 0;
+         virtual LPVOID GetEntity()                          = 0;
+         virtual LPVOID DebugObject()                        = 0;
+         virtual LPVOID GetOwnerHandle()                     = 0;
+         virtual LPVOID GetOwner()                           = 0;
+         virtual LPVOID IsOwnedBy(ISimable*)                 = 0;
+         virtual LPVOID SetOwnerObject(ISimable*)            = 0;
+         virtual LPVOID GetAttributes()                      = 0;
+         virtual LPVOID GetWPos()                            = 0;
+         virtual LPVOID _dupGetWPos()                        = 0;
+         virtual RigidBody* GetRigidBody()                   = 0;
+         virtual RigidBody* _dupGetRigidBody()               = 0;
+         virtual LPVOID IsRigidBodySimple()                  = 0;
+         virtual LPVOID _dupIsRigidBodyComplex()             = 0;
+         virtual LPVOID GetPosition()                        = 0;
+         virtual LPVOID GetTransform(UMath::Matrix4&)        = 0;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)   = 0;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&)  = 0;
+         virtual LPVOID GetWorldID()                         = 0;
+         virtual LPVOID GetEventSequencer()                  = 0;
+         virtual LPVOID ProcessStimulus(uint32_t)            = 0;
+         virtual LPVOID GetModel()                           = 0;
+         virtual LPVOID _dupGetModel()                       = 0;
+         virtual LPVOID SetCausality(LPVOID HCAUSE__, float) = 0;
+         virtual LPVOID GetCausality()                       = 0;
+         virtual LPVOID GetCausalityTime()                   = 0;
          unsigned char __unk[8];
       };
       struct IVehicle {
@@ -627,30 +627,54 @@ namespace GameInternals {
 
          // Sim::ITaskable overrides
          virtual void OnTask(LPVOID HSIMTASK__, float) override;
+
+         // ISimable overrides
+         virtual LPVOID GetSimableType()                     override;
+         virtual LPVOID Kill()                               override;
+         virtual LPVOID Attach(LPVOID UTL__COM__IUnknown)    override;
+         virtual LPVOID Detach(LPVOID UTL__COM__IUnknown)    override;
+         virtual LPVOID GetAttachments()                     override;
+         virtual LPVOID AttachEntity(LPVOID Sim__IEntity)    override;
+         virtual LPVOID DetachEntity()                       override;
+         virtual LPVOID GetPlayer()                          override;
+         virtual LPVOID IsPlayer()                           override;
+         virtual LPVOID IsOwnedByPlayer()                    override;
+         virtual LPVOID GetEntity()                          override;
+         virtual LPVOID DebugObject()                        override;
+         virtual LPVOID GetOwnerHandle()                     override;
+         virtual LPVOID GetOwner()                           override;
+         virtual LPVOID IsOwnedBy(ISimable*)                 override;
+         virtual LPVOID SetOwnerObject(ISimable*)            override;
+         virtual LPVOID GetAttributes()                      override;
+         virtual LPVOID GetWPos()                            override;
+         virtual LPVOID _dupGetWPos()                        override;
+         virtual RigidBody* GetRigidBody()                   override;
+         virtual RigidBody* _dupGetRigidBody()               override;
+         virtual LPVOID IsRigidBodySimple()                  override;
+         virtual LPVOID _dupIsRigidBodyComplex()             override;
+         virtual LPVOID GetPosition()                        override;
+         virtual LPVOID GetTransform(UMath::Matrix4&)        override;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)   override;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&)  override;
+         virtual LPVOID GetWorldID()                         override;
+         virtual LPVOID GetEventSequencer()                  override;
+         virtual LPVOID ProcessStimulus(uint32_t)            override;
+         virtual LPVOID GetModel()                           override;
+         virtual LPVOID _dupGetModel()                       override;
+         virtual LPVOID SetCausality(LPVOID HCAUSE__, float) override;
+         virtual LPVOID GetCausality()                       override;
+         virtual LPVOID GetCausalityTime()                   override;
       };
 
       // sizeof(PVehicle) should be 0x1AC
       struct PVehicle : PhysicsObject, IVehicle, EventSequencer::IContext, IExplodeable, IAttributeable {
          virtual ~PVehicle();
+         // Sim::ITaskable overrides
+         virtual void OnTask(LPVOID HSIMTASK__, float) override;
          // PhysicsObject overrides
          virtual void Reset()                       override;
          virtual void OnTaskSimulate(float)         override;
          virtual void OnBehaviorChange(const DWORD) override;
-         // EventSequencer::IContext overrides
-         virtual LPVOID SetDynamicData(const LPVOID EventSequencer__System, LPVOID EventDynamicData);
-         // Sim::ITaskable overrides
-         virtual void OnTask(LPVOID HSIMTASK__, float) override;
-         // IAttributeable overrides
-         virtual LPVOID OnAttributeChange(const LPVOID Attrib__Collection, uint32_t);
-         // IExplodeable overrides
-         virtual LPVOID OnExplosion(const UMath::Vector3&, const UMath::Vector3&, float, LPVOID IExplosion);
-         // IBody overrides
-         virtual LPVOID GetTransform(UMath::Matrix4&)       override;
-         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  override;
-         virtual LPVOID GetAngularVelocity(UMath::Vector3&) override;
-         virtual LPVOID GetDimension(UMath::Vector3&)       override;
-         virtual LPVOID GetAttributes()                     override;
-         virtual LPVOID GetWorldID()                        override;
          // ISimable overrides
          virtual LPVOID Kill()              override;
          virtual LPVOID DebugObject()       override;
@@ -658,8 +682,19 @@ namespace GameInternals {
          virtual LPVOID GetEventSequencer() override;
          virtual LPVOID GetModel()          override;
          virtual LPVOID _dupGetModel()      override;
-
-         // 0xE4 EventSequencer
+         // IBody overrides
+         virtual LPVOID GetTransform(UMath::Matrix4&)       override;
+         virtual LPVOID GetLinearVelocity(UMath::Vector3&)  override;
+         virtual LPVOID GetAngularVelocity(UMath::Vector3&) override;
+         virtual LPVOID GetDimension(UMath::Vector3&)       override;
+         virtual LPVOID GetAttributes()                     override;
+         virtual LPVOID GetWorldID()                        override;
+         // EventSequencer::IContext overrides
+         virtual LPVOID SetDynamicData(const LPVOID EventSequencer__System, LPVOID EventDynamicData) override;
+         // IExplodeable overrides
+         virtual LPVOID OnExplosion(const UMath::Vector3&, const UMath::Vector3&, float, LPVOID IExplosion) override;
+         // IAttributeable overrides
+         virtual LPVOID OnAttributeChange(const LPVOID Attrib__Collection, uint32_t) override;
 
          PVehicle() = default;
          static PVehicle* Create(DriverClass driverClass, DWORD carModelHash, FECustomizationRecord* pFECustomizationRecord,
@@ -684,8 +719,6 @@ namespace GameInternals {
             // UTL::COM::Factory<Sim::Param,ISimable,UCrc32>::CreateInstance(UCrc32,Sim::Param)
             return ((PVehicle*(__cdecl*)(DWORD, DWORD, DWORD, VehicleParams*))0x41CB10)(typeHash, vehicleParams.typeName, vehicleParams.someFixedHash, &vehicleParams);
          }
-
-
       };
    }
 }
